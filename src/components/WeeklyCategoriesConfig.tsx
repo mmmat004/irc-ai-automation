@@ -44,11 +44,6 @@ const NEWS_FORMAT_OPTIONS = [
     description: "Q&A format with key people involved"
   },
   {
-    value: "feature",
-    label: "Feature / In-depth Story",
-    description: "Long-form, human-focused angle with background"
-  },
-  {
     value: "review",
     label: "Review / Critique", 
     description: "Evaluation of the event, policy, or media piece"
