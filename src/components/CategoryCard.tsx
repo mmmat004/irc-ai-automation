@@ -28,8 +28,6 @@ interface Category {
   description: string;
   keywords: string[];
   articleCount: number;
-  weeklyGrowth: number;
-  accuracy: number;
   isActive: boolean;
 }
 
@@ -46,7 +44,7 @@ export function CategoryCard({
 }: CategoryCardProps) {
   const [showKeywords, setShowKeywords] = useState(false);
 
-  const isPositiveGrowth = category.weeklyGrowth >= 0;
+
 
   return (
     <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">

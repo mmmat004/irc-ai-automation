@@ -1,69 +1,91 @@
-import { useState } from "react";
-import { User, Mail, Lock, Save } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Mail, Calendar, Shield, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Separator } from "./ui/separator";
-import { toast } from "sonner@2.0.3";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Badge } from "./ui/badge";
+import { toast } from "sonner";
+
+interface GoogleProfile {
+  id: string;
+  name: string;
+  email: string;
+  picture: string;
+  given_name: string;
+  family_name: string;
+  email_verified: boolean;
+  locale: string;
+  hd?: string;
+}
 
 export function Profile() {
-  const [profileData, setProfileData] = useState({
-    name: "John Smith",
-    email: "john.smith@adminverify.com",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: ""
-  });
+  const [profileData, setProfileData] = useState<GoogleProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    // Simulate fetching Google account data
+    // In a real app, this would come from Google OAuth or your backend
+    const mockGoogleProfile: GoogleProfile = {
+      id: "123456789",
+      name: "John Smith",
+      email: "john.smith@gmail.com",
+      picture: "https://lh3.googleusercontent.com/a/default-user",
+      given_name: "John",
+      family_name: "Smith",
+      email_verified: true,
+      locale: "en",
+      hd: "gmail.com"
+    };
 
-  const handleProfileUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate API call
     setTimeout(() => {
-      toast("Profile updated successfully!");
+      setProfileData(mockGoogleProfile);
       setIsLoading(false);
     }, 1000);
+  }, []);
+
+  const handleSignOut = () => {
+    // Simulate sign out
+    toast("Signed out successfully");
+    // In a real app, this would clear tokens and redirect to login
   };
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (profileData.newPassword !== profileData.confirmPassword) {
-      toast("New passwords don't match!");
-      return;
-    }
+  if (isLoading) {
+    return (
+      <div className="h-full overflow-auto bg-background">
+        <div className="p-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading profile...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-    if (profileData.newPassword.length < 8) {
-      toast("Password must be at least 8 characters long!");
-      return;
-    }
-
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      toast("Password changed successfully!");
-      setProfileData(prev => ({
-        ...prev,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: ""
-      }));
-      setIsLoading(false);
-    }, 1000);
-  };
+  if (!profileData) {
+    return (
+      <div className="h-full overflow-auto bg-background">
+        <div className="p-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-muted-foreground">Failed to load profile data</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full overflow-auto bg-background">
       <div className="p-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Profile Settings</h1>
-          <p className="text-muted-foreground mt-2">Manage your account information and security settings.</p>
+          <h1 className="text-3xl font-bold text-foreground">Google Account Profile</h1>
+          <p className="text-muted-foreground mt-2">Your account information from Google.</p>
         </div>
 
         <div className="max-w-2xl space-y-8">
@@ -76,97 +98,53 @@ export function Profile() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleProfileUpdate} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    value={profileData.name}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
-                    className="border-border rounded-lg"
-                  />
+              <div className="flex items-center gap-4 mb-6">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={profileData.picture} alt={profileData.name} />
+                  <AvatarFallback>{profileData.given_name[0]}{profileData.family_name[0]}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="text-lg font-semibold">{profileData.name}</h3>
+                  <p className="text-muted-foreground">{profileData.email}</p>
+                  {profileData.email_verified && (
+                    <Badge variant="secondary" className="mt-1">
+                      <Shield className="w-3 h-3 mr-1" />
+                      Email Verified
+                    </Badge>
+                  )}
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={profileData.email}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
-                    className="border-border rounded-lg"
-                  />
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-muted-foreground">First Name</span>
+                  <span className="font-medium">{profileData.given_name}</span>
                 </div>
-
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 rounded-lg"
-                >
-                  <Save className="w-4 h-4" />
-                  {isLoading ? "Saving..." : "Save Changes"}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Password Change */}
-          <Card className="border border-border shadow-sm rounded-xl hover:shadow-md transition-shadow duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lock className="w-5 h-5 text-primary" />
-                Change Password
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handlePasswordChange} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Current Password</Label>
-                  <Input
-                    id="currentPassword"
-                    type="password"
-                    value={profileData.currentPassword}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                    className="border-border rounded-lg"
-                    placeholder="Enter your current password"
-                  />
-                </div>
-
                 <Separator />
-
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={profileData.newPassword}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, newPassword: e.target.value }))}
-                    className="border-border rounded-lg"
-                    placeholder="Enter new password (min. 8 characters)"
-                  />
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-muted-foreground">Last Name</span>
+                  <span className="font-medium">{profileData.family_name}</span>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={profileData.confirmPassword}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                    className="border-border rounded-lg"
-                    placeholder="Confirm your new password"
-                  />
+                <Separator />
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-muted-foreground">Email Address</span>
+                  <span className="font-medium">{profileData.email}</span>
                 </div>
-
-                <Button
-                  type="submit"
-                  disabled={isLoading || !profileData.currentPassword || !profileData.newPassword || !profileData.confirmPassword}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 rounded-lg"
-                >
-                  <Lock className="w-4 h-4" />
-                  {isLoading ? "Changing..." : "Change Password"}
-                </Button>
-              </form>
+                <Separator />
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-muted-foreground">Language</span>
+                  <span className="font-medium">{profileData.locale}</span>
+                </div>
+                {profileData.hd && (
+                  <>
+                    <Separator />
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-muted-foreground">Domain</span>
+                      <span className="font-medium">{profileData.hd}</span>
+                    </div>
+                  </>
+                )}
+              </div>
             </CardContent>
           </Card>
 
@@ -181,17 +159,45 @@ export function Profile() {
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center py-2">
                 <span className="text-muted-foreground">Account Type</span>
-                <span className="font-medium">Administrator</span>
+                <span className="font-medium">Google Account</span>
               </div>
               <Separator />
               <div className="flex justify-between items-center py-2">
-                <span className="text-muted-foreground">Member Since</span>
-                <span className="font-medium">January 2024</span>
+                <span className="text-muted-foreground">User ID</span>
+                <span className="font-medium font-mono text-sm">{profileData.id}</span>
               </div>
               <Separator />
-      
+              <div className="flex justify-between items-center py-2">
+                <span className="text-muted-foreground">Connected Since</span>
+                <span className="font-medium">January 2024</span>
+              </div>
             </CardContent>
           </Card>
+
+          {/* Sign Out */}
+          <Card className="border border-border shadow-sm rounded-xl hover:shadow-md transition-shadow duration-300">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-red-600">
+                <LogOut className="w-5 h-5" />
+                Sign Out
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                Sign out of your Google account. You'll need to sign in again to access the application.
+              </p>
+              <Button
+                onClick={handleSignOut}
+                variant="outline"
+                className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </CardContent>
+          </Card>
+
+
         </div>
       </div>
     </div>

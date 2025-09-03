@@ -5,6 +5,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 
+const CATEGORY_OPTIONS = [
+  "Business",
+  "Data",
+  "AI",
+  "Technology",
+  "Startup",
+  "Marketing",
+  "Digital Transform",
+  "Economic",
+  "Finance"
+];
+
 export interface FilterState {
   search: string;
   category: string;
@@ -67,14 +79,11 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="Technology">Technology</SelectItem>
-            <SelectItem value="Politics">Politics</SelectItem>
-            <SelectItem value="Business">Business</SelectItem>
-            <SelectItem value="Sports">Sports</SelectItem>
-            <SelectItem value="Entertainment">Entertainment</SelectItem>
-            <SelectItem value="Health">Health</SelectItem>
-            <SelectItem value="Environment">Environment</SelectItem>
-            <SelectItem value="Science">Science</SelectItem>
+            {CATEGORY_OPTIONS.map((category) => (
+              <SelectItem key={category} value={category}>
+                {category}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 

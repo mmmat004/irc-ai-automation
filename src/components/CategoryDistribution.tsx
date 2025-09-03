@@ -1,12 +1,13 @@
 const categoryData = [
-  { name: "Technology", count: 342, color: "bg-blue-500" },
-  { name: "Politics", count: 289, color: "bg-green-500" },
-  { name: "Business", count: 156, color: "bg-yellow-500" },
-  { name: "Sports", count: 134, color: "bg-red-500" },
-  { name: "Entertainment", count: 98, color: "bg-purple-500" },
-  { name: "Health", count: 87, color: "bg-pink-500" },
-  { name: "Environment", count: 76, color: "bg-indigo-500" },
-  { name: "Science", count: 65, color: "bg-teal-500" }
+  { name: "AI", count: 2947, color: "bg-purple-500" },
+  { name: "Technology", count: 2387, color: "bg-cyan-500" },
+  { name: "Business", count: 2156, color: "bg-emerald-500" },
+  { name: "Data", count: 1834, color: "bg-blue-500" },
+  { name: "Economic", count: 1734, color: "bg-red-500" },
+  { name: "Finance", count: 1643, color: "bg-indigo-500" },
+  { name: "Startup", count: 1567, color: "bg-amber-500" },
+  { name: "Marketing", count: 1298, color: "bg-pink-500" },
+  { name: "Digital Transform", count: 987, color: "bg-lime-500" }
 ];
 
 export function CategoryDistribution() {

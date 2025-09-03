@@ -4,78 +4,97 @@ import { Input } from "./ui/input";
 import { CategoryCard } from "./CategoryCard";
 import { AddCategoryModal } from "./AddCategoryModal";
 
-const categoriesData = [
+interface CategoryData {
+  id: number;
+  name: string;
+  color: string;
+  description: string;
+  keywords: string[];
+  articleCount: number;
+  isActive: boolean;
+}
+
+const categoriesData: CategoryData[] = [
   {
     id: 1,
-    name: "Technology",
-    color: "#3b82f6",
-    description: "AI, software, hardware, innovation, digital transformation",
-    keywords: ["AI", "machine learning", "software", "hardware", "tech", "digital", "innovation"],
-    articleCount: 2847,
+    name: "Business",
+    color: "#10b981",
+    description: "Corporate news, market analysis, business strategy",
+    keywords: ["business", "corporate", "market", "strategy", "revenue", "company", "enterprise"],
+    articleCount: 2156,
     isActive: true
   },
   {
     id: 2,
-    name: "Business",
-    color: "#10b981",
-    description: "Finance, markets, economy, corporate news, startups",
-    keywords: ["finance", "market", "economy", "business", "startup", "corporate", "investment"],
-    articleCount: 1924,
+    name: "Data",
+    color: "#3b82f6",
+    description: "Data science, analytics, big data, data engineering",
+    keywords: ["data", "analytics", "database", "data science", "big data", "statistics", "metrics"],
+    articleCount: 1834,
     isActive: true
   },
   {
     id: 3,
-    name: "Health",
-    color: "#f59e0b",
-    description: "Medical research, healthcare, wellness, public health",
-    keywords: ["health", "medical", "healthcare", "wellness", "medicine", "research", "treatment"],
-    articleCount: 1356,
+    name: "AI",
+    color: "#8b5cf6",
+    description: "Artificial intelligence, machine learning, neural networks",
+    keywords: ["AI", "artificial intelligence", "machine learning", "neural networks", "deep learning", "automation"],
+    articleCount: 2947,
     isActive: true
   },
   {
     id: 4,
-    name: "Science", 
-    color: "#8b5cf6",
-    description: "Research, discoveries, climate, space, environment",
-    keywords: ["science", "research", "discovery", "climate", "space", "environment", "study"],
-    articleCount: 987,
+    name: "Technology",
+    color: "#06b6d4",
+    description: "Software, hardware, innovation, tech infrastructure",
+    keywords: ["technology", "software", "hardware", "tech", "innovation", "development", "programming"],
+    articleCount: 2387,
     isActive: true
   },
   {
     id: 5,
-    name: "Politics",
-    color: "#ef4444",
-    description: "Government, policy, elections, international relations",
-    keywords: ["politics", "government", "policy", "election", "parliament", "minister", "law"],
-    articleCount: 1634,
+    name: "Startup",
+    color: "#f59e0b",
+    description: "Entrepreneurship, funding, startup ecosystem, venture capital",
+    keywords: ["startup", "entrepreneur", "funding", "venture capital", "seed", "series A", "investment"],
+    articleCount: 1567,
     isActive: true
   },
   {
     id: 6,
-    name: "Sports",
-    color: "#06b6d4",
-    description: "Athletics, competitions, teams, player news",
-    keywords: ["sports", "football", "basketball", "tennis", "athletics", "competition", "team"],
-    articleCount: 798,
+    name: "Marketing",
+    color: "#ec4899",
+    description: "Digital marketing, advertising, brand strategy, growth",
+    keywords: ["marketing", "advertising", "brand", "growth", "digital marketing", "campaign", "promotion"],
+    articleCount: 1298,
     isActive: true
   },
   {
     id: 7,
-    name: "Entertainment",
-    color: "#ec4899",
-    description: "Movies, music, celebrities, culture, media",
-    keywords: ["entertainment", "movie", "music", "celebrity", "culture", "media", "show"],
-    articleCount: 1245,
+    name: "Digital Transform",
+    color: "#84cc16",
+    description: "Digital transformation, modernization, cloud adoption",
+    keywords: ["digital transformation", "modernization", "cloud", "digitalization", "automation", "innovation"],
+    articleCount: 987,
     isActive: true
   },
   {
     id: 8,
-    name: "Education",
-    color: "#84cc16",
-    description: "Schools, universities, learning, academic research",
-    keywords: ["education", "school", "university", "learning", "student", "academic", "research"],
-    articleCount: 543,
-    isActive: false
+    name: "Economic",
+    color: "#ef4444",
+    description: "Economic trends, policy, global economy, indicators",
+    keywords: ["economic", "economy", "GDP", "inflation", "policy", "growth", "recession"],
+    articleCount: 1734,
+    isActive: true
+  },
+  {
+    id: 9,
+    name: "Finance",
+    color: "#6366f1",
+    description: "Financial markets, banking, fintech, investments",
+    keywords: ["finance", "banking", "fintech", "investment", "money", "financial", "markets"],
+    articleCount: 1643,
+    isActive: true
   }
 ];
 
@@ -92,7 +111,7 @@ export function CategoryCards({
   isAddModalOpen, 
   onCloseAddModal 
 }: CategoryCardsProps) {
-  const [categories, setCategories] = useState(categoriesData);
+  const [categories, setCategories] = useState<CategoryData[]>(categoriesData);
 
   const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -146,12 +165,12 @@ export function CategoryCards({
       {/* Category Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredCategories.map((category) => (
-          <CategoryCard
-            key={category.id}
-            category={category}
-            onToggleActive={handleToggleActive}
-            onEdit={handleEdit}
-          />
+                      <CategoryCard
+              key={category.id}
+              category={category}
+              onToggleActive={handleToggleActive}
+              onEdit={handleEdit}
+            />
         ))}
       </div>
 

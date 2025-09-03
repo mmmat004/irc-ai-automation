@@ -5,72 +5,137 @@ import { Badge } from "./ui/badge";
 import { toast } from "sonner";
 import { FilterState } from "./NewsFilters";
 
-const initialNewsData = [
+interface NewsItem {
+  id: number;
+  title: string;
+  category: string;
+  status: string;
+  date: string;
+  time: string;
+}
+
+const initialNewsData: NewsItem[] = [
   {
     id: 1,
     title: "Breaking: Tech Giants Announce New AI Partnership",
-    category: "Technology",
+    category: "AI",
     status: "published",
-    date: "2025-08-15",
+    date: "2024-01-15",
     time: "14:30"
   },
   {
     id: 2,
-    title: "Global Climate Summit Reaches Historic Agreement",
-    category: "Environment",
+    title: "Startup Funding: Series A Round Reaches $50M",
+    category: "Startup",
     status: "verified",
-    date: "2025-08-15",
+    date: "2024-01-15",
     time: "12:15"
   },
   {
     id: 3,
-    title: "Market Update: Stocks Rise on Positive Economic Data",
-    category: "Business",
+    title: "Market Update: Economic Indicators Show Growth",
+    category: "Economic",
     status: "pending",
-    date: "2025-08-25",
+    date: "2024-01-15",
     time: "10:45"
   },
   {
     id: 4,
-    title: "Sports: Championship Finals Set for This Weekend",
-    category: "Sports",
+    title: "Digital Transformation: Enterprise Cloud Migration Trends",
+    category: "Digital Transform",
     status: "verified",
-    date: "2025-07-15",
+    date: "2024-01-15",
     time: "09:20"
   },
   {
     id: 5,
-    title: "Healthcare Innovation: New Treatment Shows Promise",
-    category: "Health",
+    title: "Data Analytics: New Machine Learning Framework Released",
+    category: "Data",
     status: "pending",
-    date: "2025-07-25",
+    date: "2024-01-14",
     time: "16:45"
   },
   {
     id: 6,
-    title: "Entertainment Weekly: Award Season Predictions",
-    category: "Entertainment",
+    title: "Marketing Automation: Consumer Behavior Analysis",
+    category: "Marketing",
     status: "published",
-    date: "2025-07-25",
+    date: "2024-01-14",
     time: "15:30"
   },
   {
     id: 7,
-    title: "Political Analysis: Election Campaign Updates",
-    category: "Politics",
+    title: "Financial Markets: Cryptocurrency Regulation Updates",
+    category: "Finance",
     status: "verified",
-    date: "2025-06-23",
+    date: "2024-01-14",
     time: "13:15"
   },
   {
     id: 8,
-    title: "Science Discovery: Breakthrough in Quantum Computing",
-    category: "Science",
+    title: "Technology Innovation: 5G Infrastructure Expansion",
+    category: "Technology",
     status: "pending",
-    date: "2025-06-19",
+    date: "2024-01-14",
     time: "11:00"
+  },
+  {
+    id: 9,
+    title: "Business Intelligence: Q4 Revenue Report Analysis",
+    category: "Business",
+    status: "verified",
+    date: "2024-01-13",
+    time: "14:20"
   }
 ];
+
+const filterNewsData = (newsData: NewsItem[], filters: FilterState): NewsItem[] => {
+  return newsData.filter(news => {
+    // Search filter
+    if (filters.search && !news.title.toLowerCase().includes(filters.search.toLowerCase())) {
+      return false;
+    }
+
+    // Category filter
+    if (filters.category !== "all" && news.category !== filters.category) {
+      return false;
+    }
+
+    // Status filter
+    if (filters.status !== "all" && news.status !== filters.status) {
+      return false;
+    }
+
+    // Date filter
+    if (filters.dateRange !== "all") {
+      const newsDate = new Date(news.date);
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      switch (filters.dateRange) {
+        case "today":
+          if (newsDate.toDateString() !== today.toDateString()) return false;
+          break;
+        case "yesterday":
+          if (newsDate.toDateString() !== yesterday.toDateString()) return false;
+          break;
+        case "week":
+          const weekAgo = new Date(today);
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          if (newsDate < weekAgo) return false;
+          break;
+        case "month":
+          const monthAgo = new Date(today);
+          monthAgo.setMonth(monthAgo.getMonth() - 1);
+          if (newsDate < monthAgo) return false;
+          break;
+      }
+    }
+
+    return true;
+  });
+};
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -95,7 +160,7 @@ interface NewsTableProps {
 }
 
 export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
-  const [newsData, setNewsData] = useState(initialNewsData);
+  const [newsData, setNewsData] = useState<NewsItem[]>(initialNewsData);
 
   const handleNewsClick = (newsId: number) => {
     if (onNewsSelect) {
@@ -121,52 +186,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
   // Filter the news data based on current filters
   const filteredNewsData = useMemo(() => {
     if (!filters) return newsData;
-
-    return newsData.filter(news => {
-      // Search filter
-      if (filters.search && !news.title.toLowerCase().includes(filters.search.toLowerCase())) {
-        return false;
-      }
-
-      // Category filter
-      if (filters.category !== "all" && news.category !== filters.category) {
-        return false;
-      }
-
-      // Status filter
-      if (filters.status !== "all" && news.status !== filters.status) {
-        return false;
-      }
-
-      // Date filter
-      if (filters.dateRange !== "all") {
-        const newsDate = new Date(news.date);
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-
-        switch (filters.dateRange) {
-          case "today":
-            if (newsDate.toDateString() !== today.toDateString()) return false;
-            break;
-          case "yesterday":
-            if (newsDate.toDateString() !== yesterday.toDateString()) return false;
-            break;
-          case "week":
-            const weekAgo = new Date(today);
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            if (newsDate < weekAgo) return false;
-            break;
-          case "month":
-            const monthAgo = new Date(today);
-            monthAgo.setMonth(monthAgo.getMonth() - 1);
-            if (newsDate < monthAgo) return false;
-            break;
-        }
-      }
-
-      return true;
-    });
+    return filterNewsData(newsData, filters);
   }, [newsData, filters]);
 
   return (
