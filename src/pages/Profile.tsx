@@ -24,30 +24,42 @@ export function Profile() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate fetching Google account data
-    // In a real app, this would come from Google OAuth or your backend
-    const mockGoogleProfile: GoogleProfile = {
-      id: "123456789",
-      name: "John Smith",
-      email: "john.smith@gmail.com",
-      picture: "https://lh3.googleusercontent.com/a/default-user",
-      given_name: "John",
-      family_name: "Smith",
-      email_verified: true,
-      locale: "en",
-      hd: "gmail.com"
-    };
-
-    setTimeout(() => {
-      setProfileData(mockGoogleProfile);
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
       setIsLoading(false);
-    }, 1000);
+      return;
+    }
+    fetch('https://irc-be-production.up.railway.app/user/profile', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Failed to fetch profile');
+        const data = await res.json();
+        setProfileData({
+          id: data.id ?? "",
+          name: data.name ?? `${data.given_name ?? ''} ${data.family_name ?? ''}`.trim(),
+          email: data.email ?? "",
+          picture: data.picture ?? data.avatar ?? "https://lh3.googleusercontent.com/a/default-user",
+          given_name: data.given_name ?? data.first_name ?? "",
+          family_name: data.family_name ?? data.last_name ?? "",
+          email_verified: Boolean(data.email_verified ?? true),
+          locale: data.locale ?? "en",
+          hd: data.hd,
+        });
+      })
+      .catch(() => {
+        setProfileData(null);
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   const handleSignOut = () => {
-    // Simulate sign out
+    localStorage.removeItem('auth_token');
     toast("Signed out successfully");
-    // In a real app, this would clear tokens and redirect to login
+    // Optionally force reload to return to login screen
+    window.location.reload();
   };
 
   if (isLoading) {

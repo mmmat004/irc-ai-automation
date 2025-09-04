@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Toaster } from "sonner@2.0.3";
+import { useEffect, useState } from "react";
+import { Toaster } from "sonner";
 import { Sidebar } from "./components/Sidebar";
 import { Dashboard } from "./pages/Dashboard";
 import { NewsManagement } from "./pages/NewsManagement";
@@ -12,19 +12,93 @@ import { NewsDetail } from "./pages/NewsDetail";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isExchanging, setIsExchanging] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [selectedNewsId, setSelectedNewsId] = useState<number | null>(null);
   const [previousPage, setPreviousPage] = useState('dashboard');
+
+  useEffect(() => {
+    // Initialize auth from storage on first load
+    const storedToken = localStorage.getItem('auth_token');
+    if (storedToken) {
+      setIsAuthenticated(true);
+      // Optional: allow deep-linking via page query even on hard refresh
+      const initParams = new URLSearchParams(window.location.search);
+      const initialPage = initParams.get('page');
+      if (initialPage) {
+        setCurrentPage(initialPage as typeof currentPage);
+      }
+    }
+
+    // Detect temporary oauth token in URL
+    const params = new URLSearchParams(window.location.search);
+    const tokenParam = params.get('oauthToken') || params.get('token') || params.get('access_token');
+    const requestedPage = params.get('page');
+    if (tokenParam) {
+      setIsExchanging(true);
+      setAuthError(null);
+      fetch('https://irc-be-production.up.railway.app/auth/oauth-exchange-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: tokenParam }),
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Authentication failed');
+          }
+          try {
+            const data = await res.json();
+            const finalToken = data?.token || data?.accessToken || tokenParam;
+            if (finalToken) {
+              localStorage.setItem('auth_token', finalToken);
+              setIsAuthenticated(true);
+              if (requestedPage) {
+                setCurrentPage(requestedPage as typeof currentPage);
+              } else {
+                setCurrentPage('dashboard');
+              }
+            } else {
+              throw new Error('No valid token received');
+            }
+          } catch (parseError) {
+            // If backend returns no JSON, still persist param token
+            localStorage.setItem('auth_token', tokenParam);
+            setIsAuthenticated(true);
+            if (requestedPage) {
+              setCurrentPage(requestedPage as typeof currentPage);
+            } else {
+              setCurrentPage('dashboard');
+            }
+          }
+        })
+        .catch((error) => {
+          // On failure, ensure we are logged out and show error
+          localStorage.removeItem('auth_token');
+          setIsAuthenticated(false);
+          setAuthError(error.message || 'Login failed. Please try again with a valid account.');
+        })
+        .finally(() => {
+          // Clean URL
+          const newUrl = window.location.origin + window.location.pathname;
+          window.history.replaceState({}, '', newUrl);
+          setIsExchanging(false);
+        });
+    }
+  }, []);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('auth_token');
     setIsAuthenticated(false);
     setCurrentPage('dashboard');
     setSelectedNewsId(null);
     setPreviousPage('dashboard');
+    setAuthError(null);
   };
 
   const handleNewsSelect = (newsId: number) => {
@@ -65,10 +139,21 @@ export default function App() {
     }
   };
 
+  if (isExchanging) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-secondary">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
+          <p className="text-sm text-muted-foreground">Signing in…</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <div>
-        <Login onLogin={handleLogin} />
+        <Login onLogin={handleLogin} authError={authError} />
         <Toaster position="top-right" />
       </div>
     );
