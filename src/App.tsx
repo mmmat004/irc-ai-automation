@@ -35,7 +35,15 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const tokenParam = params.get('oauthToken') || params.get('token') || params.get('access_token');
     const requestedPage = params.get('page');
-    if (tokenParam) {
+    
+    console.log('URL params:', Object.fromEntries(params.entries()));
+    console.log('Token param found:', tokenParam);
+    
+    // Use token from URL if available, otherwise use stored token
+    const tokenToUse = tokenParam || localStorage.getItem('auth_token');
+    console.log('Token to use for exchange:', tokenToUse);
+    
+    if (tokenToUse) {
       setIsExchanging(true);
       setAuthError(null);
       // Use CORS proxy to bypass CORS restrictions
@@ -48,13 +56,16 @@ export default function App() {
       const targetUrl = encodeURIComponent('https://irc-be-production.up.railway.app/auth/oauth-exchange-token');
       const proxyUrl = proxies[0]; // Start with first proxy
       
+      const requestBody = { oAuthTempToken: tokenToUse };
+      console.log('Request body:', requestBody);
+      
       fetch(proxyUrl + targetUrl, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({ oAuthTempToken: tokenParam }),
+        body: JSON.stringify(requestBody),
       })
         .then(async (res) => {
           console.log('Token exchange response:', res.status, res.statusText);
@@ -65,7 +76,7 @@ export default function App() {
           }
           const data = await res.json();
           console.log('Token exchange data:', data);
-          const finalToken = data?.token || data?.accessToken || tokenParam;
+          const finalToken = data?.token || data?.accessToken || tokenToUse;
           localStorage.setItem('auth_token', finalToken);
           console.log('Token saved:', finalToken);
           setIsAuthenticated(true);
