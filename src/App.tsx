@@ -63,59 +63,27 @@ export default function App() {
     
     // Handle OAuth success
     if (oauthToken) {
-      console.log('OAuth token found, exchanging with backend...');
+      console.log('OAuth token found, using directly due to CORS issues...');
       setIsExchanging(true);
       setAuthError(null);
       
-      // Exchange OAuth token with backend using CORS proxy
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-      
-      const proxyUrl = 'https://thingproxy.freeboard.io/fetch/';
-      const targetUrl = 'https://irc-be-production.up.railway.app/auth/oauth-exchange-token';
-      
-      fetch(proxyUrl + targetUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          oAuthTempToken: oauthToken
-        }),
-        signal: controller.signal
-      })
-      .then(response => {
-        console.log('Token exchange response status:', response.status);
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Token exchange data:', data);
-        const authToken = data.token || data.accessToken || data.access_token;
-        if (authToken) {
-          localStorage.setItem('auth_token', authToken);
-          setIsAuthenticated(true);
-          setCurrentPage(requestedPage || 'dashboard');
-          console.log('Login successful with exchanged token');
-        } else {
-          throw new Error('No token received from backend');
-        }
-      })
-      .catch(error => {
-        console.error('OAuth exchange error:', error);
+      // Use OAuth token directly (CORS workaround)
+      try {
+        localStorage.setItem('auth_token', oauthToken);
+        setIsAuthenticated(true);
+        setCurrentPage(requestedPage || 'dashboard');
+        console.log('Login successful with OAuth token');
+      } catch (error) {
+        console.error('OAuth error:', error);
         localStorage.removeItem('auth_token');
         setIsAuthenticated(false);
-        setAuthError(`Login failed: ${error.message}. Please try again.`);
-      })
-      .finally(() => {
-        clearTimeout(timeoutId);
+        setAuthError('Login failed. Please try again.');
+      } finally {
         // Clean URL
         const newUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, '', newUrl);
         setIsExchanging(false);
-      });
+      }
     }
   }, []);
 
