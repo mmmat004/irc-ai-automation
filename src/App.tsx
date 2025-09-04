@@ -67,11 +67,14 @@ export default function App() {
       setIsExchanging(true);
       setAuthError(null);
       
-      // Exchange OAuth token with backend
+      // Exchange OAuth token with backend using CORS proxy
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
       
-      fetch('https://irc-be-production.up.railway.app/auth/oauth-exchange-token', {
+      const proxyUrl = 'https://thingproxy.freeboard.io/fetch/';
+      const targetUrl = 'https://irc-be-production.up.railway.app/auth/oauth-exchange-token';
+      
+      fetch(proxyUrl + targetUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

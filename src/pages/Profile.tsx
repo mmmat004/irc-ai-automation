@@ -30,8 +30,11 @@ export function Profile() {
       return;
     }
     
-    // Fetch real Google profile data from backend
-    fetch('https://irc-be-production.up.railway.app/user/profile', {
+    // Fetch real Google profile data from backend using CORS proxy
+    const proxyUrl = 'https://thingproxy.freeboard.io/fetch/';
+    const targetUrl = 'https://irc-be-production.up.railway.app/user/profile';
+    
+    fetch(proxyUrl + targetUrl, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
