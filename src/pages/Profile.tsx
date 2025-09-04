@@ -30,8 +30,12 @@ export function Profile() {
       return;
     }
     fetch('https://irc-be-production.up.railway.app/user/profile', {
+      method: 'GET',
+      mode: 'cors',
       headers: {
-        Authorization: `Bearer ${token}`,
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
       },
     })
       .then(async (res) => {

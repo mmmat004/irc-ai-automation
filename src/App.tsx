@@ -40,7 +40,11 @@ export default function App() {
       setAuthError(null);
       fetch('https://irc-be-production.up.railway.app/auth/oauth-exchange-token', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        mode: 'cors',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
         body: JSON.stringify({ token: tokenParam }),
       })
         .then(async (res) => {
@@ -77,7 +81,13 @@ export default function App() {
           // On failure, ensure we are logged out and show error
           localStorage.removeItem('auth_token');
           setIsAuthenticated(false);
-          setAuthError(error.message || 'Login failed. Please try again with a valid account.');
+          
+          // Handle CORS errors specifically
+          if (error.message.includes('CORS') || error.message.includes('blocked')) {
+            setAuthError('Server configuration issue. Please contact support or try again later.');
+          } else {
+            setAuthError(error.message || 'Login failed. Please try again with a valid account.');
+          }
         })
         .finally(() => {
           // Clean URL
