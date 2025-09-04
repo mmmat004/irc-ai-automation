@@ -37,11 +37,13 @@ export default function App() {
     const oauthStatus = params.get('oauthStatus');
     const requestedPage = params.get('page');
     
-    console.log('URL params:', { oauthToken, oauthStatus, requestedPage });
+    console.log('🔍 Full URL:', window.location.href);
+    console.log('🔍 URL params:', { oauthToken, oauthStatus, requestedPage });
+    console.log('🔍 All URL params:', Object.fromEntries(params.entries()));
     
     // Handle OAuth failure - check for various failure indicators
     if (oauthStatus === 'failed' || oauthStatus === 'error' || oauthStatus === 'denied') {
-      console.log('OAuth login failed with status:', oauthStatus);
+      console.log('❌ OAuth login failed with status:', oauthStatus);
       setAuthError('Login failed. Please try again with a valid account.');
       setIsAuthenticated(false);
       // Clean URL
@@ -52,8 +54,20 @@ export default function App() {
     
     // Handle case where OAuth returns but no token (potential failure)
     if (oauthStatus && oauthStatus !== 'success' && !oauthToken) {
-      console.log('OAuth completed but no token received, status:', oauthStatus);
+      console.log('❌ OAuth completed but no token received, status:', oauthStatus);
       setAuthError('Login failed. Please try again.');
+      setIsAuthenticated(false);
+      // Clean URL
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+      return;
+    }
+    
+    // Handle case where there's an error parameter (common OAuth failure pattern)
+    const errorParam = params.get('error');
+    if (errorParam) {
+      console.log('❌ OAuth error parameter found:', errorParam);
+      setAuthError(`Login failed: ${errorParam}. Please try again.`);
       setIsAuthenticated(false);
       // Clean URL
       const newUrl = window.location.origin + window.location.pathname;
@@ -63,7 +77,11 @@ export default function App() {
     
     // Handle OAuth success
     if (oauthToken) {
-      console.log('OAuth token found, using directly due to CORS issues...');
+      console.log('✅ OAuth token found, using directly due to CORS issues...');
+      console.log('🔑 Token length:', oauthToken.length);
+      console.log('🔑 Token preview:', oauthToken.substring(0, 50) + '...');
+      console.log('🔑 Token timestamp:', new Date().toISOString());
+      
       setIsExchanging(true);
       setAuthError(null);
       
@@ -72,9 +90,9 @@ export default function App() {
         localStorage.setItem('auth_token', oauthToken);
         setIsAuthenticated(true);
         setCurrentPage(requestedPage || 'dashboard');
-        console.log('Login successful with OAuth token');
+        console.log('✅ Login successful with OAuth token');
       } catch (error) {
-        console.error('OAuth error:', error);
+        console.error('❌ OAuth error:', error);
         localStorage.removeItem('auth_token');
         setIsAuthenticated(false);
         setAuthError('Login failed. Please try again.');
@@ -90,6 +108,31 @@ export default function App() {
   const handleLogin = () => {
     setIsAuthenticated(true);
   };
+
+  // Test function to verify API endpoint (for debugging)
+  const testApiEndpoint = async () => {
+    const testToken = 'test-token-123';
+    console.log('🧪 Testing API endpoint...');
+    
+    try {
+      const response = await fetch('https://irc-be-production.up.railway.app/auth/oauth-exchange-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          oAuthTempToken: testToken
+        })
+      });
+      console.log('🧪 API test response status:', response.status);
+      console.log('🧪 API test response:', await response.text());
+    } catch (error) {
+      console.log('🧪 API test error:', error);
+    }
+  };
+
+  // Uncomment the line below to test API endpoint
+  // testApiEndpoint();
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
