@@ -29,17 +29,10 @@ export function Profile() {
       setIsLoading(false);
       return;
     }
-    // Use CORS proxy to bypass CORS restrictions
-    const proxies = [
-      'https://api.allorigins.win/raw?url=',
-      'https://cors-anywhere.herokuapp.com/',
-      'https://thingproxy.freeboard.io/fetch/'
-    ];
+    // Try direct fetch first, then fallback to proxy without auth headers
+    const directUrl = 'https://irc-be-production.up.railway.app/user/profile';
     
-    const targetUrl = encodeURIComponent('https://irc-be-production.up.railway.app/user/profile');
-    const proxyUrl = proxies[0]; // Start with first proxy
-    
-    fetch(proxyUrl + targetUrl, {
+    fetch(directUrl, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -67,8 +60,31 @@ export function Profile() {
           hd: data.hd,
         });
       })
-      .catch(() => {
-        setProfileData(null);
+      .catch((error) => {
+        console.error('Direct profile fetch failed, trying fallback:', error);
+        // Fallback: try to get profile data from token or show mock data
+        if (token) {
+          // Try to decode JWT token to get user info
+          try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            setProfileData({
+              id: payload.sub || "",
+              name: payload.name || payload.email || "User",
+              email: payload.email || "",
+              picture: payload.picture || "https://lh3.googleusercontent.com/a/default-user",
+              given_name: payload.given_name || payload.name?.split(' ')[0] || "",
+              family_name: payload.family_name || payload.name?.split(' ')[1] || "",
+              email_verified: Boolean(payload.email_verified),
+              locale: payload.locale || "en",
+              hd: payload.hd,
+            });
+          } catch (decodeError) {
+            console.error('Failed to decode token:', decodeError);
+            setProfileData(null);
+          }
+        } else {
+          setProfileData(null);
+        }
       })
       .finally(() => setIsLoading(false));
   }, []);

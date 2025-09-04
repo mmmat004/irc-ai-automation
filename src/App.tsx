@@ -54,7 +54,7 @@ export default function App() {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({ token: tokenParam }),
+        body: JSON.stringify({ oAuthTempToken: tokenParam }),
       })
         .then(async (res) => {
           console.log('Token exchange response:', res.status, res.statusText);
