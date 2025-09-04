@@ -19,7 +19,7 @@ export default function App() {
   const [previousPage, setPreviousPage] = useState('dashboard');
 
   useEffect(() => {
-    // Initialize auth from storage on first load
+    // Initialize auth from storage on first load - v2
     const storedToken = localStorage.getItem('auth_token');
     if (storedToken) {
       setIsAuthenticated(true);
