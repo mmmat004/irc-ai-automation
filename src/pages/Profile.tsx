@@ -48,8 +48,13 @@ export function Profile() {
       },
     })
       .then(async (res) => {
-        if (!res.ok) throw new Error('Failed to fetch profile');
+        console.log('Profile fetch response:', res.status, res.statusText);
+        if (!res.ok) {
+          console.error('Profile fetch failed:', res.status, res.statusText);
+          throw new Error(`Failed to fetch profile: ${res.status} ${res.statusText}`);
+        }
         const data = await res.json();
+        console.log('Profile data:', data);
         setProfileData({
           id: data.id ?? "",
           name: data.name ?? `${data.given_name ?? ''} ${data.family_name ?? ''}`.trim(),

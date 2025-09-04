@@ -57,15 +57,19 @@ export default function App() {
         body: JSON.stringify({ token: tokenParam }),
       })
         .then(async (res) => {
+          console.log('Token exchange response:', res.status, res.statusText);
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
+            console.error('Token exchange failed:', errorData);
             throw new Error(errorData.message || 'Authentication failed');
           }
           try {
             const data = await res.json();
-            const finalToken = data?.token || data?.accessToken || tokenParam;
+            console.log('Token exchange data:', data);
+            const finalToken = data?.token || data?.accessToken || data?.access_token || data?.jwt || data?.authToken || tokenParam;
             if (finalToken) {
               localStorage.setItem('auth_token', finalToken);
+              console.log('Token saved:', finalToken);
               setIsAuthenticated(true);
               if (requestedPage) {
                 setCurrentPage(requestedPage as typeof currentPage);
@@ -76,6 +80,7 @@ export default function App() {
               throw new Error('No valid token received');
             }
           } catch (parseError) {
+            console.log('Parse error, using original token:', parseError);
             // If backend returns no JSON, still persist param token
             localStorage.setItem('auth_token', tokenParam);
             setIsAuthenticated(true);
@@ -87,6 +92,7 @@ export default function App() {
           }
         })
         .catch((error) => {
+          console.error('OAuth exchange error:', error);
           // On failure, ensure we are logged out and show error
           localStorage.removeItem('auth_token');
           setIsAuthenticated(false);
