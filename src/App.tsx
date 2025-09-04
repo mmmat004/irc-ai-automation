@@ -31,11 +31,23 @@ export default function App() {
       }
     }
 
-    // Check for OAuth token in URL parameters
+    // Check for OAuth status in URL parameters
     const params = new URLSearchParams(window.location.search);
     const oauthToken = params.get('oauthToken');
+    const oauthStatus = params.get('oauthStatus');
     const requestedPage = params.get('page');
     
+    // Handle OAuth failure
+    if (oauthStatus === 'failed') {
+      console.log('OAuth login failed');
+      setAuthError('Login failed. Please try again with a valid account.');
+      // Clean URL
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+      return;
+    }
+    
+    // Handle OAuth success
     if (oauthToken) {
       console.log('OAuth token found, using directly...');
       setIsExchanging(true);

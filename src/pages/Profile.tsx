@@ -32,21 +32,28 @@ export function Profile() {
     
     // Try to decode JWT token to get user info
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        throw new Error('Invalid JWT format');
+      }
+      
+      const payload = JSON.parse(atob(parts[1]));
       console.log('JWT payload:', payload);
+      
       setProfileData({
-        id: payload.sub || "",
+        id: payload.sub || payload.user_id || "",
         name: payload.name || payload.email || "User",
         email: payload.email || "",
-        picture: payload.picture || "https://lh3.googleusercontent.com/a/default-user",
-        given_name: payload.given_name || payload.name?.split(' ')[0] || "",
-        family_name: payload.family_name || payload.name?.split(' ')[1] || "",
+        picture: payload.picture || payload.avatar || "https://lh3.googleusercontent.com/a/default-user",
+        given_name: payload.given_name || payload.first_name || payload.name?.split(' ')[0] || "",
+        family_name: payload.family_name || payload.last_name || payload.name?.split(' ')[1] || "",
         email_verified: Boolean(payload.email_verified),
         locale: payload.locale || "en",
-        hd: payload.hd,
+        hd: payload.hd || payload.domain,
       });
     } catch (error) {
       console.error('Failed to decode JWT:', error);
+      console.log('Token that failed to decode:', token);
       setProfileData(null);
     }
     setIsLoading(false);
