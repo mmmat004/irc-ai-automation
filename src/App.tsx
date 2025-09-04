@@ -37,10 +37,24 @@ export default function App() {
     const oauthStatus = params.get('oauthStatus');
     const requestedPage = params.get('page');
     
-    // Handle OAuth failure
-    if (oauthStatus === 'failed') {
-      console.log('OAuth login failed');
+    console.log('URL params:', { oauthToken, oauthStatus, requestedPage });
+    
+    // Handle OAuth failure - check for various failure indicators
+    if (oauthStatus === 'failed' || oauthStatus === 'error' || oauthStatus === 'denied') {
+      console.log('OAuth login failed with status:', oauthStatus);
       setAuthError('Login failed. Please try again with a valid account.');
+      setIsAuthenticated(false);
+      // Clean URL
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+      return;
+    }
+    
+    // Handle case where OAuth returns but no token (potential failure)
+    if (oauthStatus && oauthStatus !== 'success' && !oauthToken) {
+      console.log('OAuth completed but no token received, status:', oauthStatus);
+      setAuthError('Login failed. Please try again.');
+      setIsAuthenticated(false);
       // Clean URL
       const newUrl = window.location.origin + window.location.pathname;
       window.history.replaceState({}, '', newUrl);
@@ -49,27 +63,56 @@ export default function App() {
     
     // Handle OAuth success
     if (oauthToken) {
-      console.log('OAuth token found, using directly...');
+      console.log('OAuth token found, exchanging with backend...');
       setIsExchanging(true);
       setAuthError(null);
       
-      // Use OAuth token directly without exchange (due to CORS issues)
-      try {
-        localStorage.setItem('auth_token', oauthToken);
-        setIsAuthenticated(true);
-        setCurrentPage(requestedPage || 'dashboard');
-        console.log('Login successful with OAuth token');
-      } catch (error) {
-        console.error('OAuth error:', error);
+      // Exchange OAuth token with backend
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      fetch('https://irc-be-production.up.railway.app/auth/oauth-exchange-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          oAuthTempToken: oauthToken
+        }),
+        signal: controller.signal
+      })
+      .then(response => {
+        console.log('Token exchange response status:', response.status);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Token exchange data:', data);
+        const authToken = data.token || data.accessToken || data.access_token;
+        if (authToken) {
+          localStorage.setItem('auth_token', authToken);
+          setIsAuthenticated(true);
+          setCurrentPage(requestedPage || 'dashboard');
+          console.log('Login successful with exchanged token');
+        } else {
+          throw new Error('No token received from backend');
+        }
+      })
+      .catch(error => {
+        console.error('OAuth exchange error:', error);
         localStorage.removeItem('auth_token');
         setIsAuthenticated(false);
-        setAuthError('Login failed. Please try again.');
-      } finally {
+        setAuthError(`Login failed: ${error.message}. Please try again.`);
+      })
+      .finally(() => {
+        clearTimeout(timeoutId);
         // Clean URL
         const newUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, '', newUrl);
         setIsExchanging(false);
-      }
+      });
     }
   }, []);
 

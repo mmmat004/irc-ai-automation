@@ -30,33 +30,32 @@ export function Profile() {
       return;
     }
     
-    // Try to decode JWT token to get user info
-    try {
-      const parts = token.split('.');
-      if (parts.length !== 3) {
-        throw new Error('Invalid JWT format');
+    // Fetch real Google profile data from backend
+    fetch('https://irc-be-production.up.railway.app/user/profile', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
       }
-      
-      const payload = JSON.parse(atob(parts[1]));
-      console.log('JWT payload:', payload);
-      
-      setProfileData({
-        id: payload.sub || payload.user_id || "",
-        name: payload.name || payload.email || "User",
-        email: payload.email || "",
-        picture: payload.picture || payload.avatar || "https://lh3.googleusercontent.com/a/default-user",
-        given_name: payload.given_name || payload.first_name || payload.name?.split(' ')[0] || "",
-        family_name: payload.family_name || payload.last_name || payload.name?.split(' ')[1] || "",
-        email_verified: Boolean(payload.email_verified),
-        locale: payload.locale || "en",
-        hd: payload.hd || payload.domain,
-      });
-    } catch (error) {
-      console.error('Failed to decode JWT:', error);
-      console.log('Token that failed to decode:', token);
+    })
+    .then(response => {
+      console.log('Profile fetch response status:', response.status);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Profile data from backend:', data);
+      setProfileData(data);
+    })
+    .catch(error => {
+      console.error('Failed to fetch profile:', error);
       setProfileData(null);
-    }
-    setIsLoading(false);
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
   }, []);
 
   const handleSignOut = () => {
