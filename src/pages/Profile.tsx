@@ -29,64 +29,25 @@ export function Profile() {
       setIsLoading(false);
       return;
     }
-    // Try direct fetch first, then fallback to proxy without auth headers
-    const directUrl = 'https://irc-be-production.up.railway.app/user/profile';
     
-    fetch(directUrl, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(async (res) => {
-        console.log('Profile fetch response:', res.status, res.statusText);
-        if (!res.ok) {
-          console.error('Profile fetch failed:', res.status, res.statusText);
-          throw new Error(`Failed to fetch profile: ${res.status} ${res.statusText}`);
-        }
-        const data = await res.json();
-        console.log('Profile data:', data);
-        setProfileData({
-          id: data.id ?? "",
-          name: data.name ?? `${data.given_name ?? ''} ${data.family_name ?? ''}`.trim(),
-          email: data.email ?? "",
-          picture: data.picture ?? data.avatar ?? "https://lh3.googleusercontent.com/a/default-user",
-          given_name: data.given_name ?? data.first_name ?? "",
-          family_name: data.family_name ?? data.last_name ?? "",
-          email_verified: Boolean(data.email_verified ?? true),
-          locale: data.locale ?? "en",
-          hd: data.hd,
-        });
-      })
-      .catch((error) => {
-        console.error('Direct profile fetch failed, trying fallback:', error);
-        // Fallback: try to get profile data from token or show mock data
-        if (token) {
-          // Try to decode JWT token to get user info
-          try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            setProfileData({
-              id: payload.sub || "",
-              name: payload.name || payload.email || "User",
-              email: payload.email || "",
-              picture: payload.picture || "https://lh3.googleusercontent.com/a/default-user",
-              given_name: payload.given_name || payload.name?.split(' ')[0] || "",
-              family_name: payload.family_name || payload.name?.split(' ')[1] || "",
-              email_verified: Boolean(payload.email_verified),
-              locale: payload.locale || "en",
-              hd: payload.hd,
-            });
-          } catch (decodeError) {
-            console.error('Failed to decode token:', decodeError);
-            setProfileData(null);
-          }
-        } else {
-          setProfileData(null);
-        }
-      })
-      .finally(() => setIsLoading(false));
+    // Try to decode JWT token to get user info
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      setProfileData({
+        id: payload.sub || "",
+        name: payload.name || payload.email || "User",
+        email: payload.email || "",
+        picture: payload.picture || "https://lh3.googleusercontent.com/a/default-user",
+        given_name: payload.given_name || payload.name?.split(' ')[0] || "",
+        family_name: payload.family_name || payload.name?.split(' ')[1] || "",
+        email_verified: Boolean(payload.email_verified),
+        locale: payload.locale || "en",
+        hd: payload.hd,
+      });
+    } catch (error) {
+      setProfileData(null);
+    }
+    setIsLoading(false);
   }, []);
 
   const handleSignOut = () => {

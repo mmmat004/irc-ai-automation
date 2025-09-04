@@ -57,52 +57,20 @@ export default function App() {
         body: JSON.stringify({ oAuthTempToken: tokenParam }),
       })
         .then(async (res) => {
-          console.log('Token exchange response:', res.status, res.statusText);
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
-            console.error('Token exchange failed:', errorData);
-            throw new Error(errorData.message || 'Authentication failed');
+            throw new Error(errorData.message?.[0] || 'Authentication failed');
           }
-          try {
-            const data = await res.json();
-            console.log('Token exchange data:', data);
-            const finalToken = data?.token || data?.accessToken || data?.access_token || data?.jwt || data?.authToken || tokenParam;
-            if (finalToken) {
-              localStorage.setItem('auth_token', finalToken);
-              console.log('Token saved:', finalToken);
-              setIsAuthenticated(true);
-              if (requestedPage) {
-                setCurrentPage(requestedPage as typeof currentPage);
-              } else {
-                setCurrentPage('dashboard');
-              }
-            } else {
-              throw new Error('No valid token received');
-            }
-          } catch (parseError) {
-            console.log('Parse error, using original token:', parseError);
-            // If backend returns no JSON, still persist param token
-            localStorage.setItem('auth_token', tokenParam);
-            setIsAuthenticated(true);
-            if (requestedPage) {
-              setCurrentPage(requestedPage as typeof currentPage);
-            } else {
-              setCurrentPage('dashboard');
-            }
-          }
+          const data = await res.json();
+          const finalToken = data?.token || data?.accessToken || tokenParam;
+          localStorage.setItem('auth_token', finalToken);
+          setIsAuthenticated(true);
+          setCurrentPage(requestedPage || 'dashboard');
         })
         .catch((error) => {
-          console.error('OAuth exchange error:', error);
-          // On failure, ensure we are logged out and show error
           localStorage.removeItem('auth_token');
           setIsAuthenticated(false);
-          
-          // Handle CORS errors specifically
-          if (error.message.includes('CORS') || error.message.includes('blocked')) {
-            setAuthError('Server configuration issue. Please contact support or try again later.');
-          } else {
-            setAuthError(error.message || 'Login failed. Please try again with a valid account.');
-          }
+          setAuthError(error.message || 'Login failed. Please try again.');
         })
         .finally(() => {
           // Clean URL
