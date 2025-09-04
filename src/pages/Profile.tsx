@@ -33,6 +33,7 @@ export function Profile() {
     // Try to decode JWT token to get user info
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
+      console.log('JWT payload:', payload);
       setProfileData({
         id: payload.sub || "",
         name: payload.name || payload.email || "User",
@@ -45,6 +46,7 @@ export function Profile() {
         hd: payload.hd,
       });
     } catch (error) {
+      console.error('Failed to decode JWT:', error);
       setProfileData(null);
     }
     setIsLoading(false);

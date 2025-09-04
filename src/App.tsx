@@ -57,17 +57,22 @@ export default function App() {
         body: JSON.stringify({ oAuthTempToken: tokenParam }),
       })
         .then(async (res) => {
+          console.log('Token exchange response:', res.status, res.statusText);
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
+            console.error('Token exchange failed:', errorData);
             throw new Error(errorData.message?.[0] || 'Authentication failed');
           }
           const data = await res.json();
+          console.log('Token exchange data:', data);
           const finalToken = data?.token || data?.accessToken || tokenParam;
           localStorage.setItem('auth_token', finalToken);
+          console.log('Token saved:', finalToken);
           setIsAuthenticated(true);
           setCurrentPage(requestedPage || 'dashboard');
         })
         .catch((error) => {
+          console.error('OAuth exchange error:', error);
           localStorage.removeItem('auth_token');
           setIsAuthenticated(false);
           setAuthError(error.message || 'Login failed. Please try again.');
