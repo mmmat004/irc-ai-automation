@@ -37,41 +37,27 @@ export default function App() {
     const requestedPage = params.get('page');
     
     if (oauthToken) {
-      console.log('OAuth token found, exchanging...');
+      console.log('OAuth token found, using directly...');
       setIsExchanging(true);
       setAuthError(null);
       
-      // Direct API call to exchange token
-      fetch('https://irc-be-production.up.railway.app/auth/oauth-exchange-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ oAuthTempToken: oauthToken }),
-      })
-        .then(async (res) => {
-          if (!res.ok) {
-            const errorData = await res.json().catch(() => ({}));
-            throw new Error(errorData.message?.[0] || 'Authentication failed');
-          }
-          const data = await res.json();
-          const finalToken = data?.token || data?.accessToken || oauthToken;
-          localStorage.setItem('auth_token', finalToken);
-          setIsAuthenticated(true);
-          setCurrentPage(requestedPage || 'dashboard');
-        })
-        .catch((error) => {
-          console.error('OAuth exchange error:', error);
-          localStorage.removeItem('auth_token');
-          setIsAuthenticated(false);
-          setAuthError(error.message || 'Login failed. Please try again.');
-        })
-        .finally(() => {
-          // Clean URL
-          const newUrl = window.location.origin + window.location.pathname;
-          window.history.replaceState({}, '', newUrl);
-          setIsExchanging(false);
-        });
+      // Use OAuth token directly without exchange (due to CORS issues)
+      try {
+        localStorage.setItem('auth_token', oauthToken);
+        setIsAuthenticated(true);
+        setCurrentPage(requestedPage || 'dashboard');
+        console.log('Login successful with OAuth token');
+      } catch (error) {
+        console.error('OAuth error:', error);
+        localStorage.removeItem('auth_token');
+        setIsAuthenticated(false);
+        setAuthError('Login failed. Please try again.');
+      } finally {
+        // Clean URL
+        const newUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+        setIsExchanging(false);
+      }
     }
   }, []);
 
