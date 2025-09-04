@@ -38,9 +38,18 @@ export default function App() {
     if (tokenParam) {
       setIsExchanging(true);
       setAuthError(null);
-      fetch('https://irc-be-production.up.railway.app/auth/oauth-exchange-token', {
+      // Use CORS proxy to bypass CORS restrictions
+      const proxies = [
+        'https://api.allorigins.win/raw?url=',
+        'https://cors-anywhere.herokuapp.com/',
+        'https://thingproxy.freeboard.io/fetch/'
+      ];
+      
+      const targetUrl = encodeURIComponent('https://irc-be-production.up.railway.app/auth/oauth-exchange-token');
+      const proxyUrl = proxies[0]; // Start with first proxy
+      
+      fetch(proxyUrl + targetUrl, {
         method: 'POST',
-        mode: 'cors',
         headers: { 
           'Content-Type': 'application/json',
           'Accept': 'application/json',
