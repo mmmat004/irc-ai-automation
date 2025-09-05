@@ -50,9 +50,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  useEffect(() => {
-    loadUserFromToken();
-  }, []);
+  // Remove automatic loading on mount - only load when explicitly called after auth
 
   return (
     <UserContext.Provider value={{ user, setUser, loadUserFromToken }}>

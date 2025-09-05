@@ -39,10 +39,9 @@ export function Profile() {
           setProfileData(data);
         } else {
           console.error('Failed to fetch profile:', response.status);
-          // If unauthorized, redirect to login
+          // If unauthorized, don't reload - just show error
           if (response.status === 401) {
-            localStorage.removeItem('auth_token');
-            window.location.reload();
+            console.log('User not authenticated yet');
           }
         }
       } catch (error) {
