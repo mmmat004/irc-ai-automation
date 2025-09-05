@@ -10,6 +10,7 @@ import { Profile } from "./pages/Profile";
 import { Login } from "./pages/Login";
 import { NewsDetail } from "./pages/NewsDetail";
 import { UserProvider, useUser } from "./contexts/UserContext";
+import { API_ENDPOINTS } from "./config/api";
 
 
 function AppContent() {
@@ -85,8 +86,7 @@ function AppContent() {
       setAuthError(null);
       
       // Exchange OAuth token with backend to get session token/cookie
-      const BACKEND_URL = process.env.BACKEND_URL;
-      fetch(BACKEND_URL + '/auth/oauth-exchange-token', {
+      fetch(API_ENDPOINTS.OAUTH_EXCHANGE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
