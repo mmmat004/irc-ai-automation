@@ -90,7 +90,6 @@ function AppContent() {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies in the response
         body: JSON.stringify({
           oAuthTempToken: oauthToken
         })
