@@ -103,23 +103,12 @@ function AppContent() {
         return response.json();
       })
       .then(data => {
-        console.log('Token exchange response:', data);
-        console.log('Response keys:', Object.keys(data));
-        
-        // Try multiple possible token field names
-        const sessionToken = data.token || data.accessToken || data.access_token || data.sessionToken || data.jwt || data.authToken;
-        
-        if (sessionToken) {
-          localStorage.setItem('auth_token', sessionToken);
-          setIsAuthenticated(true);
-          setCurrentPage(requestedPage || 'dashboard');
-          loadUserFromToken(); // Load user data from session token
-          console.log('Login successful with session token');
-        } else {
-          console.error('Available response fields:', Object.keys(data));
-          console.error('Full response data:', data);
-          throw new Error('No session token received from backend');
-        }
+        console.log('Token exchange successful:', data);
+        // Backend sets cookie, so we just mark as authenticated
+        setIsAuthenticated(true);
+        setCurrentPage(requestedPage || 'dashboard');
+        loadUserFromToken(); // Load user data from session token
+        console.log('Login successful');
       })
       .catch(error => {
         console.error('Token exchange error:', error);
