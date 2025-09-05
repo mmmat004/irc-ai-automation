@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Mail, Calendar, Shield, LogOut } from "lucide-react";
+import { User, Mail, Shield, LogOut, Crown } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
@@ -15,8 +15,7 @@ interface GoogleProfile {
   given_name: string;
   family_name: string;
   email_verified: boolean;
-  locale: string;
-  hd?: string;
+  role?: string;
 }
 
 export function Profile() {
@@ -48,8 +47,7 @@ export function Profile() {
         given_name: payload.given_name || payload.first_name || payload.name?.split(' ')[0] || "",
         family_name: payload.family_name || payload.last_name || payload.name?.split(' ')[1] || "",
         email_verified: Boolean(payload.email_verified),
-        locale: payload.locale || "en",
-        hd: payload.hd || payload.domain,
+        role: payload.role || "Admin", // Default role
       });
     } catch (error) {
       console.error('Failed to decode JWT:', error);
@@ -100,13 +98,13 @@ export function Profile() {
       <div className="p-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Google Account Profile</h1>
-          <p className="text-muted-foreground mt-2">Your account information from Google.</p>
+          <h1>Profile</h1>
+          <p className="text-muted-foreground mt-2">Your Google account information</p>
         </div>
 
         <div className="max-w-2xl space-y-8">
           {/* Profile Information */}
-          <Card className="border border-border shadow-sm rounded-xl hover:shadow-md transition-shadow duration-300">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5 text-primary" />
@@ -120,14 +118,18 @@ export function Profile() {
                   <AvatarFallback>{profileData.given_name[0]}{profileData.family_name[0]}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-lg font-semibold">{profileData.name}</h3>
+                  <h3>{profileData.name}</h3>
                   <p className="text-muted-foreground">{profileData.email}</p>
-                  {profileData.email_verified && (
-                    <Badge variant="secondary" className="mt-1">
-                      <Shield className="w-3 h-3 mr-1" />
-                      Email Verified
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-2 mt-2">
+                    <Crown className="w-4 h-4 text-primary" />
+                    <Badge variant="secondary">{profileData.role}</Badge>
+                    {profileData.email_verified && (
+                      <Badge variant="secondary">
+                        <Shield className="w-3 h-3 mr-1" />
+                        Email Verified
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -148,24 +150,15 @@ export function Profile() {
                 </div>
                 <Separator />
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-muted-foreground">Language</span>
-                  <span className="font-medium">{profileData.locale}</span>
+                  <span className="text-muted-foreground">Role</span>
+                  <span className="font-medium">{profileData.role}</span>
                 </div>
-                {profileData.hd && (
-                  <>
-                    <Separator />
-                    <div className="flex justify-between items-center py-2">
-                      <span className="text-muted-foreground">Domain</span>
-                      <span className="font-medium">{profileData.hd}</span>
-                    </div>
-                  </>
-                )}
               </div>
             </CardContent>
           </Card>
 
           {/* Account Information */}
-          <Card className="border border-border shadow-sm rounded-xl hover:shadow-md transition-shadow duration-300">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Mail className="w-5 h-5 text-primary" />
@@ -182,16 +175,11 @@ export function Profile() {
                 <span className="text-muted-foreground">User ID</span>
                 <span className="font-medium font-mono text-sm">{profileData.id}</span>
               </div>
-              <Separator />
-              <div className="flex justify-between items-center py-2">
-                <span className="text-muted-foreground">Connected Since</span>
-                <span className="font-medium">January 2024</span>
-              </div>
             </CardContent>
           </Card>
 
           {/* Sign Out */}
-          <Card className="border border-border shadow-sm rounded-xl hover:shadow-md transition-shadow duration-300">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-red-600">
                 <LogOut className="w-5 h-5" />
@@ -202,11 +190,7 @@ export function Profile() {
               <p className="text-muted-foreground mb-4">
                 Sign out of your Google account. You'll need to sign in again to access the application.
               </p>
-              <Button
-                onClick={handleSignOut}
-                variant="outline"
-                className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-              >
+              <Button onClick={handleSignOut} variant="outline">
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
               </Button>
