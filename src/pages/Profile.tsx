@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { User, Mail, Shield, LogOut, Crown } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -5,19 +6,64 @@ import { Separator } from "../components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Badge } from "../components/ui/badge";
 import { toast } from "sonner";
-import { useUser } from "../contexts/UserContext";
+import { API_ENDPOINTS } from "../config/api";
+
+interface GoogleProfile {
+  id: string;
+  name: string;
+  email: string;
+  picture: string;
+  given_name: string;
+  family_name: string;
+  email_verified: boolean;
+  role: string;
+}
 
 export function Profile() {
-  const { user: profileData } = useUser();
+  const [profileData, setProfileData] = useState<GoogleProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(API_ENDPOINTS.USER_PROFILE, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Profile data from backend:', data);
+          setProfileData(data);
+        } else {
+          console.error('Failed to fetch profile:', response.status);
+        }
+      } catch (error) {
+        console.error('Profile fetch error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleSignOut = () => {
     localStorage.removeItem('auth_token');
     toast("Signed out successfully");
-    // Optionally force reload to return to login screen
     window.location.reload();
   };
 
-  if (!profileData) {
+  if (isLoading) {
     return (
       <div className="h-full overflow-auto bg-background">
         <div className="p-8">
@@ -25,6 +71,20 @@ export function Profile() {
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-muted-foreground">Loading profile...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profileData) {
+    return (
+      <div className="h-full overflow-auto bg-background">
+        <div className="p-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-muted-foreground">Failed to load profile data</p>
             </div>
           </div>
         </div>

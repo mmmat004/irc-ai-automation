@@ -10,6 +10,7 @@ import { Profile } from "./pages/Profile";
 import { Login } from "./pages/Login";
 import { NewsDetail } from "./pages/NewsDetail";
 import { UserProvider, useUser } from "./contexts/UserContext";
+import { API_ENDPOINTS } from "./config/api";
 
 function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -84,7 +85,7 @@ function AppContent() {
       setAuthError(null);
       
       // Exchange OAuth token with backend to get session token/cookie
-      fetch('https://irc-be-production.up.railway.app/auth/oauth-exchange-token', {
+      fetch(API_ENDPOINTS.OAUTH_EXCHANGE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,12 +116,8 @@ function AppContent() {
       })
       .catch(error => {
         console.error('Token exchange error:', error);
-        // Fallback: use OAuth token directly if exchange fails
-        console.log('Falling back to direct OAuth token usage');
-        localStorage.setItem('auth_token', oauthToken);
-        setIsAuthenticated(true);
-        setCurrentPage(requestedPage || 'dashboard');
-        loadUserFromToken();
+        setAuthError('Login failed. Please try again.');
+        setIsAuthenticated(false);
       })
       .finally(() => {
         setIsExchanging(false);
@@ -135,30 +132,6 @@ function AppContent() {
     setIsAuthenticated(true);
   };
 
-  // Test function to verify API endpoint (for debugging)
-  const testApiEndpoint = async () => {
-    const testToken = 'test-token-123';
-    console.log('🧪 Testing API endpoint...');
-    
-    try {
-      const response = await fetch('https://irc-be-production.up.railway.app/auth/oauth-exchange-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          oAuthTempToken: testToken
-        })
-      });
-      console.log('🧪 API test response status:', response.status);
-      console.log('🧪 API test response:', await response.text());
-    } catch (error) {
-      console.log('🧪 API test error:', error);
-    }
-  };
-
-  // Uncomment the line below to test API endpoint
-  // testApiEndpoint();
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token');

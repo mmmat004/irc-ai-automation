@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
+import { API_ENDPOINTS } from "../config/api";
 
 interface LoginProps {
   onLogin: () => void;
@@ -20,7 +21,7 @@ export function Login({ onLogin, authError }: LoginProps) {
     setIsLoading(true);
     // Allow the loading screen to render before redirecting
     setTimeout(() => {
-      window.location.href = "https://irc-be-production.up.railway.app/auth/google";
+      window.location.href = API_ENDPOINTS.GOOGLE_AUTH;
     }, 50);
   };
 
