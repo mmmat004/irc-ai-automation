@@ -25,19 +25,13 @@ export function Profile() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
       try {
         const response = await fetch(API_ENDPOINTS.USER_PROFILE, {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-          }
+          },
+          credentials: 'include', // Include cookies for authentication
         });
 
         if (response.ok) {
@@ -46,6 +40,11 @@ export function Profile() {
           setProfileData(data);
         } else {
           console.error('Failed to fetch profile:', response.status);
+          // If unauthorized, redirect to login
+          if (response.status === 401) {
+            localStorage.removeItem('auth_token');
+            window.location.reload();
+          }
         }
       } catch (error) {
         console.error('Profile fetch error:', error);

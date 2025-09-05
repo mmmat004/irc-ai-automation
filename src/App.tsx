@@ -80,7 +80,6 @@ function AppContent() {
     // Handle OAuth success
     if (oauthToken) {
       console.log('OAuth token found, exchanging with backend...');
-      console.log('Token to exchange:', oauthToken);
       
       setIsExchanging(true);
       setAuthError(null);
@@ -91,6 +90,7 @@ function AppContent() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies in the response
         body: JSON.stringify({
           oAuthTempToken: oauthToken
         })
@@ -103,7 +103,7 @@ function AppContent() {
         return response.json();
       })
       .then(data => {
-        console.log('Token exchange successful:', data);
+        
         // Backend sets cookie, so we just mark as authenticated
         setIsAuthenticated(true);
         setCurrentPage(requestedPage || 'dashboard');

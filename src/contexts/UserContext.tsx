@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { API_ENDPOINTS } from '../config/api';
 
 interface User {
   id: string;
@@ -22,36 +23,30 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  const loadUserFromToken = () => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      setUser(null);
-      return;
-    }
-
+  const loadUserFromToken = async () => {
     try {
-      const parts = token.split('.');
-      if (parts.length !== 3) {
-        throw new Error('Invalid JWT format');
+      const response = await fetch(API_ENDPOINTS.USER_PROFILE, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Include cookies for authentication
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        console.log('Loading user from backend API:', userData);
+        setUser(userData);
+      } else {
+        console.error('Failed to load user from backend:', response.status);
+        setUser(null);
+        // If unauthorized, clear any stored token
+        if (response.status === 401) {
+          localStorage.removeItem('auth_token');
+        }
       }
-
-      const payload = JSON.parse(atob(parts[1]));
-      console.log('Loading user from JWT:', payload);
-
-      const userData: User = {
-        id: payload.sub || payload.user_id || "",
-        name: payload.name || payload.email || "User",
-        email: payload.email || "",
-        picture: payload.picture || payload.avatar || "https://lh3.googleusercontent.com/a/default-user",
-        given_name: payload.given_name || payload.first_name || payload.name?.split(' ')[0] || "",
-        family_name: payload.family_name || payload.last_name || payload.name?.split(' ')[1] || "",
-        email_verified: Boolean(payload.email_verified),
-        role: payload.role || "Admin",
-      };
-
-      setUser(userData);
     } catch (error) {
-      console.error('Failed to load user from token:', error);
+      console.error('Failed to load user from backend:', error);
       setUser(null);
     }
   };
