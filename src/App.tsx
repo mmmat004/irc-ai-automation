@@ -104,7 +104,11 @@ function AppContent() {
       })
       .then(data => {
         console.log('Token exchange response:', data);
-        const sessionToken = data.token || data.accessToken || data.access_token;
+        console.log('Response keys:', Object.keys(data));
+        
+        // Try multiple possible token field names
+        const sessionToken = data.token || data.accessToken || data.access_token || data.sessionToken || data.jwt || data.authToken;
+        
         if (sessionToken) {
           localStorage.setItem('auth_token', sessionToken);
           setIsAuthenticated(true);
@@ -112,6 +116,8 @@ function AppContent() {
           loadUserFromToken(); // Load user data from session token
           console.log('Login successful with session token');
         } else {
+          console.error('Available response fields:', Object.keys(data));
+          console.error('Full response data:', data);
           throw new Error('No session token received from backend');
         }
       })
