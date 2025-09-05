@@ -10,7 +10,7 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 interface NewsDetailProps {
   newsId: number;

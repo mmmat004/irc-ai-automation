@@ -74,14 +74,12 @@ export default function App() {
     
     // Handle OAuth success
     if (oauthToken) {
-      console.log('OAuth token found, using directly due to CORS issues');
-      console.log('Token length:', oauthToken.length);
+      console.log('OAuth token found, using directly');
       
       setAuthError(null);
       
       // Use OAuth token directly (CORS workaround)
       try {
-        localStorage.setItem('auth_token', oauthToken);
         setIsAuthenticated(true);
         setCurrentPage(requestedPage || 'dashboard');
         console.log('Login successful with OAuth token');
