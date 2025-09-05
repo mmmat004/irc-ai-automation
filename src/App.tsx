@@ -14,6 +14,7 @@ import { UserProvider, useUser } from "./contexts/UserContext";
 function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isExchanging, setIsExchanging] = useState(false);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [selectedNewsId, setSelectedNewsId] = useState<number | null>(null);
   const [previousPage, setPreviousPage] = useState('dashboard');
@@ -76,26 +77,57 @@ function AppContent() {
     
     // Handle OAuth success
     if (oauthToken) {
-      console.log('OAuth token found, using directly');
+      console.log('OAuth token found, exchanging with backend...');
+      console.log('Token to exchange:', oauthToken);
       
+      setIsExchanging(true);
       setAuthError(null);
       
-      // Use OAuth token directly (CORS workaround)
-      try {
+      // Exchange OAuth token with backend to get session token/cookie
+      fetch('https://irc-be-production.up.railway.app/auth/oauth-exchange-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          oAuthTempToken: oauthToken
+        })
+      })
+      .then(response => {
+        console.log('Token exchange response status:', response.status);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Token exchange response:', data);
+        const sessionToken = data.token || data.accessToken || data.access_token;
+        if (sessionToken) {
+          localStorage.setItem('auth_token', sessionToken);
+          setIsAuthenticated(true);
+          setCurrentPage(requestedPage || 'dashboard');
+          loadUserFromToken(); // Load user data from session token
+          console.log('Login successful with session token');
+        } else {
+          throw new Error('No session token received from backend');
+        }
+      })
+      .catch(error => {
+        console.error('Token exchange error:', error);
+        // Fallback: use OAuth token directly if exchange fails
+        console.log('Falling back to direct OAuth token usage');
+        localStorage.setItem('auth_token', oauthToken);
         setIsAuthenticated(true);
         setCurrentPage(requestedPage || 'dashboard');
-        loadUserFromToken(); // Load user data from token
-        console.log('Login successful with OAuth token');
-      } catch (error) {
-        console.error('OAuth error:', error);
-        localStorage.removeItem('auth_token');
-        setIsAuthenticated(false);
-        setAuthError('Login failed. Please try again.');
-      } finally {
+        loadUserFromToken();
+      })
+      .finally(() => {
+        setIsExchanging(false);
         // Clean URL
         const newUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, '', newUrl);
-      }
+      });
     }
   }, []);
 
@@ -175,6 +207,17 @@ function AppContent() {
     }
   };
 
+
+  if (isExchanging) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
+          <p className="text-sm text-muted-foreground">Exchanging token...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
