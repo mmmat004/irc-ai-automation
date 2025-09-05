@@ -12,7 +12,6 @@ import { NewsDetail } from "./pages/NewsDetail";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isExchanging, setIsExchanging] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [selectedNewsId, setSelectedNewsId] = useState<number | null>(null);
@@ -37,13 +36,11 @@ export default function App() {
     const oauthStatus = params.get('oauthStatus');
     const requestedPage = params.get('page');
     
-    console.log('🔍 Full URL:', window.location.href);
-    console.log('🔍 URL params:', { oauthToken, oauthStatus, requestedPage });
-    console.log('🔍 All URL params:', Object.fromEntries(params.entries()));
+    console.log('OAuth params:', { oauthToken, oauthStatus, requestedPage });
     
     // Handle OAuth failure - check for various failure indicators
     if (oauthStatus === 'failed' || oauthStatus === 'error' || oauthStatus === 'denied') {
-      console.log('❌ OAuth login failed with status:', oauthStatus);
+      console.log('OAuth login failed with status:', oauthStatus);
       setAuthError('Login failed. Please try again with a valid account.');
       setIsAuthenticated(false);
       // Clean URL
@@ -54,7 +51,7 @@ export default function App() {
     
     // Handle case where OAuth returns but no token (potential failure)
     if (oauthStatus && oauthStatus !== 'success' && !oauthToken) {
-      console.log('❌ OAuth completed but no token received, status:', oauthStatus);
+      console.log('OAuth completed but no token received, status:', oauthStatus);
       setAuthError('Login failed. Please try again.');
       setIsAuthenticated(false);
       // Clean URL
@@ -66,7 +63,7 @@ export default function App() {
     // Handle case where there's an error parameter (common OAuth failure pattern)
     const errorParam = params.get('error');
     if (errorParam) {
-      console.log('❌ OAuth error parameter found:', errorParam);
+      console.log('OAuth error parameter found:', errorParam);
       setAuthError(`Login failed: ${errorParam}. Please try again.`);
       setIsAuthenticated(false);
       // Clean URL
@@ -77,12 +74,9 @@ export default function App() {
     
     // Handle OAuth success
     if (oauthToken) {
-      console.log('✅ OAuth token found, using directly due to CORS issues...');
-      console.log('🔑 Token length:', oauthToken.length);
-      console.log('🔑 Token preview:', oauthToken.substring(0, 50) + '...');
-      console.log('🔑 Token timestamp:', new Date().toISOString());
+      console.log('OAuth token found, using directly due to CORS issues');
+      console.log('Token length:', oauthToken.length);
       
-      setIsExchanging(true);
       setAuthError(null);
       
       // Use OAuth token directly (CORS workaround)
@@ -90,9 +84,9 @@ export default function App() {
         localStorage.setItem('auth_token', oauthToken);
         setIsAuthenticated(true);
         setCurrentPage(requestedPage || 'dashboard');
-        console.log('✅ Login successful with OAuth token');
+        console.log('Login successful with OAuth token');
       } catch (error) {
-        console.error('❌ OAuth error:', error);
+        console.error('OAuth error:', error);
         localStorage.removeItem('auth_token');
         setIsAuthenticated(false);
         setAuthError('Login failed. Please try again.');
@@ -100,7 +94,6 @@ export default function App() {
         // Clean URL
         const newUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, '', newUrl);
-        setIsExchanging(false);
       }
     }
   }, []);
@@ -181,16 +174,6 @@ export default function App() {
     }
   };
 
-  if (isExchanging) {
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-secondary">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
-          <p className="text-sm text-muted-foreground">Signing in…</p>
-        </div>
-      </div>
-    );
-  }
 
   if (!isAuthenticated) {
     return (
