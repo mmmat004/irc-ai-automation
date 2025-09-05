@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { User, Mail, Shield, LogOut, Crown } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -6,56 +5,10 @@ import { Separator } from "../components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Badge } from "../components/ui/badge";
 import { toast } from "sonner";
-
-interface GoogleProfile {
-  id: string;
-  name: string;
-  email: string;
-  picture: string;
-  given_name: string;
-  family_name: string;
-  email_verified: boolean;
-  role?: string;
-}
+import { useUser } from "../contexts/UserContext";
 
 export function Profile() {
-  const [profileData, setProfileData] = useState<GoogleProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
-    
-    // Try to decode JWT token to get user info (fallback due to CORS issues)
-    try {
-      const parts = token.split('.');
-      if (parts.length !== 3) {
-        throw new Error('Invalid JWT format');
-      }
-      
-      const payload = JSON.parse(atob(parts[1]));
-      console.log('JWT payload:', payload);
-      
-      setProfileData({
-        id: payload.sub || payload.user_id || "",
-        name: payload.name || payload.email || "User",
-        email: payload.email || "",
-        picture: payload.picture || payload.avatar || "https://lh3.googleusercontent.com/a/default-user",
-        given_name: payload.given_name || payload.first_name || payload.name?.split(' ')[0] || "",
-        family_name: payload.family_name || payload.last_name || payload.name?.split(' ')[1] || "",
-        email_verified: Boolean(payload.email_verified),
-        role: payload.role || "Admin", // Default role
-      });
-    } catch (error) {
-      console.error('Failed to decode JWT:', error);
-      console.log('Token that failed to decode:', token);
-      setProfileData(null);
-    }
-    setIsLoading(false);
-  }, []);
+  const { user: profileData } = useUser();
 
   const handleSignOut = () => {
     localStorage.removeItem('auth_token');
@@ -64,7 +17,7 @@ export function Profile() {
     window.location.reload();
   };
 
-  if (isLoading) {
+  if (!profileData) {
     return (
       <div className="h-full overflow-auto bg-background">
         <div className="p-8">
@@ -72,20 +25,6 @@ export function Profile() {
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-muted-foreground">Loading profile...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!profileData) {
-    return (
-      <div className="h-full overflow-auto bg-background">
-        <div className="p-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <p className="text-muted-foreground">Failed to load profile data</p>
             </div>
           </div>
         </div>

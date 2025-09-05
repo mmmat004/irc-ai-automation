@@ -9,13 +9,15 @@ import { CategoriesManagement } from "./pages/CategoriesManagement";
 import { Profile } from "./pages/Profile";
 import { Login } from "./pages/Login";
 import { NewsDetail } from "./pages/NewsDetail";
+import { UserProvider, useUser } from "./contexts/UserContext";
 
-export default function App() {
+function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [selectedNewsId, setSelectedNewsId] = useState<number | null>(null);
   const [previousPage, setPreviousPage] = useState('dashboard');
+  const { loadUserFromToken } = useUser();
 
   useEffect(() => {
     // Initialize auth from storage on first load - v2
@@ -82,6 +84,7 @@ export default function App() {
       try {
         setIsAuthenticated(true);
         setCurrentPage(requestedPage || 'dashboard');
+        loadUserFromToken(); // Load user data from token
         console.log('Login successful with OAuth token');
       } catch (error) {
         console.error('OAuth error:', error);
@@ -194,5 +197,13 @@ export default function App() {
       </main>
       <Toaster position="top-right" />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <UserProvider>
+      <AppContent />
+    </UserProvider>
   );
 }
