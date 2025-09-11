@@ -12,8 +12,8 @@ interface GoogleProfile {
   id: string;
   name: string;
   email: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   email_verified: boolean;
   role: string;
 }
@@ -123,7 +123,7 @@ export function Profile() {
               <div className="flex items-center gap-4 mb-6">
                 <Avatar className="h-16 w-16">
                   
-                  <AvatarFallback>{profileData.first_name[0]}{profileData.last_name[0]}</AvatarFallback>
+                  <AvatarFallback>{profileData.firstName?.[0] || ''}{profileData.lastName?.[0] || ''}</AvatarFallback>
                 </Avatar>
                 <div>
                   <h3>{profileData.name}</h3>
@@ -144,12 +144,12 @@ export function Profile() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-2">
                   <span className="text-muted-foreground">First Name</span>
-                  <span className="font-medium">{profileData.first_name}</span>
+                  <span className="font-medium">{profileData.firstName}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between items-center py-2">
                   <span className="text-muted-foreground">Last Name</span>
-                  <span className="font-medium">{profileData.last_name}</span>
+                  <span className="font-medium">{profileData.lastName}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between items-center py-2">

@@ -9,7 +9,6 @@ import { CategoriesManagement } from "./pages/CategoriesManagement";
 import { Profile } from "./pages/Profile";
 import { Login } from "./pages/Login";
 import { NewsDetail } from "./pages/NewsDetail";
-import { UserProvider, useUser } from "./contexts/UserContext";
 import { API_ENDPOINTS } from "./config/api";
 
 
@@ -20,7 +19,6 @@ function AppContent() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [selectedNewsId, setSelectedNewsId] = useState<number | null>(null);
   const [previousPage, setPreviousPage] = useState('dashboard');
-  const { loadUserFromToken } = useUser();
 
   useEffect(() => {
     // Initialize auth from storage on first load - v2
@@ -107,7 +105,6 @@ function AppContent() {
         // Backend sets cookie, so we just mark as authenticated
         setIsAuthenticated(true);
         setCurrentPage(requestedPage || 'dashboard');
-        loadUserFromToken(); // Load user data from session token
         console.log('Login successful');
       })
       .catch(error => {
@@ -213,9 +210,5 @@ function AppContent() {
 }
 
 export default function App() {
-  return (
-    <UserProvider>
-      <AppContent />
-    </UserProvider>
-  );
+  return <AppContent />;
 }

@@ -138,11 +138,11 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
     });
   };
 
-  const getCurrentWeekLabel = () => {
-    const now = new Date();
-    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-    return `Week of ${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-  };
+  /// const getCurrentWeekLabel = () => {
+    /// const now = new Date();
+    /// const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+    /// return `Week of ${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  /// };
 
 
 
@@ -159,14 +159,9 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
               Configure the news topic for automated AI workflow collection
             </CardDescription>
           </div>
-          <div className="text-right">
-            <div className="text-sm text-muted-foreground">
-              {getCurrentWeekLabel()}
-            </div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-              <Clock className="h-3 w-3" />
-              Last updated: {formatDate(lastUpdated)}
-            </div>
+          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+            <Clock className="h-3 w-3" />
+            Last updated: {formatDate(lastUpdated)}
           </div>
         </div>
       </CardHeader>
