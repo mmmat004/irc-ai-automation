@@ -10,6 +10,10 @@ interface Workflow {
   lastRun: string;
   nextRun: string;
   description: string;
+  currentConfig?: {
+    category?: string;
+    format?: string;
+  };
 }
 
 interface WorkflowCardProps {
@@ -51,6 +55,23 @@ export function WorkflowCard({ workflow }: WorkflowCardProps) {
             <span className="text-muted-foreground">Next run:</span>
             <span className="text-foreground">{workflow.nextRun}</span>
           </div>
+          {workflow.currentConfig && (workflow.currentConfig.category || workflow.currentConfig.format) && (
+            <div className="pt-2 border-t border-border">
+              <div className="text-xs text-muted-foreground mb-1">Current Configuration:</div>
+              <div className="flex flex-wrap gap-1">
+                {workflow.currentConfig.category && (
+                  <Badge variant="secondary" className="text-xs">
+                    Topic: {workflow.currentConfig.category}
+                  </Badge>
+                )}
+                {workflow.currentConfig.format && (
+                  <Badge variant="outline" className="text-xs">
+                    Format: {workflow.currentConfig.format}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
       

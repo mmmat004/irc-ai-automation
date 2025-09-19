@@ -21,17 +21,38 @@ function AppContent() {
   const [previousPage, setPreviousPage] = useState('dashboard');
 
   useEffect(() => {
-    // Initialize auth from storage on first load - v2
-    const storedToken = localStorage.getItem('auth_token');
-    if (storedToken) {
-      setIsAuthenticated(true);
-      // Optional: allow deep-linking via page query even on hard refresh
-      const initParams = new URLSearchParams(window.location.search);
-      const initialPage = initParams.get('page');
-      if (initialPage) {
-        setCurrentPage(initialPage as typeof currentPage);
+    // Initialize auth by validating existing session
+    const validateAuth = async () => {
+      try {
+        const response = await fetch(API_ENDPOINTS.USER_PROFILE, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // Include cookies for authentication
+        });
+
+        if (response.ok) {
+          setIsAuthenticated(true);
+          // Optional: allow deep-linking via page query even on hard refresh
+          const initParams = new URLSearchParams(window.location.search);
+          const initialPage = initParams.get('page');
+          if (initialPage) {
+            setCurrentPage(initialPage as typeof currentPage);
+          }
+        } else if (response.status === 401) {
+          // Token expired or invalid, clear any stored token
+          localStorage.removeItem('auth_token');
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error('Auth validation error:', error);
+        // On network error, assume not authenticated
+        setIsAuthenticated(false);
       }
-    }
+    };
+
+    validateAuth();
 
     // Check for OAuth status in URL parameters
     const params = new URLSearchParams(window.location.search);
@@ -101,7 +122,6 @@ function AppContent() {
         return response.json();
       })
       .then(data => {
-        
         // Backend sets cookie, so we just mark as authenticated
         setIsAuthenticated(true);
         setCurrentPage(requestedPage || 'dashboard');
@@ -126,13 +146,24 @@ function AppContent() {
   };
 
 
-  const handleLogout = () => {
-    localStorage.removeItem('auth_token');
-    setIsAuthenticated(false);
-    setCurrentPage('dashboard');
-    setSelectedNewsId(null);
-    setPreviousPage('dashboard');
-    setAuthError(null);
+  const handleLogout = async () => {
+    try {
+      // Call logout endpoint to clear server-side session/cookies
+      await fetch(API_ENDPOINTS.LOGOUT, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear local state regardless of server response
+      localStorage.removeItem('auth_token');
+      setIsAuthenticated(false);
+      setCurrentPage('dashboard');
+      setSelectedNewsId(null);
+      setPreviousPage('dashboard');
+      setAuthError(null);
+    }
   };
 
   const handleNewsSelect = (newsId: number) => {

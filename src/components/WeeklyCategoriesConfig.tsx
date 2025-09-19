@@ -5,99 +5,130 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Calendar, Check, Clock, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { API_ENDPOINTS, API_BASE_URL } from "../config/api";
 
 interface WeeklyCategoriesConfigProps {
   onSave?: (config: { category: string; format: string }) => void;
 }
 
-const CATEGORY_OPTIONS = [
-  "Business",
-  "Data",
-  "AI", 
-  "Technology",
-  "Startup",
-  "Marketing",
-  "Digital Transform",
-  "Economic",
-  "Finance"
-];
+// Database response format
+interface CategoryOption {
+  id: string;
+  name: string;
+}
 
-const NEWS_FORMAT_OPTIONS = [
-  {
-    value: "news-report",
-    label: "News Report / Article",
-    description: "A straightforward, fact-based report of the event"
-  },
-  {
-    value: "analysis",
-    label: "Analysis", 
-    description: "Deeper breakdown explaining causes, implications, and context"
-  },
-  {
-    value: "opinion",
-    label: "Opinion / Editorial",
-    description: "Personal viewpoints, arguments, or commentary"
-  },
-  {
-    value: "interview",
-    label: "Interview",
-    description: "Q&A format with key people involved"
-  },
-  {
-    value: "review",
-    label: "Review / Critique", 
-    description: "Evaluation of the event, policy, or media piece"
-  },
-  {
-    value: "live-coverage",
-    label: "Live Coverage / Updates",
-    description: "Real-time or continuous updates on breaking news"
-  },
-  {
-    value: "transcript",
-    label: "Transcript / Statement",
-    description: "Direct words from a source (like government release)"
-  }
-];
+interface NewsFormatOption {
+  id: string;
+  name: string;
+  description: string;
+}
 
 export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [selectedFormat, setSelectedFormat] = useState<string>("");
-  const [previousCategory, setPreviousCategory] = useState<string>("Technology");
-  const [previousFormat, setPreviousFormat] = useState<string>("news-report");
+  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
+  const [formatOptions, setFormatOptions] = useState<NewsFormatOption[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+  const [selectedFormatId, setSelectedFormatId] = useState<string>("");
+  const [previousCategoryId, setPreviousCategoryId] = useState<string>("");
+  const [previousFormatId, setPreviousFormatId] = useState<string>("");
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)); // 1 week ago
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true);
 
   useEffect(() => {
-    // Initialize with last week's selection
-    setSelectedCategory(previousCategory);
-    setSelectedFormat(previousFormat);
-  }, [previousCategory, previousFormat]);
+    // Load options and current configuration from API
+    const loadData = async () => {
+      try {
+        const [categoriesResponse, formatsResponse] = await Promise.all([
+          fetch(API_ENDPOINTS.WORKFLOW_CONFIG_CATEGORY, {
+            credentials: 'include'
+          }),
+          fetch(API_ENDPOINTS.WORKFLOW_CONFIG_FORMAT, {
+            credentials: 'include'
+          })
+        ]);
+
+        // Load category options
+        if (categoriesResponse.ok) {
+          const categoriesData = await categoriesResponse.json();
+          
+          if (Array.isArray(categoriesData)) {
+            setCategoryOptions(categoriesData);
+            console.log(`Loaded ${categoriesData.length} categories from API`);
+          } else {
+            console.warn('Categories response is not an array:', categoriesData);
+          }
+        } else {
+          console.error(`Categories endpoint failed: ${categoriesResponse.status} ${categoriesResponse.statusText}`);
+        }
+
+        // Load format options
+        if (formatsResponse.ok) {
+          const formatsData = await formatsResponse.json();
+          
+          if (Array.isArray(formatsData)) {
+            setFormatOptions(formatsData);
+            console.log(`Loaded ${formatsData.length} news formats from API`);
+          } else {
+            console.warn('Formats response is not an array:', formatsData);
+          }
+        } else {
+          console.error(`Formats endpoint failed: ${formatsResponse.status} ${formatsResponse.statusText}`);
+        }
+
+
+      } catch (error) {
+        console.error('Failed to load workflow configuration data:', error);
+      } finally {
+        setIsLoadingOptions(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Set default selections when options are loaded
+  useEffect(() => {
+    if (categoryOptions.length > 0 && selectedCategoryId === "") {
+      setSelectedCategoryId(categoryOptions[0].id);
+      setPreviousCategoryId(categoryOptions[0].id);
+    }
+  }, [categoryOptions, selectedCategoryId]);
+
+  useEffect(() => {
+    if (formatOptions.length > 0 && selectedFormatId === "") {
+      setSelectedFormatId(formatOptions[0].id);
+      setPreviousFormatId(formatOptions[0].id);
+    }
+  }, [formatOptions, selectedFormatId]);
 
   useEffect(() => {
     // Check if current selection differs from previous
     setHasChanges(
-      selectedCategory !== previousCategory || 
-      selectedFormat !== previousFormat
+      selectedCategoryId !== previousCategoryId || 
+      selectedFormatId !== previousFormatId
     );
-  }, [selectedCategory, previousCategory, selectedFormat, previousFormat]);
+  }, [selectedCategoryId, previousCategoryId, selectedFormatId, previousFormatId]);
 
   const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value);
+    const categoryName = categoryOptions.find(c => c.id === value)?.name || 'Unknown';
+    console.log(`📝 Category selected: ${categoryName} (ID: ${value})`);
+    setSelectedCategoryId(value);
   };
 
   const handleFormatChange = (value: string) => {
-    setSelectedFormat(value);
+    const formatName = formatOptions.find(f => f.id === value)?.name || 'Unknown';
+    console.log(`📝 Format selected: ${formatName} (ID: ${value})`);
+    setSelectedFormatId(value);
   };
 
   const handleSave = async () => {
-    if (!selectedCategory) {
+    if (!selectedCategoryId || selectedCategoryId === "") {
       toast.error("Please select a category before saving");
       return;
     }
 
-    if (!selectedFormat) {
+    if (!selectedFormatId || selectedFormatId === "") {
       toast.error("Please select a news format before saving");
       return;
     }
@@ -105,24 +136,97 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
     setIsSaving(true);
     
     try {
-      // Simulate API call - replace with actual database save
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const categoryName = categoryOptions.find(c => c.id === selectedCategoryId)?.name || 'Unknown';
+      const formatName = formatOptions.find(f => f.id === selectedFormatId)?.name || 'Unknown';
       
-      setPreviousCategory(selectedCategory);
-      setPreviousFormat(selectedFormat);
+      console.log(`💾 Saving workflow configuration: ${categoryName} + ${formatName}`);
+      
+      const requestBody = {
+        categoryId: selectedCategoryId,
+        formatId: selectedFormatId
+      };
+      
+      // Try main endpoint first
+      let response = await fetch(API_ENDPOINTS.WORKFLOW_CONFIG_SAVE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(requestBody)
+      });
+      
+      // If 500 error, try alternative endpoints
+      if (response.status === 500) {
+        console.warn('⚠️ Main endpoint failed with 500, trying alternatives...');
+        
+        const alternativeEndpoints = [
+          `${API_BASE_URL}/api/workflow-config/save`,
+          `${API_BASE_URL}/workflow/save-config`
+        ];
+        
+        for (const endpoint of alternativeEndpoints) {
+          console.log(`🔄 Trying alternative endpoint: ${endpoint}`);
+          response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(requestBody)
+          });
+          
+          if (response.ok) {
+            console.log(`✅ Alternative endpoint succeeded: ${endpoint}`);
+            break;
+          }
+        }
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`❌ Save failed (${response.status}):`, errorText);
+        
+        // Handle different error types
+        if (response.status === 500) {
+          toast.error("Server error occurred. The workflow configuration endpoint may not be implemented yet. Please contact support.");
+        } else if (response.status === 401) {
+          toast.error("Authentication required. Please log in again.");
+        } else if (response.status === 403) {
+          toast.error("You don't have permission to perform this action.");
+        } else if (response.status === 404) {
+          toast.error("Workflow configuration endpoint not found. Please contact support.");
+        } else {
+          toast.error(`Failed to save configuration: ${response.statusText}`);
+        }
+        
+        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+      }
+      
+      setPreviousCategoryId(selectedCategoryId);
+      setPreviousFormatId(selectedFormatId);
       setLastUpdated(new Date());
       setHasChanges(false);
       
       if (onSave) {
+        const selectedCategory = categoryOptions.find(c => c.id === selectedCategoryId)?.name || '';
+        const selectedFormat = formatOptions.find(f => f.id === selectedFormatId)?.name || '';
         onSave({
           category: selectedCategory,
           format: selectedFormat
         });
       }
       
+      console.log('✅ Workflow configuration saved successfully');
       toast.success("Weekly configuration updated successfully");
     } catch (error) {
-      toast.error("Failed to save configuration");
+      console.error('❌ Save configuration error:', error);
+      
+      // Don't show additional error toast if we already showed one above
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (!errorMessage.includes('HTTP 500') && !errorMessage.includes('HTTP 401') && !errorMessage.includes('HTTP 403')) {
+        toast.error("Failed to save configuration. Please try again.");
+      }
     } finally {
       setIsSaving(false);
     }
@@ -145,6 +249,33 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
   /// };
 
 
+
+
+  if (isLoadingOptions) {
+    return (
+      <Card className="mb-8">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                Weekly Categories Configuration
+              </CardTitle>
+              <CardDescription>
+                Configure the news topic for automated AI workflow collection
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-center py-8">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
+            <span className="ml-3 text-sm text-muted-foreground">Loading options...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="mb-8">
@@ -175,16 +306,25 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                 <label className="text-sm font-medium mb-2 block">
                   Select News Topic for This Week
                 </label>
-                <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+                <Select 
+                  value={selectedCategoryId} 
+                  onValueChange={handleCategoryChange}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Choose a category..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {CATEGORY_OPTIONS.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
+                    {categoryOptions.length > 0 ? (
+                      categoryOptions.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="no-options" disabled>
+                        No categories available
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -195,21 +335,30 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                   <FileText className="h-4 w-4 inline mr-2" />
                   Select News Format
                 </label>
-                <Select value={selectedFormat} onValueChange={handleFormatChange}>
+                <Select 
+                  value={selectedFormatId} 
+                  onValueChange={handleFormatChange}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Choose a news format..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {NEWS_FORMAT_OPTIONS.map((format) => (
-                      <SelectItem key={format.value} value={format.value}>
-                        <div className="flex flex-col text-left">
-                          <span>{format.label}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {format.description}
-                          </span>
-                        </div>
+                    {formatOptions.length > 0 ? (
+                      formatOptions.map((format) => (
+                        <SelectItem key={format.id} value={format.id}>
+                          <div className="flex flex-col text-left">
+                            <span>{format.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {format.description}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="no-options" disabled>
+                        No formats available
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -222,33 +371,29 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
               <h4 className="font-medium">Configuration Summary</h4>
               
               {/* Selected Category Tag */}
-              {selectedCategory && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium block">
-                    Topic:
-                  </label>
-                  <Badge 
-                    variant="secondary" 
-                    className="bg-primary/10 text-primary border-primary/20 px-3 py-1"
-                  >
-                    {selectedCategory}
-                  </Badge>
-                </div>
-              )}
+              <div className="space-y-2">
+                <label className="text-sm font-medium block">
+                  Topic:
+                </label>
+                <Badge 
+                  variant="secondary" 
+                  className="bg-primary/10 text-primary border-primary/20 px-3 py-1"
+                >
+                  {categoryOptions.find(c => c.id === selectedCategoryId)?.name}
+                </Badge>
+              </div>
 
               {/* Selected Format */}
-              {selectedFormat && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium block">
-                    Format:
-                  </label>
-                  <Badge variant="outline">
-                    {NEWS_FORMAT_OPTIONS.find(f => f.value === selectedFormat)?.label}
-                  </Badge>
-                </div>
-              )}
+              <div className="space-y-2">
+                <label className="text-sm font-medium block">
+                  Format:
+                </label>
+                <Badge variant="outline">
+                  {formatOptions.find(f => f.id === selectedFormatId)?.name}
+                </Badge>
+              </div>
 
-              {!hasChanges && selectedCategory && selectedFormat && (
+              {!hasChanges && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground pt-2 border-t">
                   <Check className="h-3 w-3" />
                   Configuration matches previous week
@@ -257,20 +402,20 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
             </div>
 
             {/* Previous Week Reference */}
-            {hasChanges && (previousCategory || previousFormat) && (
+            {hasChanges && (
               <div className="space-y-2">
                 <label className="text-sm font-medium block text-muted-foreground">
                   Previous Week's Configuration:
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {previousCategory && (
+                  {previousCategoryId && (
                     <Badge variant="outline" className="text-muted-foreground">
-                      Topic: {previousCategory}
+                      Topic: {categoryOptions.find(c => c.id === previousCategoryId)?.name}
                     </Badge>
                   )}
-                  {previousFormat && (
+                  {previousFormatId && (
                     <Badge variant="outline" className="text-muted-foreground">
-                      Format: {NEWS_FORMAT_OPTIONS.find(f => f.value === previousFormat)?.label}
+                      Format: {formatOptions.find(f => f.id === previousFormatId)?.name}
                     </Badge>
                   )}
                 </div>
@@ -289,7 +434,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
           </div>
           <Button 
             onClick={handleSave}
-            disabled={!selectedCategory || !selectedFormat || isSaving}
+            disabled={!selectedCategoryId || !selectedFormatId || selectedCategoryId === "" || selectedFormatId === "" || isSaving}
             className="bg-primary hover:bg-primary/90"
           >
             {isSaving ? "Saving..." : "Save Configuration"}

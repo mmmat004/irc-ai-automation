@@ -66,10 +66,20 @@ export function Profile() {
     fetchProfile();
   }, []);
 
-  const handleSignOut = () => {
-    localStorage.removeItem('auth_token');
-    toast("Signed out successfully");
-    window.location.reload();
+  const handleSignOut = async () => {
+    try {
+      // Call logout endpoint to clear server-side session/cookies
+      await fetch(API_ENDPOINTS.LOGOUT, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('auth_token');
+      toast("Signed out successfully");
+      window.location.reload();
+    }
   };
 
   if (isLoading) {
