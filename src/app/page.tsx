@@ -12,7 +12,9 @@ import { Profile } from "../views/Profile";
 import { Login } from "../views/Login";
 
 export default function HomePage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    process.env.NEXT_PUBLIC_DEMO === 'true'
+  );
   const [currentPage, setCurrentPage] = useState('dashboard');
 
   const handleLogin = () => {
