@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+// global styles are imported via app/layout.tsx
 import { Toaster } from "../components/ui/sonner";
 import { Sidebar } from "../components/Sidebar";
 import { Dashboard } from "../views/Dashboard";
