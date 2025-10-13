@@ -19,6 +19,7 @@ export function Login({ onLogin, authError }: LoginProps) {
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
+    // Allow the loading screen to render before redirecting
     setTimeout(() => {
       window.location.href = API_ENDPOINTS.GOOGLE_AUTH;
     }, 50);
