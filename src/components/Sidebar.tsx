@@ -8,7 +8,6 @@ import {
   LogOut,
   Circle
 } from "lucide-react";
-import logoImage from 'figma:asset/7eabaf731540bbbc5100f5b51095c282d76f33e9.png';
 
 interface SidebarProps {
   currentPage: string;
@@ -37,7 +36,7 @@ export function Sidebar({ currentPage, onNavigate, onLogout }: SidebarProps) {
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 flex items-center justify-center">
             <img 
-              src={logoImage} 
+              src="/logo.png" 
               alt="iReadCustomer" 
               className="w-full h-full object-contain"
             />

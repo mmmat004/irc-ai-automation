@@ -28,3 +28,5 @@ export function Dashboard({ onNewsSelect }: DashboardProps) {
     </div>
   );
 }
+
+

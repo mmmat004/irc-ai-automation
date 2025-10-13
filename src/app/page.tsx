@@ -1,15 +1,15 @@
 'use client';
 
 import { useState } from "react";
-import { Toaster } from "sonner@2.0.3";
+import { Toaster } from "../components/ui/sonner";
 import { Sidebar } from "../components/Sidebar";
-import { Dashboard } from "../components/Dashboard";
-import { NewsManagement } from "../components/NewsManagement";
-import { VerificationQueue } from "../components/VerificationQueue";
-import { WorkflowDashboard } from "../components/WorkflowDashboard";
-import { CategoriesManagement } from "../components/CategoriesManagement";
-import { Profile } from "../components/Profile";
-import { Login } from "../components/Login";
+import { Dashboard } from "../views/Dashboard";
+import { NewsManagement } from "../views/NewsManagement";
+import { VerificationQueue } from "../views/VerificationQueue";
+import { WorkflowDashboard } from "../views/WorkflowDashboard";
+import { CategoriesManagement } from "../views/CategoriesManagement";
+import { Profile } from "../views/Profile";
+import { Login } from "../views/Login";
 
 export default function HomePage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

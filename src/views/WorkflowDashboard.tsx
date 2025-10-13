@@ -4,9 +4,8 @@ import { RecentExecutions } from "../components/RecentExecutions";
 import { WeeklyCategoriesConfig } from "../components/WeeklyCategoriesConfig";
 
 export function WorkflowDashboard() {
-  const handleCategorySave = (category: string) => {
-    // This would typically update the n8n workflow parameters
-    console.log("Category saved for n8n workflow:", category);
+  const handleCategorySave = (config: { category: string; format: string }) => {
+    console.log("Weekly configuration saved:", config);
   };
 
   return (
@@ -27,3 +26,5 @@ export function WorkflowDashboard() {
     </div>
   );
 }
+
+

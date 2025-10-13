@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Toaster } from "sonner";
 import { Sidebar } from "./components/Sidebar";
-import { Dashboard } from "./pages/Dashboard";
-import { NewsManagement } from "./pages/NewsManagement";
-import { VerificationQueue } from "./pages/VerificationQueue";
-import { WorkflowDashboard } from "./pages/WorkflowDashboard";
-import { CategoriesManagement } from "./pages/CategoriesManagement";
-import { Profile } from "./pages/Profile";
-import { Login } from "./pages/Login";
-import { NewsDetail } from "./pages/NewsDetail";
+import { Dashboard } from "./views/Dashboard";
+import { NewsManagement } from "./views/NewsManagement";
+import { VerificationQueue } from "./views/VerificationQueue";
+import { WorkflowDashboard } from "./views/WorkflowDashboard";
+import { CategoriesManagement } from "./views/CategoriesManagement";
+import { Profile } from "./views/Profile";
+import { Login } from "./views/Login";
+import { NewsDetail } from "./views/NewsDetail";
 import { API_ENDPOINTS } from "./config/api";
 
 

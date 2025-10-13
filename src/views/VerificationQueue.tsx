@@ -18,3 +18,5 @@ export function VerificationQueue({ onNewsSelect }: VerificationQueueProps) {
     </div>
   );
 }
+
+

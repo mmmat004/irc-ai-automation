@@ -17,7 +17,6 @@ interface NewsDetailProps {
   onBack: () => void;
 }
 
-// Updated mock data for AI-generated content structure
 const getNewsDetail = (id: number) => {
   const newsDetails = {
     1: {
@@ -130,7 +129,7 @@ const getNewsDetail = (id: number) => {
         },
       ],
     },
-  };
+  } as const;
 
   return (
     newsDetails[id as keyof typeof newsDetails] ||
@@ -138,10 +137,7 @@ const getNewsDetail = (id: number) => {
   );
 };
 
-export function NewsDetail({
-  newsId,
-  onBack,
-}: NewsDetailProps) {
+export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
   const news = getNewsDetail(newsId);
 
   const handleShare = () => {
@@ -180,7 +176,6 @@ export function NewsDetail({
   return (
     <div className="h-full overflow-auto bg-background">
       <div className="max-w-4xl mx-auto p-8">
-        {/* Header Navigation */}
         <div className="mb-6">
           <Button
             variant="ghost"
@@ -192,7 +187,6 @@ export function NewsDetail({
           </Button>
         </div>
 
-        {/* Article Header */}
         <Card className="border border-border shadow-sm rounded-xl mb-6">
           <CardHeader className="pb-4">
             <div className="flex items-start justify-between mb-4">
@@ -206,7 +200,6 @@ export function NewsDetail({
               {news.title}
             </h1>
 
-            {/* Article Meta Information - Removed views and reading time */}
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
@@ -219,11 +212,9 @@ export function NewsDetail({
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content - Consolidated into single card */}
           <div className="lg:col-span-2">
             <Card className="border border-border shadow-sm rounded-xl">
               <CardContent className="p-8 space-y-6">
-                {/* Introduction */}
                 <div>
                   <p className="text-foreground leading-relaxed">
                     {news.intro}
@@ -232,7 +223,6 @@ export function NewsDetail({
 
                 <Separator />
 
-                {/* Main Content */}
                 <div>
                   <div
                     className="prose prose-gray max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground"
@@ -244,7 +234,6 @@ export function NewsDetail({
 
                 <Separator />
 
-                {/* Summary */}
                 <div>
                   <p className="text-foreground leading-relaxed">
                     {news.summarizedContent}
@@ -254,9 +243,7 @@ export function NewsDetail({
             </Card>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Original Sources */}
             <Card className="border border-border shadow-sm rounded-xl">
               <CardHeader>
                 <h3 className="font-semibold text-foreground">
@@ -287,7 +274,6 @@ export function NewsDetail({
               </CardContent>
             </Card>
 
-            {/* Keywords */}
             <Card className="border border-border shadow-sm rounded-xl">
               <CardHeader>
                 <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -310,7 +296,6 @@ export function NewsDetail({
               </CardContent>
             </Card>
 
-            {/* Article Stats - Removed views and reading time, kept only status */}
             <Card className="border border-border shadow-sm rounded-xl">
               <CardHeader>
                 <h3 className="font-semibold text-foreground">
@@ -334,3 +319,5 @@ export function NewsDetail({
     </div>
   );
 }
+
+

@@ -25,7 +25,6 @@ export function Profile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        // Try with credentials first, fallback without if CORS fails
         let response;
         try {
           response = await fetch(API_ENDPOINTS.USER_PROFILE, {
@@ -33,10 +32,9 @@ export function Profile() {
             headers: {
               'Content-Type': 'application/json',
             },
-            credentials: 'include', // Include cookies for authentication
+            credentials: 'include',
           });
         } catch (error) {
-          console.log('CORS error with credentials, trying without...');
           response = await fetch(API_ENDPOINTS.USER_PROFILE, {
             method: 'GET',
             headers: {
@@ -47,17 +45,9 @@ export function Profile() {
 
         if (response.ok) {
           const data = await response.json();
-          console.log('Profile data from backend:', data);
           setProfileData(data);
-        } else {
-          console.error('Failed to fetch profile:', response.status);
-          // If unauthorized, don't reload - just show error
-          if (response.status === 401) {
-            console.log('User not authenticated yet');
-          }
         }
       } catch (error) {
-        console.error('Profile fetch error:', error);
       } finally {
         setIsLoading(false);
       }
@@ -68,13 +58,11 @@ export function Profile() {
 
   const handleSignOut = async () => {
     try {
-      // Call logout endpoint to clear server-side session/cookies
       await fetch(API_ENDPOINTS.LOGOUT, {
         method: 'POST',
         credentials: 'include',
       });
     } catch (error) {
-      console.error('Logout error:', error);
     } finally {
       localStorage.removeItem('auth_token');
       toast("Signed out successfully");
@@ -114,14 +102,12 @@ export function Profile() {
   return (
     <div className="h-full overflow-auto bg-background">
       <div className="p-8">
-        {/* Header */}
         <div className="mb-8">
           <h1>Profile</h1>
           <p className="text-muted-foreground mt-2">Your Google account information</p>
         </div>
 
         <div className="max-w-2xl space-y-8">
-          {/* Profile Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -175,7 +161,6 @@ export function Profile() {
             </CardContent>
           </Card>
 
-          {/* Account Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -196,7 +181,6 @@ export function Profile() {
             </CardContent>
           </Card>
 
-          {/* Sign Out */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-red-600">
@@ -219,3 +203,5 @@ export function Profile() {
     </div>
   );
 }
+
+

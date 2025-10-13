@@ -27,3 +27,5 @@ export function CategoriesManagement() {
     </div>
   );
 }
+
+

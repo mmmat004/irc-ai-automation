@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NewsHeader } from "../components/NewsHeader";
-import { NewsFilters, FilterState } from "../components/NewsFilters";
+import { NewsFilters, type FilterState } from "../components/NewsFilters";
 import { NewsTable } from "../components/NewsTable";
 
 interface NewsManagementProps {
@@ -35,3 +35,5 @@ export function NewsManagement({ onNewsSelect }: NewsManagementProps) {
     </div>
   );
 }
+
+

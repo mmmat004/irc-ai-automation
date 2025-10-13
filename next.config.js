@@ -3,6 +3,7 @@ const nextConfig = {
   images: {
     domains: ['images.unsplash.com'],
   },
+  outputFileTracingRoot: __dirname,
 }
 
 module.exports = nextConfig
