@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'iReadCustomer Admin Dashboard',
   description: 'News automation admin panel',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({
