@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 // global styles are imported via app/layout.tsx
 import { Toaster } from "../components/ui/sonner";
 import { Sidebar } from "../components/Sidebar";
@@ -11,20 +12,96 @@ import { WorkflowDashboard } from "../views/WorkflowDashboard";
 import { CategoriesManagement } from "../views/CategoriesManagement";
 import { Profile } from "../views/Profile";
 import { Login } from "../views/Login";
+import { API_ENDPOINTS } from "../config/api";
 
-export default function HomePage() {
+export const dynamic = 'force-dynamic';
+
+function HomePageContent() {
+  const searchParams = useSearchParams();
   const [isAuthenticated, setIsAuthenticated] = useState(
     process.env.NEXT_PUBLIC_DEMO === 'true'
   );
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!searchParams) return;
+    
+    // Check if user just authenticated
+    if (searchParams.get('authenticated') === 'true') {
+      setIsAuthenticated(true);
+      setAuthError(null);
+      // Clean up URL
+      window.history.replaceState({}, '', '/');
+    }
+
+    // Check for authentication errors
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      const errorMessages: Record<string, string> = {
+        'access_denied': 'Access denied. Please try again.',
+        'no_code': 'Authentication failed. Please try again.',
+        'invalid_account': 'Invalid account. Please use an authorized account.',
+      };
+      setAuthError(
+        decodeURIComponent(errorParam) in errorMessages
+          ? errorMessages[decodeURIComponent(errorParam)]
+          : decodeURIComponent(errorParam)
+      );
+      setIsAuthenticated(false);
+      // Clean up URL
+      window.history.replaceState({}, '', '/');
+    }
+
+    // Check for existing auth token
+    const token = localStorage.getItem('auth_token');
+    if (token && !isAuthenticated) {
+      // Verify token is still valid
+      fetch(API_ENDPOINTS.USER_PROFILE, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      })
+        .then(response => {
+          if (response.ok) {
+            setIsAuthenticated(true);
+          } else {
+            // Token is invalid, clear it
+            localStorage.removeItem('auth_token');
+          }
+        })
+        .catch(() => {
+          localStorage.removeItem('auth_token');
+        });
+    }
+  }, [searchParams, isAuthenticated]);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
+    setAuthError(null);
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setCurrentPage('dashboard');
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        await fetch(API_ENDPOINTS.LOGOUT, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('auth_token');
+      setIsAuthenticated(false);
+      setCurrentPage('dashboard');
+      setAuthError(null);
+    }
   };
 
   const renderCurrentPage = () => {
@@ -48,7 +125,7 @@ export default function HomePage() {
   if (!isAuthenticated) {
     return (
       <div>
-        <Login onLogin={handleLogin} />
+        <Login onLogin={handleLogin} authError={authError} />
         <Toaster position="top-right" />
       </div>
     );
@@ -66,5 +143,13 @@ export default function HomePage() {
       </main>
       <Toaster position="top-right" />
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomePageContent />
+    </Suspense>
   );
 }
