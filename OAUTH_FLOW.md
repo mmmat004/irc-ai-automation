@@ -6,17 +6,19 @@ This document describes the Google OAuth authentication flow implemented in the 
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌────────────┐     ┌─────────────┐
-│   User      │────▶│   Frontend   │────▶│   Google   │────▶│   Backend   │
-│  (Browser)  │◀────│   (Next.js)  │◀────│   OAuth    │◀────│   (AWS)     │
-└─────────────┘     └──────────────┘     └────────────┘     └─────────────┘
+│   User      │────▶│   Backend    │────▶│   Google   │────▶│   Backend   │
+│  (Browser)  │◀────│   (AWS)      │◀────│   OAuth    │◀────│   (AWS)     │
+│             │     │              │     └────────────┘     │             │
+│             │◀────┤  Sets Cookie │                        │  Validates  │
+└─────────────┘     └──────────────┘                        └─────────────┘
 ```
 
 ## Step-by-Step Process
 
 ### 1. **User Initiates Login**
 - User clicks "Continue with Google" button on login page (`/`)
-- Frontend shows loading spinner
 - Browser redirects to: `${BACKEND_URL}/auth/google`
+- **Note:** No frontend loading state to avoid redirect loops
 
 ### 2. **Backend Redirects to Google**
 - Backend receives the request
@@ -30,57 +32,59 @@ This document describes the Google OAuth authentication flow implemented in the 
 
 ### 4. **Backend Processes Authorization**
 - Backend receives authorization code from Google
-- Backend exchanges code for access token
+- Backend exchanges code for access token with Google
 - Backend validates the user's account
-- Backend redirects to: `${FRONTEND_URL}/auth/callback?code=...`
+- Backend creates session and sets authentication cookie
+- Backend redirects to: `${FRONTEND_URL}/` (root page)
 
-### 5. **Frontend Callback Handler**
-- Frontend callback page (`/auth/callback`) receives the code
-- Frontend exchanges code for JWT token via `POST ${BACKEND_URL}/auth/oauth-exchange-token`
-- Frontend validates user account via `GET ${BACKEND_URL}/user/profile`
+### 5. **Frontend Checks Authentication**
+- Frontend loads and checks authentication via `GET ${BACKEND_URL}/user/profile`
+- Request includes cookies automatically (`credentials: 'include'`)
+- **If Valid Account:** Shows dashboard
+- **If Invalid Account:** Shows login page with error
 
 ### 6. **Authentication Result**
 
 **If Valid Account:**
-- Frontend stores JWT token in `localStorage`
-- Frontend redirects to `/?authenticated=true`
-- Main page detects authentication and shows dashboard
+- Backend set authentication cookie
+- Frontend detects valid session
+- User sees dashboard immediately
 
 **If Invalid Account:**
-- Frontend redirects to `/?error=Invalid account. Please use an authorized account.`
-- Login page shows error message
+- Backend redirects with `?error=invalid_account` query parameter
+- Frontend shows error message on login page
 - User can try again with different account
 
 ## Files Involved
 
 ### Frontend
-- **`src/views/Login.tsx`** - Login page with Google button
+- **`src/views/Login.tsx`** - Login page with Google button (redirects to backend)
 - **`src/app/page.tsx`** - Main page with auth state management
-- **`src/app/auth/callback/page.tsx`** - OAuth callback handler
 - **`src/config/api.ts`** - API endpoints configuration
 
 ### Backend Endpoints
-- **`GET /auth/google`** - Initiates OAuth flow
-- **`POST /auth/oauth-exchange-token`** - Exchanges code for JWT
-- **`GET /user/profile`** - Validates user account
-- **`POST /auth/logout`** - Logs out user
+- **`GET /auth/google`** - Initiates OAuth flow and handles complete OAuth process
+- **`GET /user/profile`** - Validates user session (returns user data if authenticated)
+- **`POST /auth/logout`** - Logs out user and clears session cookies
 
-## Token Management
+## Session Management
 
 ### Storage
-- JWT tokens are stored in browser's `localStorage` under key `auth_token`
-- Tokens are also sent as HTTP-only cookies for added security
+- Backend sets HTTP-only session cookies after successful authentication
+- Frontend does NOT store tokens - backend manages sessions via cookies
+- Cookies are sent automatically with every request using `credentials: 'include'`
 
 ### Validation
-- On page load, frontend checks for existing token
-- If token exists, frontend validates it via `/user/profile` endpoint
-- Invalid tokens are automatically removed
+- On page load, frontend checks authentication by calling `/user/profile`
+- If response is 200 OK → User is authenticated → Show dashboard
+- If response is 401/403 → User is not authenticated → Show login page
+- Cookies are automatically included in the request
 
 ### Logout
 - User clicks logout button
-- Frontend calls `/auth/logout` endpoint
-- Frontend removes token from `localStorage`
-- User is redirected to login page
+- Frontend calls `POST /auth/logout` endpoint with `credentials: 'include'`
+- Backend clears session cookies
+- Frontend redirects to `/` to force re-authentication
 
 ## Error Handling
 

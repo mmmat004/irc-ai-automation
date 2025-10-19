@@ -18,64 +18,62 @@ export const dynamic = 'force-dynamic';
 
 function HomePageContent() {
   const searchParams = useSearchParams();
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    process.env.NEXT_PUBLIC_DEMO === 'true'
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!searchParams) return;
     
-    // Check if user just authenticated
-    if (searchParams.get('authenticated') === 'true') {
-      setIsAuthenticated(true);
-      setAuthError(null);
-      // Clean up URL
-      window.history.replaceState({}, '', '/');
-    }
+    const checkAuth = async () => {
+      // Check for demo mode
+      if (process.env.NEXT_PUBLIC_DEMO === 'true') {
+        setIsAuthenticated(true);
+        setIsChecking(false);
+        return;
+      }
 
-    // Check for authentication errors
-    const errorParam = searchParams.get('error');
-    if (errorParam) {
-      const errorMessages: Record<string, string> = {
-        'access_denied': 'Access denied. Please try again.',
-        'no_code': 'Authentication failed. Please try again.',
-        'invalid_account': 'Invalid account. Please use an authorized account.',
-      };
-      setAuthError(
-        decodeURIComponent(errorParam) in errorMessages
-          ? errorMessages[decodeURIComponent(errorParam)]
-          : decodeURIComponent(errorParam)
-      );
-      setIsAuthenticated(false);
-      // Clean up URL
-      window.history.replaceState({}, '', '/');
-    }
+      // Check for authentication errors from backend redirect
+      const errorParam = searchParams.get('error');
+      if (errorParam) {
+        const errorMessages: Record<string, string> = {
+          'access_denied': 'Access denied. Please try again.',
+          'invalid_account': 'Invalid account. Please use an authorized account.',
+          'unauthorized': 'You are not authorized to access this application.',
+        };
+        setAuthError(
+          errorMessages[errorParam] || decodeURIComponent(errorParam)
+        );
+        setIsAuthenticated(false);
+        setIsChecking(false);
+        // Clean up URL
+        window.history.replaceState({}, '', '/');
+        return;
+      }
 
-    // Check for existing auth token
-    const token = localStorage.getItem('auth_token');
-    if (token && !isAuthenticated) {
-      // Verify token is still valid
-      fetch(API_ENDPOINTS.USER_PROFILE, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        credentials: 'include',
-      })
-        .then(response => {
-          if (response.ok) {
-            setIsAuthenticated(true);
-          } else {
-            // Token is invalid, clear it
-            localStorage.removeItem('auth_token');
-          }
-        })
-        .catch(() => {
-          localStorage.removeItem('auth_token');
+      // Check authentication with backend (backend sets cookies)
+      try {
+        const response = await fetch(API_ENDPOINTS.USER_PROFILE, {
+          credentials: 'include', // Important: sends cookies
         });
-    }
-  }, [searchParams, isAuthenticated]);
+
+        if (response.ok) {
+          setIsAuthenticated(true);
+          setAuthError(null);
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        setIsAuthenticated(false);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    checkAuth();
+  }, [searchParams]);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
@@ -84,23 +82,18 @@ function HomePageContent() {
 
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        await fetch(API_ENDPOINTS.LOGOUT, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-          credentials: 'include',
-        });
-      }
+      await fetch(API_ENDPOINTS.LOGOUT, {
+        method: 'POST',
+        credentials: 'include', // Send cookies to backend
+      });
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('auth_token');
       setIsAuthenticated(false);
       setCurrentPage('dashboard');
       setAuthError(null);
+      // Redirect to clear any session
+      window.location.href = '/';
     }
   };
 
@@ -121,6 +114,15 @@ function HomePageContent() {
         return <Dashboard />;
     }
   };
+
+  // Show loading while checking authentication
+  if (isChecking) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Zap } from "lucide-react";
 import { Button } from "../components/ui/button";
 import {
@@ -15,38 +14,10 @@ interface LoginProps {
 }
 
 export function Login({ onLogin, authError }: LoginProps) {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    // Allow the loading screen to render before redirecting
-    setTimeout(() => {
-      window.location.href = API_ENDPOINTS.GOOGLE_AUTH;
-    }, 50);
+  const handleGoogleLogin = () => {
+    // Direct redirect to backend OAuth - backend handles everything
+    window.location.href = API_ENDPOINTS.GOOGLE_AUTH;
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md shadow-lg border-0">
-          <CardHeader className="space-y-2 pb-2">
-            <div className="inline-flex items-center gap-2 justify-center">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Zap className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="text-2xl font-semibold text-primary">iReadCustomer</span>
-            </div>
-            <CardTitle className="text-center text-xl">Signing in…</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center py-6">
-              <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
@@ -76,7 +47,6 @@ export function Login({ onLogin, authError }: LoginProps) {
               type="button"
               variant="outline"
               onClick={handleGoogleLogin}
-              disabled={isLoading}
               className="w-full h-11 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-colors"
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
