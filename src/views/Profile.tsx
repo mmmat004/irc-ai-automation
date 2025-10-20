@@ -46,8 +46,16 @@ export function Profile() {
         if (response.ok) {
           const data = await response.json();
           setProfileData(data);
+        } else if (response.status === 401) {
+          console.warn('Profile fetch failed: 401 Unauthorized - Session expired or cookies not sent');
+          toast.error('Session expired. Please log in again.');
+        } else {
+          console.error('Profile fetch failed with status:', response.status);
+          toast.error('Failed to load profile. Please try again.');
         }
       } catch (error) {
+        console.error('Profile fetch error:', error);
+        toast.error('Cannot connect to server. Check your connection.');
       } finally {
         setIsLoading(false);
       }

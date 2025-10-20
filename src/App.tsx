@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Toaster } from "sonner";
 import { Sidebar } from "./components/Sidebar";
 import { Dashboard } from "./views/Dashboard";
@@ -42,12 +42,18 @@ function AppContent() {
           }
         } else if (response.status === 401) {
           // Token expired or invalid, clear any stored token
+          console.warn('Authentication failed: No valid session cookies found (401)');
           localStorage.removeItem('auth_token');
+          setIsAuthenticated(false);
+          setAuthError('Session expired. Please log in again.');
+        } else {
+          console.error('Auth validation failed with status:', response.status);
           setIsAuthenticated(false);
         }
       } catch (error) {
         console.error('Auth validation error:', error);
-        // On network error, assume not authenticated
+        // On network error (CORS, connection issue), assume not authenticated
+        setAuthError('Cannot connect to server. Check your connection or try demo mode.');
         setIsAuthenticated(false);
       }
     };

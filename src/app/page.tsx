@@ -53,18 +53,31 @@ function HomePageContent() {
 
       // Check authentication with backend (backend sets cookies)
       try {
+        console.log('🔍 Checking authentication with:', API_ENDPOINTS.USER_PROFILE);
+        console.log('📝 Current cookies:', document.cookie || 'No cookies found');
+        
         const response = await fetch(API_ENDPOINTS.USER_PROFILE, {
           credentials: 'include', // Important: sends cookies
         });
 
+        console.log('📡 Auth response status:', response.status);
+
         if (response.ok) {
+          const userData = await response.json();
+          console.log('✅ Authentication successful! User:', userData);
           setIsAuthenticated(true);
           setAuthError(null);
+        } else if (response.status === 401) {
+          // Unauthorized - cookies not present or invalid
+          console.warn('❌ Authentication failed: No valid session cookies');
+          console.log('This is normal if you haven\'t logged in yet');
+          setIsAuthenticated(false);
         } else {
+          console.error('❌ Auth check failed with status:', response.status);
           setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error('Auth check error:', error);
+        console.error('❌ Auth check error:', error);
         setIsAuthenticated(false);
       } finally {
         setIsChecking(false);
