@@ -33,10 +33,13 @@ function HomePageContent() {
         return;
       }
 
-      // Handle OAuth token exchange
-      const oauthToken = searchParams.get('oAuthTempToken');
+      // Handle OAuth token from backend redirect
+      const oauthToken = searchParams.get('oauthToken');
+      const oauthStatus = searchParams.get('oauthStatus');
+      
       if (oauthToken) {
-        console.log('🔑 OAuth token found, exchanging with backend...');
+        console.log('🔑 OAuth token found in URL:', oauthToken.substring(0, 20) + '...');
+        console.log('🔑 OAuth status:', oauthStatus);
         
         try {
           const response = await fetch(API_ENDPOINTS.OAUTH_EXCHANGE, {
@@ -46,7 +49,7 @@ function HomePageContent() {
             },
             credentials: 'include', // Include cookies
             body: JSON.stringify({
-              oAuthTempToken: oauthToken
+              oauthToken: oauthToken
             })
           });
 
