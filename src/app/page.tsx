@@ -49,7 +49,7 @@ function HomePageContent() {
             },
             credentials: 'include', // Include cookies
             body: JSON.stringify({
-              oauthToken: oauthToken
+              oAuthTempToken: oauthToken  // Backend expects this exact field name
             })
           });
 
