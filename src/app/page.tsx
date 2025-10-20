@@ -33,6 +33,48 @@ function HomePageContent() {
         return;
       }
 
+      // Handle OAuth token exchange
+      const oauthToken = searchParams.get('oAuthTempToken');
+      if (oauthToken) {
+        console.log('🔑 OAuth token found, exchanging with backend...');
+        
+        try {
+          const response = await fetch(API_ENDPOINTS.OAUTH_EXCHANGE, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include', // Include cookies
+            body: JSON.stringify({
+              oAuthTempToken: oauthToken
+            })
+          });
+
+          console.log('🔄 Token exchange response status:', response.status);
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Token exchange successful!', data);
+            setIsAuthenticated(true);
+            setAuthError(null);
+          } else {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('❌ Token exchange failed:', errorData);
+            setAuthError(errorData.message || 'Login failed. Please try again.');
+            setIsAuthenticated(false);
+          }
+        } catch (error) {
+          console.error('❌ Token exchange error:', error);
+          setAuthError('Login failed. Please try again.');
+          setIsAuthenticated(false);
+        } finally {
+          setIsChecking(false);
+          // Clean up URL
+          window.history.replaceState({}, '', '/');
+        }
+        return;
+      }
+
       // Check for authentication errors from backend redirect
       const errorParam = searchParams.get('error');
       if (errorParam) {
