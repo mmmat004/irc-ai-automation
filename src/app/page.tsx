@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 // global styles are imported via app/layout.tsx
 import { Toaster } from "../components/ui/sonner";
 import { Sidebar } from "../components/Sidebar";
@@ -17,14 +16,14 @@ import { API_ENDPOINTS } from "../config/api";
 export const dynamic = 'force-dynamic';
 
 function HomePageContent() {
-  const searchParams = useSearchParams();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!searchParams) return;
+    // Get URL params directly from window for client-side
+    const searchParams = new URLSearchParams(window.location.search);
     
     const checkAuth = async () => {
       // Check for demo mode
@@ -73,7 +72,7 @@ function HomePageContent() {
     };
 
     checkAuth();
-  }, [searchParams]);
+  }, []); // Run once on mount
 
   const handleLogin = () => {
     setIsAuthenticated(true);
@@ -149,9 +148,5 @@ function HomePageContent() {
 }
 
 export default function HomePage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <HomePageContent />
-    </Suspense>
-  );
+  return <HomePageContent />;
 }
