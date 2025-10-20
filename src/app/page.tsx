@@ -54,6 +54,7 @@ function HomePageContent() {
           });
 
           console.log('🔄 Token exchange response status:', response.status);
+          console.log('📤 Request body sent:', { oAuthTempToken: oauthToken });
           
           if (response.ok) {
             const data = await response.json();
@@ -63,7 +64,13 @@ function HomePageContent() {
           } else {
             const errorData = await response.json().catch(() => ({}));
             console.error('❌ Token exchange failed:', errorData);
-            setAuthError(errorData.message || 'Login failed. Please try again.');
+            console.error('❌ Full error details:', JSON.stringify(errorData, null, 2));
+            
+            const errorMessage = Array.isArray(errorData.message) 
+              ? errorData.message.join(', ')
+              : (errorData.message || 'Login failed. Please try again.');
+            
+            setAuthError(errorMessage);
             setIsAuthenticated(false);
           }
         } catch (error) {
