@@ -181,11 +181,7 @@ export function Profile() {
                 <span className="text-muted-foreground">Account Type</span>
                 <span className="font-medium">Google Account</span>
               </div>
-              <Separator />
-              <div className="flex justify-between items-center py-2">
-                <span className="text-muted-foreground">User ID</span>
-                <span className="font-medium font-mono text-sm">{profileData.id}</span>
-              </div>
+  
             </CardContent>
           </Card>
 
