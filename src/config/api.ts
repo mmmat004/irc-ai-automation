@@ -1,4 +1,4 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://irc-automation-api.ap-southeast-1.elasticbeanstalk.com';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://d2snwaeegxbt9.cloudfront.net';
 
 export const API_ENDPOINTS = {
   OAUTH_EXCHANGE: `${API_BASE_URL}/auth/oauth-exchange-token`,
