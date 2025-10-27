@@ -19,7 +19,6 @@ export function Sidebar({ currentPage, onNavigate, onLogout }: SidebarProps) {
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'news', label: 'News Management', icon: FileText },
-    { id: 'verification', label: 'Verification Queue', icon: CheckCircle },
     { id: 'categories', label: 'Categories', icon: Tag },
     { id: 'workflows', label: 'n8n Workflows', icon: Workflow },
     { id: 'profile', label: 'Profile', icon: User },

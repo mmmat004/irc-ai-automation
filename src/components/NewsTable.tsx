@@ -168,7 +168,8 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     }
   };
 
-  const handleVerifyNews = (newsId: number) => {
+  const handleVerifyNews = (newsId: number, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent row click
     setNewsData(prevData => 
       prevData.map(news => 
         news.id === newsId 
@@ -224,13 +225,14 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
               </tr>
             ) : (
               filteredNewsData.map((news, index) => (
-              <tr key={news.id} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+              <tr 
+                key={news.id} 
+                className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"} cursor-pointer hover:bg-gray-100 transition-colors`}
+                onClick={() => handleNewsClick(news.id)}
+              >
                 <td className="px-6 py-4">
                   <div className="max-w-md">
-                    <p 
-                      className="font-medium text-gray-900 truncate cursor-pointer hover:text-primary transition-colors"
-                      onClick={() => handleNewsClick(news.id)}
-                    >
+                    <p className="font-medium text-gray-900 truncate">
                       {news.title}
                     </p>
                   </div>
@@ -252,7 +254,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                         variant="outline"
                         size="sm"
                         className="h-8 w-8 p-0 border-orange-300 hover:bg-orange-50"
-                        onClick={() => handleVerifyNews(news.id)}
+                        onClick={(e) => handleVerifyNews(news.id, e)}
                         title="Verify this news article"
                       >
                         <Check className="w-4 h-4 text-orange-600" />
