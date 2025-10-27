@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ArrowLeft,
   Clock,
@@ -5,6 +6,7 @@ import {
   ExternalLink,
   Share2,
   Bookmark,
+  Globe,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
@@ -139,6 +141,7 @@ const getNewsDetail = (id: number) => {
 
 export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
   const news = getNewsDetail(newsId);
+  const [isTranslated, setIsTranslated] = useState(false);
 
   const handleShare = () => {
     toast("Link copied to clipboard!");
@@ -146,6 +149,33 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
 
   const handleBookmark = () => {
     toast("Article bookmarked!");
+  };
+
+  const handleTranslate = () => {
+    setIsTranslated(!isTranslated);
+    toast(isTranslated ? "Switched to English" : "Switched to Thai");
+  };
+
+  // Simple translation function for demo purposes
+  const translateText = (text: string) => {
+    if (!isTranslated) return text;
+    
+    // Basic Thai translations for demo
+    const translations: Record<string, string> = {
+      "Breaking: Tech Giants Announce New AI Partnership": "ข่าวด่วน: บริษัทเทคโนโลยียักษ์ใหญ่ประกาศความร่วมมือ AI ใหม่",
+      "Global Climate Summit Reaches Historic Agreement": "การประชุมสุดยอดสภาพภูมิอากาศโลกบรรลุข้อตกลงประวัติศาสตร์",
+      "Technology": "เทคโนโลยี",
+      "Environment": "สิ่งแวดล้อม",
+      "Published": "เผยแพร่แล้ว",
+      "Verified": "ยืนยันแล้ว",
+      "Pending": "รอดำเนินการ",
+      "Original Sources": "แหล่งข้อมูลต้นฉบับ",
+      "Keywords": "คำสำคัญ",
+      "Article Status": "สถานะบทความ",
+      "Status": "สถานะ"
+    };
+    
+    return translations[text] || text;
   };
 
   const getStatusBadge = (status: string) => {
@@ -176,7 +206,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
   return (
     <div className="h-full overflow-auto bg-background">
       <div className="max-w-4xl mx-auto p-8">
-        <div className="mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <Button
             variant="ghost"
             onClick={onBack}
@@ -185,19 +215,28 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </Button>
+          
+          <Button
+            variant="outline"
+            onClick={handleTranslate}
+            className="gap-2 border-gray-300 hover:bg-gray-50"
+          >
+            <Globe className="w-4 h-4" />
+            {isTranslated ? "English" : "ไทย"}
+          </Button>
         </div>
 
         <Card className="border border-border shadow-sm rounded-xl mb-6">
           <CardHeader className="pb-4">
             <div className="flex items-start justify-between mb-4">
               <Badge className="bg-primary/10 text-primary hover:bg-primary/10">
-                {news.category}
+                {translateText(news.category)}
               </Badge>
               {getStatusBadge(news.status)}
             </div>
 
             <h1 className="text-3xl font-bold text-foreground mb-4 leading-tight">
-              {news.title}
+              {translateText(news.title)}
             </h1>
 
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
@@ -247,7 +286,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             <Card className="border border-border shadow-sm rounded-xl">
               <CardHeader>
                 <h3 className="font-semibold text-foreground">
-                  Original Sources
+                  {translateText("Original Sources")}
                 </h3>
               </CardHeader>
               <CardContent>
@@ -278,7 +317,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
               <CardHeader>
                 <h3 className="font-semibold text-foreground flex items-center gap-2">
                   <Hash className="w-4 h-4" />
-                  Keywords
+                  {translateText("Keywords")}
                 </h3>
               </CardHeader>
               <CardContent>
@@ -299,16 +338,16 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             <Card className="border border-border shadow-sm rounded-xl">
               <CardHeader>
                 <h3 className="font-semibold text-foreground">
-                  Article Status
+                  {translateText("Article Status")}
                 </h3>
               </CardHeader>
               <CardContent>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">
-                    Status
+                    {translateText("Status")}
                   </span>
                   <span className="font-medium text-foreground capitalize">
-                    {news.status}
+                    {translateText(news.status)}
                   </span>
                 </div>
               </CardContent>

@@ -11,6 +11,7 @@ import { WorkflowDashboard } from "../views/WorkflowDashboard";
 import { CategoriesManagement } from "../views/CategoriesManagement";
 import { Profile } from "../views/Profile";
 import { Login } from "../views/Login";
+import { NewsDetail } from "../views/NewsDetail";
 import { API_ENDPOINTS } from "../config/api";
 
 export const dynamic = 'force-dynamic';
@@ -20,6 +21,8 @@ function HomePageContent() {
   const [isChecking, setIsChecking] = useState(true);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [authError, setAuthError] = useState<string | null>(null);
+  const [selectedNewsId, setSelectedNewsId] = useState<number | null>(null);
+  const [previousPage, setPreviousPage] = useState('dashboard');
 
   useEffect(() => {
     // Get URL params directly from window for client-side
@@ -155,18 +158,40 @@ function HomePageContent() {
     } finally {
       setIsAuthenticated(false);
       setCurrentPage('dashboard');
+      setSelectedNewsId(null);
+      setPreviousPage('dashboard');
       setAuthError(null);
       // Redirect to clear any session
       window.location.href = '/';
     }
   };
 
+  const handleNewsSelect = (newsId: number) => {
+    setPreviousPage(currentPage);
+    setSelectedNewsId(newsId);
+    setCurrentPage('news-detail');
+  };
+
+  const handleBackFromNewsDetail = () => {
+    setSelectedNewsId(null);
+    setCurrentPage(previousPage);
+  };
+
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'news':
-        return <NewsManagement />;
+        return <NewsManagement onNewsSelect={handleNewsSelect} />;
       case 'verification':
-        return <VerificationQueue />;
+        return <VerificationQueue onNewsSelect={handleNewsSelect} />;
+      case 'news-detail':
+        return selectedNewsId ? (
+          <NewsDetail 
+            newsId={selectedNewsId} 
+            onBack={handleBackFromNewsDetail}
+          />
+        ) : (
+          <Dashboard onNewsSelect={handleNewsSelect} />
+        );
       case 'workflows':
         return <WorkflowDashboard />;
       case 'categories':
@@ -175,7 +200,7 @@ function HomePageContent() {
         return <Profile />;
       case 'dashboard':
       default:
-        return <Dashboard />;
+        return <Dashboard onNewsSelect={handleNewsSelect} />;
     }
   };
 
