@@ -86,6 +86,30 @@ const initialNewsData: NewsItem[] = [
     status: "verified",
     date: "2024-01-13",
     time: "14:20"
+  },
+  {
+    id: 10,
+    title: "Fake News Alert: Unverified Claims About Market Crash",
+    category: "Finance",
+    status: "rejected",
+    date: "2024-01-13",
+    time: "12:30"
+  },
+  {
+    id: 11,
+    title: "Spam Content: Unrelated Marketing Material",
+    category: "Marketing",
+    status: "rejected",
+    date: "2024-01-12",
+    time: "16:15"
+  },
+  {
+    id: 12,
+    title: "Low Quality Article: Incomplete Information",
+    category: "Technology",
+    status: "rejected",
+    date: "2024-01-12",
+    time: "14:45"
   }
 ];
 
