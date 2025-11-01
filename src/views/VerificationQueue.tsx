@@ -2,7 +2,7 @@ import { VerificationHeader } from "../components/VerificationHeader";
 import { VerificationCards } from "../components/VerificationCards";
 
 interface VerificationQueueProps {
-  onNewsSelect?: (newsId: number) => void;
+  onNewsSelect?: (newsId: string | number) => void;
 }
 
 export function VerificationQueue({ onNewsSelect }: VerificationQueueProps) {

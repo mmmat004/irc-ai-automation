@@ -1,165 +1,19 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Check, X, CheckSquare, Square } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { toast } from "sonner";
 import { FilterState } from "./NewsFilters";
+import { API_ENDPOINTS } from "../config/api";
 
 interface NewsItem {
-  id: number;
+  id: string | number;
   title: string;
   category: string;
   status: string;
   date: string;
-  time: string;
+  time?: string;
 }
-
-const initialNewsData: NewsItem[] = [
-  {
-    id: 1,
-    title: "Breaking: Tech Giants Announce New AI Partnership",
-    category: "AI",
-    status: "published",
-    date: "2024-01-15",
-    time: "14:30"
-  },
-  {
-    id: 2,
-    title: "Startup Funding: Series A Round Reaches $50M",
-    category: "Startup",
-    status: "verified",
-    date: "2024-01-15",
-    time: "12:15"
-  },
-  {
-    id: 3,
-    title: "Market Update: Economic Indicators Show Growth",
-    category: "Economic",
-    status: "pending",
-    date: "2024-01-15",
-    time: "10:45"
-  },
-  {
-    id: 4,
-    title: "Digital Transformation: Enterprise Cloud Migration Trends",
-    category: "Digital Transform",
-    status: "verified",
-    date: "2024-01-15",
-    time: "09:20"
-  },
-  {
-    id: 5,
-    title: "Data Analytics: New Machine Learning Framework Released",
-    category: "Data",
-    status: "pending",
-    date: "2024-01-14",
-    time: "16:45"
-  },
-  {
-    id: 6,
-    title: "Marketing Automation: Consumer Behavior Analysis",
-    category: "Marketing",
-    status: "published",
-    date: "2024-01-14",
-    time: "15:30"
-  },
-  {
-    id: 7,
-    title: "Financial Markets: Cryptocurrency Regulation Updates",
-    category: "Finance",
-    status: "verified",
-    date: "2024-01-14",
-    time: "13:15"
-  },
-  {
-    id: 8,
-    title: "Technology Innovation: 5G Infrastructure Expansion",
-    category: "Technology",
-    status: "pending",
-    date: "2024-01-14",
-    time: "11:00"
-  },
-  {
-    id: 9,
-    title: "Business Intelligence: Q4 Revenue Report Analysis",
-    category: "Business",
-    status: "verified",
-    date: "2024-01-13",
-    time: "14:20"
-  },
-  {
-    id: 10,
-    title: "Fake News Alert: Unverified Claims About Market Crash",
-    category: "Finance",
-    status: "rejected",
-    date: "2024-01-13",
-    time: "12:30"
-  },
-  {
-    id: 11,
-    title: "Spam Content: Unrelated Marketing Material",
-    category: "Marketing",
-    status: "rejected",
-    date: "2024-01-12",
-    time: "16:15"
-  },
-  {
-    id: 12,
-    title: "Low Quality Article: Incomplete Information",
-    category: "Technology",
-    status: "rejected",
-    date: "2024-01-12",
-    time: "14:45"
-  }
-];
-
-const filterNewsData = (newsData: NewsItem[], filters: FilterState): NewsItem[] => {
-  return newsData.filter(news => {
-    // Search filter
-    if (filters.search && !news.title.toLowerCase().includes(filters.search.toLowerCase())) {
-      return false;
-    }
-
-    // Category filter
-    if (filters.category !== "all" && news.category !== filters.category) {
-      return false;
-    }
-
-    // Status filter
-    if (filters.status !== "all" && news.status !== filters.status) {
-      return false;
-    }
-
-    // Date filter
-    if (filters.dateRange !== "all") {
-      const newsDate = new Date(news.date);
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-
-      switch (filters.dateRange) {
-        case "today":
-          if (newsDate.toDateString() !== today.toDateString()) return false;
-          break;
-        case "yesterday":
-          if (newsDate.toDateString() !== yesterday.toDateString()) return false;
-          break;
-        case "week":
-          const weekAgo = new Date(today);
-          weekAgo.setDate(weekAgo.getDate() - 7);
-          if (newsDate < weekAgo) return false;
-          break;
-        case "month":
-          const monthAgo = new Date(today);
-          monthAgo.setMonth(monthAgo.getMonth() - 1);
-          if (newsDate < monthAgo) return false;
-          break;
-      }
-    }
-
-    return true;
-  });
-};
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -181,53 +35,148 @@ const getCategoryBadge = (category: string) => {
 };
 
 interface NewsTableProps {
-  onNewsSelect?: (newsId: number) => void;
+  onNewsSelect?: (newsId: string | number) => void;
   filters?: FilterState;
 }
 
 export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
-  const [newsData, setNewsData] = useState<NewsItem[]>(initialNewsData);
-  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+  const [newsData, setNewsData] = useState<NewsItem[]>([]);
+  const [selectedItems, setSelectedItems] = useState<Set<string | number>>(new Set());
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleNewsClick = (newsId: number) => {
+  // Fetch news data from API using POST /news/search
+  useEffect(() => {
+    const fetchNewsData = async () => {
+      try {
+        setIsLoading(true);
+        const searchPayload: any = {};
+        
+        // Build search payload from filters
+        if (filters?.search) {
+          searchPayload.search = filters.search;
+        }
+        if (filters?.category && filters.category !== "all") {
+          searchPayload.category = filters.category;
+        }
+        if (filters?.status && filters.status !== "all") {
+          searchPayload.status = filters.status;
+        }
+        if (filters?.dateRange && filters.dateRange !== "all") {
+          searchPayload.dateRange = filters.dateRange;
+        }
+
+        const response = await fetch(API_ENDPOINTS.NEWS_SEARCH, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(searchPayload),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Handle both array and object with data property
+          const newsItems = Array.isArray(data) ? data : (data.data || data.news || []);
+          setNewsData(newsItems);
+        } else {
+          console.error('Failed to fetch news:', response.status);
+          toast.error('Failed to load news articles. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error fetching news:', error);
+        toast.error('Cannot connect to server. Check your connection.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNewsData();
+  }, [filters]);
+
+  const handleNewsClick = (newsId: string | number) => {
     if (onNewsSelect) {
       onNewsSelect(newsId);
     }
   };
 
-  const handleVerifyNews = (newsId: number, event: React.MouseEvent) => {
+  const handleVerifyNews = async (newsId: string | number, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent row click
-    setNewsData(prevData => 
-      prevData.map(news => 
-        news.id === newsId 
-          ? { ...news, status: 'verified' }
-          : news
-      )
-    );
     
-    const newsItem = newsData.find(news => news.id === newsId);
-    if (newsItem) {
-      toast.success(`"${newsItem.title}" has been verified successfully!`);
+    try {
+      const response = await fetch(API_ENDPOINTS.NEWS_STATUS, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          id: String(newsId),
+          status: 'verified',
+        }),
+      });
+
+      if (response.ok) {
+        setNewsData(prevData => 
+          prevData.map(news => 
+            news.id === newsId 
+              ? { ...news, status: 'verified' }
+              : news
+          )
+        );
+        const newsItem = newsData.find(news => news.id === newsId);
+        if (newsItem) {
+          toast.success(`"${newsItem.title}" has been verified successfully!`);
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.message || 'Failed to verify news article. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error verifying news:', error);
+      toast.error('Cannot connect to server. Check your connection.');
     }
   };
 
-  const handleRejectNews = (newsId: number, event: React.MouseEvent) => {
+  const handleRejectNews = async (newsId: string | number, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent row click
-    setNewsData(prevData => 
-      prevData.map(news => 
-        news.id === newsId 
-          ? { ...news, status: 'rejected' }
-          : news
-      )
-    );
     
-    const newsItem = newsData.find(news => news.id === newsId);
-    if (newsItem) {
-      toast.error(`"${newsItem.title}" has been rejected!`);
+    try {
+      const response = await fetch(API_ENDPOINTS.NEWS_STATUS, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          id: String(newsId),
+          status: 'rejected',
+        }),
+      });
+
+      if (response.ok) {
+        setNewsData(prevData => 
+          prevData.map(news => 
+            news.id === newsId 
+              ? { ...news, status: 'rejected' }
+              : news
+          )
+        );
+        const newsItem = newsData.find(news => news.id === newsId);
+        if (newsItem) {
+          toast.error(`"${newsItem.title}" has been rejected!`);
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.message || 'Failed to reject news article. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error rejecting news:', error);
+      toast.error('Cannot connect to server. Check your connection.');
     }
   };
 
-  const handleSelectItem = (newsId: number, event: React.MouseEvent) => {
+  const handleSelectItem = (newsId: string | number, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent row click
     setSelectedItems(prev => {
       const newSet = new Set(prev);
@@ -249,61 +198,115 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     }
   };
 
-  const handleBulkVerify = () => {
+  const handleBulkVerify = async () => {
     if (selectedItems.size === 0) {
       toast.warning("Please select items to verify");
       return;
     }
     
-    setNewsData(prevData => 
-      prevData.map(news => 
-        selectedItems.has(news.id) 
-          ? { ...news, status: 'verified' }
-          : news
-      )
-    );
-    
-    toast.success(`${selectedItems.size} items have been verified successfully!`);
-    setSelectedItems(new Set());
+    try {
+      const promises = Array.from(selectedItems).map(id =>
+        fetch(API_ENDPOINTS.NEWS_STATUS, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            id: String(id),
+            status: 'verified',
+          }),
+        })
+      );
+
+      const results = await Promise.all(promises);
+      const allSucceeded = results.every(res => res.ok);
+
+      if (allSucceeded) {
+        setNewsData(prevData => 
+          prevData.map(news => 
+            selectedItems.has(news.id) 
+              ? { ...news, status: 'verified' }
+              : news
+          )
+        );
+        toast.success(`${selectedItems.size} items have been verified successfully!`);
+        setSelectedItems(new Set());
+      } else {
+        toast.error('Some items failed to verify. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error bulk verifying news:', error);
+      toast.error('Cannot connect to server. Check your connection.');
+    }
   };
 
-  const handleBulkReject = () => {
+  const handleBulkReject = async () => {
     if (selectedItems.size === 0) {
       toast.warning("Please select items to reject");
       return;
     }
     
-    setNewsData(prevData => 
-      prevData.map(news => 
-        selectedItems.has(news.id) 
-          ? { ...news, status: 'rejected' }
-          : news
-      )
-    );
-    
-    toast.error(`${selectedItems.size} items have been rejected!`);
-    setSelectedItems(new Set());
+    try {
+      const promises = Array.from(selectedItems).map(id =>
+        fetch(API_ENDPOINTS.NEWS_STATUS, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            id: String(id),
+            status: 'rejected',
+          }),
+        })
+      );
+
+      const results = await Promise.all(promises);
+      const allSucceeded = results.every(res => res.ok);
+
+      if (allSucceeded) {
+        setNewsData(prevData => 
+          prevData.map(news => 
+            selectedItems.has(news.id) 
+              ? { ...news, status: 'rejected' }
+              : news
+          )
+        );
+        toast.success(`${selectedItems.size} items have been rejected!`);
+        setSelectedItems(new Set());
+      } else {
+        toast.error('Some items failed to reject. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error bulk rejecting news:', error);
+      toast.error('Cannot connect to server. Check your connection.');
+    }
   };
 
-  // Filter the news data based on current filters
-  const filteredNewsData = useMemo(() => {
-    if (!filters) return newsData;
-    return filterNewsData(newsData, filters);
-  }, [newsData, filters]);
+  // Use newsData directly from API (filters are applied server-side)
+  const filteredNewsData = newsData;
 
   const pendingItems = filteredNewsData.filter(news => news.status === 'pending');
   const isAllSelected = pendingItems.length > 0 && selectedItems.size === pendingItems.length;
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="px-6 py-12 text-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/30 border-t-primary mx-auto" />
+          <p className="mt-4 text-sm text-gray-600">Loading news articles...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       {/* Results Counter and Bulk Actions */}
       <div className="px-6 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          Showing {filteredNewsData.length} of {newsData.length} articles
-          {filters && (filters.search || filters.category !== "all" || filters.status !== "all" || filters.dateRange !== "all") 
-            ? " (filtered)" 
-            : ""
-          }
+          Showing {filteredNewsData.length} article{filteredNewsData.length !== 1 ? 's' : ''}
         </p>
         
         {selectedItems.size > 0 && (
@@ -403,7 +406,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm text-gray-900">{news.date}</div>
-                  <div className="text-sm text-gray-500">{news.time}</div>
+                  {news.time && <div className="text-sm text-gray-500">{news.time}</div>}
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">

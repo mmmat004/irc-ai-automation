@@ -21,7 +21,7 @@ function HomePageContent() {
   const [isChecking, setIsChecking] = useState(true);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [authError, setAuthError] = useState<string | null>(null);
-  const [selectedNewsId, setSelectedNewsId] = useState<number | null>(null);
+  const [selectedNewsId, setSelectedNewsId] = useState<string | number | null>(null);
   const [previousPage, setPreviousPage] = useState('dashboard');
 
   useEffect(() => {
@@ -166,7 +166,7 @@ function HomePageContent() {
     }
   };
 
-  const handleNewsSelect = (newsId: number) => {
+  const handleNewsSelect = (newsId: string | number) => {
     setPreviousPage(currentPage);
     setSelectedNewsId(newsId);
     setCurrentPage('news-detail');

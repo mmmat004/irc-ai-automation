@@ -2,7 +2,7 @@ import { StatsCards } from "../components/StatsCards";
 import { RecentActivity } from "../components/RecentActivity";
 
 interface DashboardProps {
-  onNewsSelect?: (newsId: number) => void;
+  onNewsSelect?: (newsId: string | number) => void;
 }
 
 export function Dashboard({ onNewsSelect }: DashboardProps) {

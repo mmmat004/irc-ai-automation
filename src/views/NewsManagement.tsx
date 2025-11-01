@@ -4,7 +4,7 @@ import { NewsFilters, type FilterState } from "../components/NewsFilters";
 import { NewsTable } from "../components/NewsTable";
 
 interface NewsManagementProps {
-  onNewsSelect?: (newsId: number) => void;
+  onNewsSelect?: (newsId: string | number) => void;
 }
 
 export function NewsManagement({ onNewsSelect }: NewsManagementProps) {

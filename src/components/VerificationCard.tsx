@@ -6,11 +6,11 @@ import { Textarea } from "./ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 
 interface NewsItem {
-  id: number;
+  id: string | number;
   title: string;
   category: string;
   date: string;
-  time: string;
+  time?: string;
   preview: string;
   sources: string[];
   content: string;
@@ -18,9 +18,9 @@ interface NewsItem {
 
 interface VerificationCardProps {
   newsItem: NewsItem;
-  onNewsSelect?: (newsId: number) => void;
-  onApprove?: (newsId: number, notes: string) => void;
-  onReject?: (newsId: number, notes: string) => void;
+  onNewsSelect?: (newsId: string | number) => void;
+  onApprove?: (newsId: string | number, notes: string) => void;
+  onReject?: (newsId: string | number, notes: string) => void;
 }
 
 export function VerificationCard({ newsItem, onNewsSelect, onApprove, onReject }: VerificationCardProps) {

@@ -17,7 +17,7 @@ function AppContent() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [isExchanging, setIsExchanging] = useState(false);
   const [currentPage, setCurrentPage] = useState('dashboard');
-  const [selectedNewsId, setSelectedNewsId] = useState<number | null>(null);
+  const [selectedNewsId, setSelectedNewsId] = useState<string | number | null>(null);
   const [previousPage, setPreviousPage] = useState('dashboard');
 
   useEffect(() => {
@@ -172,7 +172,7 @@ function AppContent() {
     }
   };
 
-  const handleNewsSelect = (newsId: number) => {
+  const handleNewsSelect = (newsId: string | number) => {
     setPreviousPage(currentPage);
     setSelectedNewsId(newsId);
     setCurrentPage('news-detail');

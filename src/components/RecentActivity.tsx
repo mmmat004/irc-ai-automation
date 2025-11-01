@@ -2,7 +2,7 @@ import { RecentNews } from "./RecentNews";
 import { CategoryDistribution } from "./CategoryDistribution";
 
 interface RecentActivityProps {
-  onNewsSelect?: (newsId: number) => void;
+  onNewsSelect?: (newsId: string | number) => void;
 }
 
 export function RecentActivity({ onNewsSelect }: RecentActivityProps) {
