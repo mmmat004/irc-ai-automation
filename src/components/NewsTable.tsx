@@ -484,7 +484,13 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                 </td>
                 <td className="px-6 py-4">
                   <div className="max-w-md">
-                    <p className="font-medium text-gray-900 truncate">
+                    <p 
+                      className="font-medium text-gray-900 truncate cursor-pointer hover:text-blue-600 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleNewsClick(news.id);
+                      }}
+                    >
                       {news.title}
                     </p>
                   </div>
