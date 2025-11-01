@@ -276,40 +276,14 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             Back to Dashboard
           </Button>
           
-          <div className="flex items-center gap-2">
-            {/* Verify and Reject buttons */}
-            {news.status === 'pending' && (
-              <>
-                <Button
-                  variant="default"
-                  onClick={handleVerify}
-                  disabled={isUpdatingStatus}
-                  className="gap-2 bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <Check className="w-4 h-4" />
-                  Verify
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleReject}
-                  disabled={isUpdatingStatus}
-                  className="gap-2 border-red-300 hover:bg-red-50 text-red-700"
-                >
-                  <X className="w-4 h-4" />
-                  Reject
-                </Button>
-              </>
-            )}
-            
-            <Button
-              variant="outline"
-              onClick={handleTranslate}
-              className="gap-2 border-gray-300 hover:bg-gray-50"
-            >
-              <Globe className="w-4 h-4" />
-              {isTranslated ? "English" : "ไทย"}
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={handleTranslate}
+            className="gap-2 border-gray-300 hover:bg-gray-50"
+          >
+            <Globe className="w-4 h-4" />
+            {isTranslated ? "English" : "ไทย"}
+          </Button>
         </div>
 
         <Card className="border border-border shadow-sm rounded-xl mb-6">
@@ -382,20 +356,22 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                   {translateText("Original Sources")}
                 </h3>
               </CardHeader>
-              <CardContent>
+              <CardContent className="overflow-hidden">
                 {news.originalSources && news.originalSources.length > 0 ? (
                   <div className="space-y-3">
                     {news.originalSources.map((source, index, sources) => (
-                      <div key={index}>
+                      <div key={index} className="overflow-hidden">
                         <Button
                           variant="ghost"
-                          className="p-0 h-auto text-primary hover:text-primary/80 hover:bg-transparent gap-1 text-left w-full justify-start"
+                          className="p-0 h-auto text-primary hover:text-primary/80 hover:bg-transparent gap-1.5 text-left w-full justify-start min-w-0"
                           onClick={() =>
                             window.open(source.url, "_blank")
                           }
                         >
-                          {source.name}
-                          <ExternalLink className="w-3 h-3" />
+                          <span className="break-all break-words overflow-hidden text-ellipsis line-clamp-2 min-w-0 flex-1">
+                            {source.name || source.url}
+                          </span>
+                          <ExternalLink className="w-3 h-3 flex-shrink-0 ml-auto" />
                         </Button>
                         {index < sources.length - 1 && (
                           <Separator className="mt-3" />
@@ -441,7 +417,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                   {translateText("Article Status")}
                 </h3>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">
                     {translateText("Status")}
@@ -450,6 +426,33 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                     {translateText(news.status)}
                   </span>
                 </div>
+                
+                {/* Verify and Reject buttons */}
+                {news.status === 'pending' && (
+                  <>
+                    <Separator />
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        variant="default"
+                        onClick={handleVerify}
+                        disabled={isUpdatingStatus}
+                        className="gap-2 bg-green-600 hover:bg-green-700 text-white w-full"
+                      >
+                        <Check className="w-4 h-4" />
+                        Verify
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={handleReject}
+                        disabled={isUpdatingStatus}
+                        className="gap-2 border-red-300 hover:bg-red-50 text-red-700 w-full"
+                      >
+                        <X className="w-4 h-4" />
+                        Reject
+                      </Button>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>

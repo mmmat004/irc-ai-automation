@@ -76,12 +76,6 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
 
         if (response.ok) {
           const data = await response.json();
-          console.log('NewsTable API Response:', data);
-          console.log('NewsTable Response Type:', typeof data);
-          console.log('NewsTable Is Array:', Array.isArray(data));
-          console.log('NewsTable data.items:', data.items);
-          console.log('NewsTable data.data:', data.data);
-          console.log('NewsTable data.news:', data.news);
           
           // API returns: { currentPage, totalPage, totalItems, items: [...] }
           let rawItems: any[] = [];
@@ -91,28 +85,16 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
             rawItems = data.items || data.data || data.news || data.results || [];
           }
           
-          console.log('NewsTable Parsed Items:', rawItems);
-          console.log('NewsTable Items Length:', rawItems.length);
-          
-          if (rawItems.length === 0) {
-            console.warn('NewsTable: No items found in response!');
-          }
-          
           // Map API response fields to component interface
-          const newsItems: NewsItem[] = rawItems.map((item: any, index: number) => {
-            console.log(`NewsTable Item ${index}:`, item);
-            return {
-              id: item.id || item._id || `temp-${index}`,
-              title: item.title || '',
-              category: item.category || '',
-              status: item.status || 'pending', // Default to pending if not provided
-              date: item.date || item.createdAt || new Date().toISOString().split('T')[0],
-              time: item.time || '',
-            };
-          });
+          const newsItems: NewsItem[] = rawItems.map((item: any, index: number) => ({
+            id: item.id || item._id || `temp-${index}`,
+            title: item.title || '',
+            category: item.category || '',
+            status: item.status || 'pending', // Default to pending if not provided
+            date: item.date || item.createdAt || new Date().toISOString().split('T')[0],
+            time: item.time || '',
+          }));
           
-          console.log('NewsTable Mapped Items:', newsItems);
-          console.log('NewsTable Setting state with', newsItems.length, 'items');
           setNewsData(newsItems);
         } else {
           console.error('Failed to fetch news:', response.status);
@@ -321,12 +303,6 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
 
   // Use newsData directly from API (filters are applied server-side)
   const filteredNewsData = newsData;
-
-  // Debug: Log when newsData changes
-  useEffect(() => {
-    console.log('NewsTable newsData state updated:', newsData);
-    console.log('NewsTable newsData length:', newsData.length);
-  }, [newsData]);
 
   const pendingItems = filteredNewsData.filter(news => news.status === 'pending');
   const isAllSelected = pendingItems.length > 0 && selectedItems.size === pendingItems.length;

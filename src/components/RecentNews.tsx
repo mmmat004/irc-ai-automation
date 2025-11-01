@@ -52,11 +52,9 @@ export function RecentNews({ onNewsSelect }: RecentNewsProps) {
 
         if (response.ok) {
           const data = await response.json();
-          console.log('RecentNews API Response:', data);
           
           // API returns: { currentPage, totalPage, totalItems, items: [...] }
           const rawItems = Array.isArray(data) ? data : (data.items || data.data || data.news || []);
-          console.log('RecentNews Parsed Items:', rawItems);
           
           // Map API response fields to component interface
           const newsItems: RecentNewsItem[] = rawItems.slice(0, 4).map((item: any) => ({
@@ -68,7 +66,6 @@ export function RecentNews({ onNewsSelect }: RecentNewsProps) {
             time: item.time || '',
           }));
           
-          console.log('RecentNews Mapped Items:', newsItems);
           setRecentNewsData(newsItems);
         } else {
           console.error('Failed to fetch recent news:', response.status);

@@ -43,11 +43,9 @@ export function VerificationCards({ onNewsSelect }: VerificationCardsProps) {
 
         if (response.ok) {
           const data = await response.json();
-          console.log('VerificationCards API Response:', data);
           
           // API returns: { currentPage, totalPage, totalItems, items: [...] }
           const rawItems = Array.isArray(data) ? data : (data.items || data.data || data.news || []);
-          console.log('VerificationCards Parsed Items:', rawItems);
           
           // Map API response fields to component interface
           const newsItems: NewsItem[] = rawItems.map((item: any) => ({
@@ -64,7 +62,6 @@ export function VerificationCards({ onNewsSelect }: VerificationCardsProps) {
             status: item.status || 'pending',
           }));
           
-          console.log('VerificationCards Mapped Items:', newsItems);
           setNewsData(newsItems);
         } else {
           console.error('Failed to fetch pending news:', response.status);
