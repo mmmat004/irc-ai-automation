@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Check, X, CheckSquare, Square } from "lucide-react";
+import { Check, X, CheckSquare, Square, RotateCcw } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { toast } from "sonner";
@@ -206,8 +206,10 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     }
   };
 
-  const handleSelectItem = (newsId: string | number, event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent row click
+  const handleSelectItem = (newsId: string | number, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation(); // Prevent row click
+    }
     setSelectedItems(prev => {
       const newSet = new Set(prev);
       if (newSet.has(newsId)) {
@@ -219,12 +221,53 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     });
   };
 
+  const handleCancelVerify = async (newsId: string | number, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent row click
+    
+    try {
+      const response = await fetch(API_ENDPOINTS.NEWS_STATUS, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          id: String(newsId),
+          status: 'pending',
+        }),
+      });
+
+      if (response.ok) {
+        setNewsData(prevData => 
+          prevData.map(news => 
+            news.id === newsId 
+              ? { ...news, status: 'pending' }
+              : news
+          )
+        );
+        const newsItem = newsData.find(news => news.id === newsId);
+        if (newsItem) {
+          toast.success(`"${newsItem.title}" verification has been cancelled.`);
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.message || 'Failed to cancel verification. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error canceling verification:', error);
+      toast.error('Cannot connect to server. Check your connection.');
+    }
+  };
+
   const handleSelectAll = () => {
-    const pendingItems = filteredNewsData.filter(news => news.status === 'pending');
-    if (selectedItems.size === pendingItems.length) {
+    const selectableItems = filteredNewsData.filter(news => news.status === 'pending' || news.status === 'verified');
+    const selectableIds = selectableItems.map(news => news.id);
+    const allSelected = selectableIds.every(id => selectedItems.has(id));
+    
+    if (allSelected) {
       setSelectedItems(new Set());
     } else {
-      setSelectedItems(new Set(pendingItems.map(news => news.id)));
+      setSelectedItems(new Set(selectableIds));
     }
   };
 
@@ -318,7 +361,8 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
   const filteredNewsData = newsData;
 
   const pendingItems = filteredNewsData.filter(news => news.status === 'pending');
-  const isAllSelected = pendingItems.length > 0 && selectedItems.size === pendingItems.length;
+  const selectableItems = filteredNewsData.filter(news => news.status === 'pending' || news.status === 'verified');
+  const isAllSelected = selectableItems.length > 0 && selectableItems.every(item => selectedItems.has(item.id));
 
   if (isLoading) {
     return (
@@ -373,7 +417,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                 <button
                   onClick={handleSelectAll}
                   className="flex items-center gap-2 hover:text-gray-700"
-                  disabled={pendingItems.length === 0}
+                  disabled={selectableItems.length === 0}
                 >
                   {isAllSelected ? (
                     <CheckSquare className="w-4 h-4 text-blue-600" />
@@ -401,22 +445,39 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                 </td>
               </tr>
             ) : (
-              filteredNewsData.map((news, index) => (
-              <tr 
-                key={news.id} 
-                className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"} cursor-pointer hover:bg-gray-100 transition-colors`}
-                onClick={() => handleNewsClick(news.id)}
-              >
+              filteredNewsData.map((news, index) => {
+                const isSelected = selectedItems.has(news.id);
+                const isSelectable = news.status === 'pending' || news.status === 'verified';
+                
+                return (
+                  <tr 
+                    key={news.id} 
+                    className={`
+                      ${isSelected ? "bg-blue-50 border-l-4 border-l-blue-500" : index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                      cursor-pointer hover:bg-gray-100 transition-all
+                      ${isSelected ? "hover:bg-blue-100" : ""}
+                    `}
+                    onClick={() => {
+                      if (isSelectable) {
+                        handleSelectItem(news.id);
+                      } else {
+                        handleNewsClick(news.id);
+                      }
+                    }}
+                  >
                 <td className="px-6 py-4">
-                  {news.status === 'pending' && (
+                  {isSelectable && (
                     <button
-                      onClick={(e) => handleSelectItem(news.id, e)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectItem(news.id, e);
+                      }}
                       className="flex items-center justify-center"
                     >
-                      {selectedItems.has(news.id) ? (
+                      {isSelected ? (
                         <CheckSquare className="w-4 h-4 text-blue-600" />
                       ) : (
-                        <Square className="w-4 h-4 text-gray-400" />
+                        <Square className="w-4 h-4 text-gray-400 hover:text-blue-400" />
                       )}
                     </button>
                   )}
@@ -462,10 +523,23 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                         </Button>
                       </>
                     )}
+                    {news.status === 'verified' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 w-8 p-0 border-orange-300 hover:bg-orange-50"
+                        onClick={(e) => handleCancelVerify(news.id, e)}
+                        title="Cancel verification - set back to pending"
+                      >
+                        <RotateCcw className="w-4 h-4 text-orange-600" />
+                      </Button>
+                    )}
                   </div>
                 </td>
-              </tr>
-            )))}
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
