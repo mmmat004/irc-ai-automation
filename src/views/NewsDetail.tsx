@@ -14,6 +14,7 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
+import { VerifyConfirmationModal } from "../components/VerifyConfirmationModal";
 import { toast } from "sonner";
 import { API_ENDPOINTS } from "../config/api";
 
@@ -46,6 +47,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
   const [isTranslated, setIsTranslated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [showVerifyConfirm, setShowVerifyConfirm] = useState(false);
 
   // Fetch news detail from API
   useEffect(() => {
@@ -113,9 +115,14 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
     toast(isTranslated ? "Switched to English" : "Switched to Thai");
   };
 
-  const handleVerify = async () => {
+  const handleVerifyClick = () => {
+    setShowVerifyConfirm(true);
+  };
+
+  const handleVerifyConfirm = async () => {
     if (!news) return;
 
+    setShowVerifyConfirm(false);
     try {
       setIsUpdatingStatus(true);
       const response = await fetch(API_ENDPOINTS.NEWS_STATUS, {
@@ -514,7 +521,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                     <div className="flex flex-col gap-2">
                       <Button
                         variant="default"
-                        onClick={handleVerify}
+                        onClick={handleVerifyClick}
                         disabled={isUpdatingStatus}
                         className="gap-2 bg-green-600 hover:bg-green-700 text-white w-full"
                       >
@@ -537,6 +544,13 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             </Card>
           </div>
         </div>
+
+        {/* Verify Confirmation Modal */}
+        <VerifyConfirmationModal
+          open={showVerifyConfirm}
+          onOpenChange={setShowVerifyConfirm}
+          onConfirm={handleVerifyConfirm}
+        />
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { Badge } from "./ui/badge";
 import { toast } from "sonner";
 import { FilterState } from "./NewsFilters";
 import { API_ENDPOINTS } from "../config/api";
+import { VerifyConfirmationModal } from "./VerifyConfirmationModal";
 
 interface NewsItem {
   id: string | number;
@@ -43,6 +44,10 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string | number>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
+  const [verifyConfirmModal, setVerifyConfirmModal] = useState<{
+    open: boolean;
+    newsId: string | number | null;
+  }>({ open: false, newsId: null });
 
   // Fetch news data from API using POST /news/search
   useEffect(() => {
@@ -117,9 +122,15 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     }
   };
 
-  const handleVerifyNews = async (newsId: string | number, event: React.MouseEvent) => {
+  const handleVerifyNews = (newsId: string | number, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent row click
-    
+    setVerifyConfirmModal({ open: true, newsId });
+  };
+
+  const handleVerifyConfirm = async () => {
+    const newsId = verifyConfirmModal.newsId;
+    if (!newsId) return;
+
     try {
       const response = await fetch(API_ENDPOINTS.NEWS_STATUS, {
         method: 'PUT',
@@ -152,6 +163,8 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     } catch (error) {
       console.error('Error verifying news:', error);
       toast.error('Cannot connect to server. Check your connection.');
+    } finally {
+      setVerifyConfirmModal({ open: false, newsId: null });
     }
   };
 
@@ -456,6 +469,13 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Verify Confirmation Modal */}
+      <VerifyConfirmationModal
+        open={verifyConfirmModal.open}
+        onOpenChange={(open) => setVerifyConfirmModal({ open, newsId: open ? verifyConfirmModal.newsId : null })}
+        onConfirm={handleVerifyConfirm}
+      />
     </div>
   );
 }
