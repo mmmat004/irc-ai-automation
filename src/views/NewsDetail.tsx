@@ -131,8 +131,48 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
       });
 
       if (response.ok) {
-        const updatedNews = await response.json();
-        setNews(updatedNews);
+        // Check if response has content before parsing
+        const contentType = response.headers.get('content-type');
+        const text = await response.text();
+        
+        let updatedNews = news;
+        if (text && contentType?.includes('application/json')) {
+          try {
+            updatedNews = JSON.parse(text);
+            setNews(updatedNews);
+          } catch (e) {
+            // If JSON parsing fails, just update local state
+            setNews({ ...news, status: 'verified' });
+          }
+        } else {
+          // Response is empty, update local state and refetch
+          setNews({ ...news, status: 'verified' });
+          // Refetch to get updated data from server
+          const refreshResponse = await fetch(`${API_ENDPOINTS.NEWS_GET}/${encodeURIComponent(String(newsId))}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+          });
+          if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            const mappedNews: NewsDetailData = {
+              id: refreshData.id,
+              title: refreshData.title || '',
+              category: refreshData.category || '',
+              status: refreshData.status || 'verified',
+              date: refreshData.date || refreshData.createdAt || new Date().toISOString().split('T')[0],
+              time: refreshData.time || '',
+              keywords: refreshData.keyword || refreshData.keywords || [],
+              intro: refreshData.introduction || refreshData.intro || '',
+              hookContent: refreshData.hook || '',
+              summarizedContent: refreshData.summary || '',
+              originalSources: refreshData.source 
+                ? [{ name: refreshData.source, url: refreshData.source }]
+                : (refreshData.originalSources || []),
+            };
+            setNews(mappedNews);
+          }
+        }
         toast.success('News article verified successfully!');
       } else {
         const errorData = await response.json().catch(() => ({}));
@@ -165,8 +205,48 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
       });
 
       if (response.ok) {
-        const updatedNews = await response.json();
-        setNews(updatedNews);
+        // Check if response has content before parsing
+        const contentType = response.headers.get('content-type');
+        const text = await response.text();
+        
+        let updatedNews = news;
+        if (text && contentType?.includes('application/json')) {
+          try {
+            updatedNews = JSON.parse(text);
+            setNews(updatedNews);
+          } catch (e) {
+            // If JSON parsing fails, just update local state
+            setNews({ ...news, status: 'rejected' });
+          }
+        } else {
+          // Response is empty, update local state and refetch
+          setNews({ ...news, status: 'rejected' });
+          // Refetch to get updated data from server
+          const refreshResponse = await fetch(`${API_ENDPOINTS.NEWS_GET}/${encodeURIComponent(String(newsId))}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+          });
+          if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            const mappedNews: NewsDetailData = {
+              id: refreshData.id,
+              title: refreshData.title || '',
+              category: refreshData.category || '',
+              status: refreshData.status || 'rejected',
+              date: refreshData.date || refreshData.createdAt || new Date().toISOString().split('T')[0],
+              time: refreshData.time || '',
+              keywords: refreshData.keyword || refreshData.keywords || [],
+              intro: refreshData.introduction || refreshData.intro || '',
+              hookContent: refreshData.hook || '',
+              summarizedContent: refreshData.summary || '',
+              originalSources: refreshData.source 
+                ? [{ name: refreshData.source, url: refreshData.source }]
+                : (refreshData.originalSources || []),
+            };
+            setNews(mappedNews);
+          }
+        }
         toast.success('News article rejected.');
       } else {
         const errorData = await response.json().catch(() => ({}));
