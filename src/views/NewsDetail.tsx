@@ -65,7 +65,23 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
 
         if (response.ok) {
           const data = await response.json();
-          setNews(data);
+          // Map API response fields to component interface
+          const mappedNews: NewsDetailData = {
+            id: data.id,
+            title: data.title || '',
+            category: data.category || '',
+            status: data.status || 'pending',
+            date: data.date || data.createdAt || new Date().toISOString().split('T')[0],
+            time: data.time || '',
+            keywords: data.keyword || data.keywords || [],
+            intro: data.introduction || data.intro || '',
+            hookContent: data.hook || '',
+            summarizedContent: data.summary || '',
+            originalSources: data.source 
+              ? [{ name: data.source, url: data.source }]
+              : (data.originalSources || []),
+          };
+          setNews(mappedNews);
         } else if (response.status === 404) {
           toast.error('News article not found');
           onBack();

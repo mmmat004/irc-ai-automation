@@ -50,7 +50,7 @@ export function StatsCards() {
 
         if (allNewsResponse.ok) {
           const allData = await allNewsResponse.json();
-          const allNews = Array.isArray(allData) ? allData : (allData.data || allData.news || []);
+          const allNews = Array.isArray(allData) ? allData : (allData.items || allData.data || allData.news || []);
           totalNews = allNews.length;
           allNews.forEach((item: any) => {
             if (item.category) categories.add(item.category);
@@ -59,20 +59,21 @@ export function StatsCards() {
 
         if (pendingNewsResponse.ok) {
           const pendingData = await pendingNewsResponse.json();
-          const pendingNews = Array.isArray(pendingData) ? pendingData : (pendingData.data || pendingData.news || []);
+          const pendingNews = Array.isArray(pendingData) ? pendingData : (pendingData.items || pendingData.data || pendingData.news || []);
           pendingCount = pendingNews.length;
         }
 
         if (publishedNewsResponse.ok) {
           const publishedData = await publishedNewsResponse.json();
-          const publishedNews = Array.isArray(publishedData) ? publishedData : (publishedData.data || publishedData.news || []);
+          const publishedNews = Array.isArray(publishedData) ? publishedData : (publishedData.items || publishedData.data || publishedData.news || []);
           // Filter by this week
           const weekAgo = new Date();
           weekAgo.setDate(weekAgo.getDate() - 7);
           publishedCount = publishedNews.filter((item: any) => {
-            if (!item.date) return false;
-            const itemDate = new Date(item.date);
-            return itemDate >= weekAgo;
+            const itemDate = item.date || item.createdAt;
+            if (!itemDate) return false;
+            const date = new Date(itemDate);
+            return date >= weekAgo;
           }).length;
         }
 

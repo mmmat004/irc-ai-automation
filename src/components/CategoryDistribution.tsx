@@ -41,7 +41,8 @@ export function CategoryDistribution() {
 
         if (response.ok) {
           const data = await response.json();
-          const newsItems = Array.isArray(data) ? data : (data.data || data.news || []);
+          // API returns: { currentPage, totalPage, totalItems, items: [...] }
+          const newsItems = Array.isArray(data) ? data : (data.items || data.data || data.news || []);
           
           // Count news by category
           const categoryCounts: Record<string, number> = {};
