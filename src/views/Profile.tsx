@@ -111,7 +111,7 @@ export function Profile() {
     <div className="h-full overflow-auto bg-background">
       <div className="p-8">
         <div className="mb-8">
-          <h1>Profile</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
           <p className="text-muted-foreground mt-2">Your Google account information</p>
         </div>
 

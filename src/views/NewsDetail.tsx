@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Clock,
@@ -7,141 +7,82 @@ import {
   Share2,
   Bookmark,
   Globe,
+  Check,
+  X,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
 import { toast } from "sonner";
+import { API_ENDPOINTS } from "../config/api";
 
 interface NewsDetailProps {
-  newsId: number;
+  newsId: string | number;
   onBack: () => void;
 }
 
-const getNewsDetail = (id: number) => {
-  const newsDetails = {
-    1: {
-      id: 1,
-      title:
-        "Breaking: Tech Giants Announce New AI Partnership",
-      category: "Technology",
-      status: "published",
-      date: "2024-01-15",
-      time: "14:30",
-      keywords: [
-        "AI",
-        "Partnership",
-        "Technology",
-        "Innovation",
-        "Machine Learning",
-      ],
-      intro:
-        "In a groundbreaking announcement that could reshape the artificial intelligence landscape, several major technology companies have formed an unprecedented partnership to accelerate AI development and ensure responsible deployment of advanced AI systems.",
-      hookContent: `
-        <p>The partnership, announced at a joint press conference in San Francisco, brings together industry leaders including Microsoft, Google, OpenAI, and Meta, marking the first time these competitors have collaborated on such a scale.</p>
-        
-        <h3>Key Partnership Objectives</h3>
-        <p>The collaboration aims to address three critical areas:</p>
-        <ul>
-          <li><strong>Safety Standards:</strong> Developing comprehensive safety protocols for AI systems</li>
-          <li><strong>Ethical Guidelines:</strong> Establishing industry-wide ethical frameworks</li>
-          <li><strong>Innovation Acceleration:</strong> Pooling resources for breakthrough research</li>
-        </ul>
-        
-        <p>"This partnership represents a pivotal moment in AI development," said Dr. Emily Chen, AI Ethics researcher at Stanford University. "When industry leaders come together like this, it signals a maturity in the field that prioritizes responsible innovation."</p>
-        
-        <h3>Industry Impact</h3>
-        <p>The announcement has already sent ripples through the tech industry, with stock prices of participating companies seeing immediate positive reactions. Industry analysts predict this collaboration could accelerate AI development timelines by 2-3 years while ensuring better safety standards.</p>
-        
-        <p>The partnership will establish a joint research facility in Silicon Valley, with plans to invest $2.5 billion over the next five years. This facility will focus on developing next-generation AI systems while maintaining strict ethical oversight.</p>
-      `,
-      summarizedContent:
-        "As the AI landscape continues to evolve rapidly, this partnership sets a new precedent for industry collaboration and responsible innovation. The companies plan to release their first joint research findings by the end of 2024, marking a significant step forward in ethical AI development.",
-      originalSources: [
-        {
-          name: "TechCrunch",
-          url: "https://techcrunch.com/ai-partnership-announcement",
-        },
-        {
-          name: "The Verge",
-          url: "https://theverge.com/tech-giants-ai-collaboration",
-        },
-        {
-          name: "Wired",
-          url: "https://wired.com/ai-industry-partnership",
-        },
-        {
-          name: "Bloomberg Technology",
-          url: "https://bloomberg.com/tech-ai-partnership",
-        },
-      ],
-    },
-    2: {
-      id: 2,
-      title: "Global Climate Summit Reaches Historic Agreement",
-      category: "Environment",
-      status: "verified",
-      date: "2024-01-15",
-      time: "12:15",
-      keywords: [
-        "Climate Change",
-        "Environment",
-        "Summit",
-        "Global Agreement",
-        "Sustainability",
-      ],
-      intro:
-        "After two weeks of intense negotiations, the Global Climate Summit has concluded with a historic agreement that commits 195 countries to unprecedented climate action, marking the most significant environmental accord since the Paris Agreement.",
-      hookContent: `
-        <p>The agreement, dubbed the "Global Climate Resilience Pact," establishes binding commitments for carbon neutrality and introduces innovative financing mechanisms for developing nations to transition to clean energy.</p>
-        
-        <h3>Key Agreement Highlights</h3>
-        <p>The pact includes several groundbreaking provisions:</p>
-        <ul>
-          <li><strong>Carbon Neutrality:</strong> All signatory nations commit to carbon neutrality by 2045</li>
-          <li><strong>Clean Energy Fund:</strong> $500 billion global fund for renewable energy transition</li>
-          <li><strong>Forest Protection:</strong> Legally binding protection for 30% of global forests</li>
-          <li><strong>Ocean Conservation:</strong> New international marine protected areas</li>
-        </ul>
-        
-        <p>UN Secretary-General António Guterres called the agreement "a turning point in humanity's fight against climate change," emphasizing the legally binding nature of the commitments.</p>
-        
-        <h3>Implementation Timeline</h3>
-        <p>The agreement will be implemented in phases, with immediate actions required within the first 100 days. Countries must submit detailed implementation plans by March 2024, with regular progress reviews every six months.</p>
-      `,
-      summarizedContent:
-        "Environmental groups have cautiously welcomed the agreement, though some critics argue the timeline may still be too conservative given the urgency of the climate crisis. The pact represents a significant step forward in global climate cooperation.",
-      originalSources: [
-        {
-          name: "Reuters",
-          url: "https://reuters.com/climate-summit-agreement",
-        },
-        {
-          name: "BBC News",
-          url: "https://bbc.com/climate-accord-2024",
-        },
-        {
-          name: "CNN",
-          url: "https://cnn.com/climate-summit-historic-deal",
-        },
-        {
-          name: "The Guardian",
-          url: "https://theguardian.com/climate-agreement",
-        },
-      ],
-    },
-  } as const;
+interface NewsSource {
+  name: string;
+  url: string;
+}
 
-  return (
-    newsDetails[id as keyof typeof newsDetails] ||
-    newsDetails[1]
-  );
-};
+interface NewsDetailData {
+  id: string | number;
+  title: string;
+  category: string;
+  status: string;
+  date: string;
+  time?: string;
+  keywords?: string[];
+  intro: string;
+  hookContent?: string;
+  summarizedContent?: string;
+  originalSources?: NewsSource[];
+}
 
 export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
-  const news = getNewsDetail(newsId);
+  const [news, setNews] = useState<NewsDetailData | null>(null);
   const [isTranslated, setIsTranslated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  // Fetch news detail from API
+  useEffect(() => {
+    const fetchNewsDetail = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch news by ID from MongoDB
+        // Support both path parameter format: /news/{id} or query parameter: /news/?id={id}
+        const url = `${API_ENDPOINTS.NEWS_GET}/${encodeURIComponent(String(newsId))}`;
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setNews(data);
+        } else if (response.status === 404) {
+          toast.error('News article not found');
+          onBack();
+        } else {
+          console.error('Failed to fetch news detail:', response.status);
+          toast.error('Failed to load news article. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error fetching news detail:', error);
+        toast.error('Cannot connect to server. Check your connection.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNewsDetail();
+  }, [newsId, onBack]);
 
   const handleShare = () => {
     toast("Link copied to clipboard!");
@@ -156,19 +97,86 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
     toast(isTranslated ? "Switched to English" : "Switched to Thai");
   };
 
-  // Simple translation function for demo purposes
+  const handleVerify = async () => {
+    if (!news) return;
+
+    try {
+      setIsUpdatingStatus(true);
+      const response = await fetch(API_ENDPOINTS.NEWS_STATUS, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          id: String(newsId),
+          status: 'verified',
+        }),
+      });
+
+      if (response.ok) {
+        const updatedNews = await response.json();
+        setNews(updatedNews);
+        toast.success('News article verified successfully!');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to verify news:', response.status, errorData);
+        toast.error(errorData.message || 'Failed to verify news article. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error verifying news:', error);
+      toast.error('Cannot connect to server. Check your connection.');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!news) return;
+
+    try {
+      setIsUpdatingStatus(true);
+      const response = await fetch(API_ENDPOINTS.NEWS_STATUS, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          id: String(newsId),
+          status: 'rejected',
+        }),
+      });
+
+      if (response.ok) {
+        const updatedNews = await response.json();
+        setNews(updatedNews);
+        toast.success('News article rejected.');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to reject news:', response.status, errorData);
+        toast.error(errorData.message || 'Failed to reject news article. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error rejecting news:', error);
+      toast.error('Cannot connect to server. Check your connection.');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  // Translation function
   const translateText = (text: string) => {
     if (!isTranslated) return text;
     
-    // Basic Thai translations for demo
+    // Basic Thai translations
     const translations: Record<string, string> = {
-      "Breaking: Tech Giants Announce New AI Partnership": "ข่าวด่วน: บริษัทเทคโนโลยียักษ์ใหญ่ประกาศความร่วมมือ AI ใหม่",
-      "Global Climate Summit Reaches Historic Agreement": "การประชุมสุดยอดสภาพภูมิอากาศโลกบรรลุข้อตกลงประวัติศาสตร์",
       "Technology": "เทคโนโลยี",
       "Environment": "สิ่งแวดล้อม",
       "Published": "เผยแพร่แล้ว",
       "Verified": "ยืนยันแล้ว",
       "Pending": "รอดำเนินการ",
+      "Rejected": "ปฏิเสธแล้ว",
       "Original Sources": "แหล่งข้อมูลต้นฉบับ",
       "Keywords": "คำสำคัญ",
       "Article Status": "สถานะบทความ",
@@ -198,10 +206,46 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             Pending
           </Badge>
         );
+      case "rejected":
+        return (
+          <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
+            Rejected
+          </Badge>
+        );
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="h-full overflow-auto bg-background">
+        <div className="max-w-4xl mx-auto p-8">
+          <div className="flex items-center justify-center h-96">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!news) {
+    return (
+      <div className="h-full overflow-auto bg-background">
+        <div className="max-w-4xl mx-auto p-8">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <p className="text-muted-foreground mb-4">News article not found</p>
+              <Button variant="outline" onClick={onBack}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full overflow-auto bg-background">
@@ -216,14 +260,40 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             Back to Dashboard
           </Button>
           
-          <Button
-            variant="outline"
-            onClick={handleTranslate}
-            className="gap-2 border-gray-300 hover:bg-gray-50"
-          >
-            <Globe className="w-4 h-4" />
-            {isTranslated ? "English" : "ไทย"}
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Verify and Reject buttons */}
+            {news.status === 'pending' && (
+              <>
+                <Button
+                  variant="default"
+                  onClick={handleVerify}
+                  disabled={isUpdatingStatus}
+                  className="gap-2 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Check className="w-4 h-4" />
+                  Verify
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleReject}
+                  disabled={isUpdatingStatus}
+                  className="gap-2 border-red-300 hover:bg-red-50 text-red-700"
+                >
+                  <X className="w-4 h-4" />
+                  Reject
+                </Button>
+              </>
+            )}
+            
+            <Button
+              variant="outline"
+              onClick={handleTranslate}
+              className="gap-2 border-gray-300 hover:bg-gray-50"
+            >
+              <Globe className="w-4 h-4" />
+              {isTranslated ? "English" : "ไทย"}
+            </Button>
+          </div>
         </div>
 
         <Card className="border border-border shadow-sm rounded-xl mb-6">
@@ -243,7 +313,8 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
                 <span>
-                  {news.date} at {news.time}
+                  {news.date}
+                  {news.time && ` at ${news.time}`}
                 </span>
               </div>
             </div>
@@ -260,24 +331,30 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                   </p>
                 </div>
 
-                <Separator />
+                {news.hookContent && (
+                  <>
+                    <Separator />
+                    <div>
+                      <div
+                        className="prose prose-gray max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground"
+                        dangerouslySetInnerHTML={{
+                          __html: news.hookContent,
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
 
-                <div>
-                  <div
-                    className="prose prose-gray max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground"
-                    dangerouslySetInnerHTML={{
-                      __html: news.hookContent,
-                    }}
-                  />
-                </div>
-
-                <Separator />
-
-                <div>
-                  <p className="text-foreground leading-relaxed">
-                    {news.summarizedContent}
-                  </p>
-                </div>
+                {news.summarizedContent && (
+                  <>
+                    <Separator />
+                    <div>
+                      <p className="text-foreground leading-relaxed">
+                        {news.summarizedContent}
+                      </p>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -290,26 +367,29 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                 </h3>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {news.originalSources.map((source, index) => (
-                    <div key={index}>
-                      <Button
-                        variant="ghost"
-                        className="p-0 h-auto text-primary hover:text-primary/80 hover:bg-transparent gap-1 text-left w-full justify-start"
-                        onClick={() =>
-                          window.open(source.url, "_blank")
-                        }
-                      >
-                        {source.name}
-                        <ExternalLink className="w-3 h-3" />
-                      </Button>
-                      {index <
-                        news.originalSources.length - 1 && (
-                        <Separator className="mt-3" />
-                      )}
-                    </div>
-                  ))}
-                </div>
+                {news.originalSources && news.originalSources.length > 0 ? (
+                  <div className="space-y-3">
+                    {news.originalSources.map((source, index, sources) => (
+                      <div key={index}>
+                        <Button
+                          variant="ghost"
+                          className="p-0 h-auto text-primary hover:text-primary/80 hover:bg-transparent gap-1 text-left w-full justify-start"
+                          onClick={() =>
+                            window.open(source.url, "_blank")
+                          }
+                        >
+                          {source.name}
+                          <ExternalLink className="w-3 h-3" />
+                        </Button>
+                        {index < sources.length - 1 && (
+                          <Separator className="mt-3" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No sources available</p>
+                )}
               </CardContent>
             </Card>
 
@@ -321,17 +401,21 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                 </h3>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {news.keywords.map((keyword, index) => (
-                    <Badge
-                      key={index}
-                      variant="secondary"
-                      className="bg-muted hover:bg-muted/80 text-muted-foreground rounded-lg"
-                    >
-                      {keyword}
-                    </Badge>
-                  ))}
-                </div>
+                {news.keywords && news.keywords.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {news.keywords.map((keyword, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="bg-muted hover:bg-muted/80 text-muted-foreground rounded-lg"
+                      >
+                        {keyword}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No keywords available</p>
+                )}
               </CardContent>
             </Card>
 

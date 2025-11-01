@@ -11,7 +11,7 @@ export function Dashboard({ onNewsSelect }: DashboardProps) {
       <div className="p-8">
         {/* Page Title */}
         <div className="mb-8">
-          <h1>Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900"> Dashboard</h1>
           <p className="text-muted-foreground mt-2">
             Here's what's happening with your news automation system.
           </p>
