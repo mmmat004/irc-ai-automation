@@ -3,6 +3,7 @@ import { Check, X, CheckSquare, Square, RotateCcw, ChevronLeft, ChevronRight } f
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { toast } from "sonner";
+import { showSuccess, showError, NotificationMessages } from "../utils/notifications";
 import { FilterState } from "./NewsFilters";
 import { API_ENDPOINTS } from "../config/api";
 import { VerifyConfirmationModal } from "./VerifyConfirmationModal";
@@ -221,15 +222,15 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
         );
         const newsItem = newsData.find(news => news.id === newsId);
         if (newsItem) {
-          toast.success(`"${newsItem.title}" has been verified successfully!`);
+          showSuccess(NotificationMessages.newsVerified(newsItem.title));
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
-        toast.error(errorData.message || 'Failed to verify news article. Please try again.');
+        showError(NotificationMessages.newsVerificationFailed(errorData.message));
       }
     } catch (error) {
       console.error('Error verifying news:', error);
-      toast.error('Cannot connect to server. Check your connection.');
+      showError(NotificationMessages.connectionError);
     } finally {
       setVerifyConfirmModal({ open: false, newsId: null });
     }

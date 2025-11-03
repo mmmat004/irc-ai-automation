@@ -24,14 +24,33 @@ function HomePageContent() {
     if (typeof window !== 'undefined') {
       const searchParams = new URLSearchParams(window.location.search);
       const pageParam = searchParams.get('page');
+      const newsIdParam = searchParams.get('newsId');
+      // If newsId exists in URL, automatically set page to news-detail
+      if (newsIdParam && !pageParam) {
+        return 'news-detail';
+      }
       if (pageParam) return pageParam;
       const savedPage = localStorage.getItem('currentPage');
+      // If saved page is news-detail but no newsId, fallback to dashboard
+      if (savedPage === 'news-detail' && !localStorage.getItem('selectedNewsId')) {
+        return 'dashboard';
+      }
       if (savedPage) return savedPage;
     }
     return 'dashboard';
   });
   const [authError, setAuthError] = useState<string | null>(null);
-  const [selectedNewsId, setSelectedNewsId] = useState<string | number | null>(null);
+  // Initialize selectedNewsId from URL params or localStorage
+  const [selectedNewsId, setSelectedNewsId] = useState<string | number | null>(() => {
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const newsIdParam = searchParams.get('newsId');
+      if (newsIdParam) return newsIdParam;
+      const savedNewsId = localStorage.getItem('selectedNewsId');
+      if (savedNewsId) return savedNewsId;
+    }
+    return null;
+  });
   const [previousPage, setPreviousPage] = useState(() => {
     if (typeof window !== 'undefined') {
       const savedPreviousPage = localStorage.getItem('previousPage');
@@ -63,6 +82,32 @@ function HomePageContent() {
       localStorage.setItem('previousPage', previousPage);
     }
   }, [previousPage]);
+
+  // Automatically set page to news-detail when selectedNewsId is set
+  useEffect(() => {
+    if (selectedNewsId) {
+      // Only change if not already on news-detail to avoid unnecessary updates
+      setCurrentPage(prev => prev === 'news-detail' ? prev : 'news-detail');
+    }
+  }, [selectedNewsId]);
+
+  // Update URL and localStorage when selectedNewsId changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && isAuthenticated) {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (selectedNewsId) {
+        searchParams.set('newsId', String(selectedNewsId));
+        localStorage.setItem('selectedNewsId', String(selectedNewsId));
+      } else {
+        searchParams.delete('newsId');
+        localStorage.removeItem('selectedNewsId');
+      }
+      const newUrl = searchParams.toString() 
+        ? `${window.location.pathname}?${searchParams.toString()}`
+        : window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [selectedNewsId, isAuthenticated]);
 
   useEffect(() => {
     // Get URL params directly from window for client-side
