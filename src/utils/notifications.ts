@@ -7,10 +7,10 @@ import { toast } from "sonner";
 /**
  * Show a success notification
  */
-export const showSuccess = (message: string, title?: string) => {
-  if (title) {
+export const showSuccess = (message: string, description?: string) => {
+  if (description) {
     toast.success(message, {
-      title,
+      description,
       duration: 4000,
     });
   } else {
@@ -23,10 +23,10 @@ export const showSuccess = (message: string, title?: string) => {
 /**
  * Show an error notification
  */
-export const showError = (message: string, title?: string) => {
-  if (title) {
+export const showError = (message: string, description?: string) => {
+  if (description) {
     toast.error(message, {
-      title,
+      description,
       duration: 5000,
     });
   } else {
@@ -39,10 +39,10 @@ export const showError = (message: string, title?: string) => {
 /**
  * Show a warning notification
  */
-export const showWarning = (message: string, title?: string) => {
-  if (title) {
+export const showWarning = (message: string, description?: string) => {
+  if (description) {
     toast.warning(message, {
-      title,
+      description,
       duration: 4000,
     });
   } else {
@@ -55,10 +55,10 @@ export const showWarning = (message: string, title?: string) => {
 /**
  * Show an info notification
  */
-export const showInfo = (message: string, title?: string) => {
-  if (title) {
+export const showInfo = (message: string, description?: string) => {
+  if (description) {
     toast.info(message, {
-      title,
+      description,
       duration: 4000,
     });
   } else {
