@@ -355,6 +355,92 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
     }
   };
 
+  const handleCancelReject = async () => {
+    if (!news) return;
+
+    try {
+      setIsUpdatingStatus(true);
+      const response = await fetch(API_ENDPOINTS.NEWS_STATUS, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          id: String(newsId),
+          status: 'pending',
+        }),
+      });
+
+      if (response.ok) {
+        // Check if response has content before parsing
+        const contentType = response.headers.get('content-type');
+        const text = await response.text();
+        
+        if (text && contentType?.includes('application/json')) {
+          try {
+            const updatedNews = JSON.parse(text);
+            const mappedNews: NewsDetailData = {
+              id: updatedNews.id,
+              title: updatedNews.title || news.title,
+              category: updatedNews.category || news.category,
+              status: updatedNews.status || 'pending',
+              date: updatedNews.date || updatedNews.createdAt || news.date,
+              time: updatedNews.time || news.time,
+              keywords: updatedNews.keyword || updatedNews.keywords || news.keywords || [],
+              intro: updatedNews.introduction || updatedNews.intro || news.intro,
+              hookContent: updatedNews.hook || news.hookContent,
+              summarizedContent: updatedNews.summary || news.summarizedContent,
+              originalSources: updatedNews.source 
+                ? [{ name: updatedNews.source, url: updatedNews.source }]
+                : (updatedNews.originalSources || news.originalSources || []),
+            };
+            setNews(mappedNews);
+          } catch (e) {
+            setNews({ ...news, status: 'pending' });
+          }
+        } else {
+          setNews({ ...news, status: 'pending' });
+          // Refetch to get updated data from server
+          const refreshResponse = await fetch(`${API_ENDPOINTS.NEWS_GET}/${encodeURIComponent(String(newsId))}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+          });
+          if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            const mappedNews: NewsDetailData = {
+              id: refreshData.id,
+              title: refreshData.title || news.title,
+              category: refreshData.category || news.category,
+              status: refreshData.status || 'pending',
+              date: refreshData.date || refreshData.createdAt || news.date,
+              time: refreshData.time || news.time,
+              keywords: refreshData.keyword || refreshData.keywords || news.keywords || [],
+              intro: refreshData.introduction || refreshData.intro || news.intro,
+              hookContent: refreshData.hook || news.hookContent,
+              summarizedContent: refreshData.summary || news.summarizedContent,
+              originalSources: refreshData.source 
+                ? [{ name: refreshData.source, url: refreshData.source }]
+                : (refreshData.originalSources || news.originalSources || []),
+            };
+            setNews(mappedNews);
+          }
+        }
+        toast.success('Rejection cancelled. Article status set back to pending.');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to cancel rejection:', response.status, errorData);
+        toast.error(errorData.message || 'Failed to cancel rejection. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error canceling rejection:', error);
+      toast.error('Cannot connect to server. Check your connection.');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   // Translation function
   const translateText = (text: string) => {
     if (!isTranslated) return text;
@@ -639,6 +725,21 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                     >
                       <RotateCcw className="w-4 h-4" />
                       Cancel Verification
+                    </Button>
+                  </>
+                )}
+                
+                {news.status === 'rejected' && (
+                  <>
+                    <Separator />
+                    <Button
+                      variant="outline"
+                      onClick={handleCancelReject}
+                      disabled={isUpdatingStatus}
+                      className="gap-2 border-orange-300 hover:bg-orange-50 text-orange-700 w-full"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Cancel Rejection
                     </Button>
                   </>
                 )}
