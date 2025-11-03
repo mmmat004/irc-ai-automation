@@ -40,6 +40,11 @@ interface NewsTableProps {
   filters?: FilterState;
 }
 
+interface CategoryOption {
+  id: string;
+  name: string;
+}
+
 export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string | number>>(new Set());
@@ -48,10 +53,33 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [pageLimit] = useState(10);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [verifyConfirmModal, setVerifyConfirmModal] = useState<{
     open: boolean;
     newsId: string | number | null;
   }>({ open: false, newsId: null });
+
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(API_ENDPOINTS.WORKFLOW_CONFIG_CATEGORY, {
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const categoriesData = await response.json();
+          if (Array.isArray(categoriesData)) {
+            setCategories(categoriesData);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // Fetch news data from API using POST /news/search
   useEffect(() => {
@@ -59,6 +87,18 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
       try {
         setIsLoading(true);
         
+        // Map category name to category ID
+        let categoryId: string | null = null;
+        if (filters?.category && filters.category !== "all") {
+          const category = categories.find(cat => cat.name === filters.category);
+          if (category) {
+            categoryId = category.id;
+          } else {
+            // If category not found, try to use the value directly (in case it's already an ID)
+            categoryId = filters.category;
+          }
+        }
+
         // Build search payload according to API specification
         const searchPayload: {
           page: number;
@@ -70,7 +110,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           page: currentPage,
           limit: pageLimit,
           keyword: filters?.search && filters.search.trim() !== "" ? filters.search.trim() : null,
-          categoryId: filters?.category && filters.category !== "all" ? filters.category : null,
+          categoryId: categoryId,
           status: filters?.status && filters.status !== "all" ? filters.status : null,
         };
 
@@ -131,7 +171,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     };
 
     fetchNewsData();
-  }, [filters, currentPage, pageLimit]);
+  }, [filters, currentPage, pageLimit, categories]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
