@@ -370,7 +370,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
             <div className="bg-muted/50 rounded-lg p-4 space-y-4">
               <h4 className="font-medium">Configuration Summary</h4>
               
-              {/* Selected Category Tag */}
+              {/* Last Saved Category Tag */}
               <div className="space-y-2">
                 <label className="text-sm font-medium block">
                   Topic:
@@ -379,17 +379,17 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                   variant="secondary" 
                   className="bg-primary/10 text-primary border-primary/20 px-3 py-1"
                 >
-                  {categoryOptions.find(c => c.id === selectedCategoryId)?.name}
+                  {previousCategoryId ? categoryOptions.find(c => c.id === previousCategoryId)?.name || 'Not set' : 'Not set'}
                 </Badge>
               </div>
 
-              {/* Selected Format */}
+              {/* Last Saved Format */}
               <div className="space-y-2">
                 <label className="text-sm font-medium block">
                   Format:
                 </label>
                 <Badge variant="outline">
-                  {formatOptions.find(f => f.id === selectedFormatId)?.name}
+                  {previousFormatId ? formatOptions.find(f => f.id === previousFormatId)?.name || 'Not set' : 'Not set'}
                 </Badge>
               </div>
 
