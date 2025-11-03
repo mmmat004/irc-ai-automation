@@ -19,10 +19,50 @@ export const dynamic = 'force-dynamic';
 function HomePageContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
-  const [currentPage, setCurrentPage] = useState('dashboard');
+  // Initialize currentPage from URL params or localStorage, fallback to dashboard
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const pageParam = searchParams.get('page');
+      if (pageParam) return pageParam;
+      const savedPage = localStorage.getItem('currentPage');
+      if (savedPage) return savedPage;
+    }
+    return 'dashboard';
+  });
   const [authError, setAuthError] = useState<string | null>(null);
   const [selectedNewsId, setSelectedNewsId] = useState<string | number | null>(null);
-  const [previousPage, setPreviousPage] = useState('dashboard');
+  const [previousPage, setPreviousPage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedPreviousPage = localStorage.getItem('previousPage');
+      return savedPreviousPage || 'dashboard';
+    }
+    return 'dashboard';
+  });
+
+  // Update URL and localStorage when currentPage changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && isAuthenticated) {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (currentPage === 'dashboard') {
+        searchParams.delete('page');
+      } else {
+        searchParams.set('page', currentPage);
+      }
+      const newUrl = searchParams.toString() 
+        ? `${window.location.pathname}?${searchParams.toString()}`
+        : window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+      localStorage.setItem('currentPage', currentPage);
+    }
+  }, [currentPage, isAuthenticated]);
+
+  // Save previousPage to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('previousPage', previousPage);
+    }
+  }, [previousPage]);
 
   useEffect(() => {
     // Get URL params directly from window for client-side

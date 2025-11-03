@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { FilterState } from "./NewsFilters";
 import { API_ENDPOINTS } from "../config/api";
 import { VerifyConfirmationModal } from "./VerifyConfirmationModal";
+import { RejectConfirmationModal } from "./RejectConfirmationModal";
 
 interface NewsItem {
   id: string | number;
@@ -55,6 +56,10 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
   const [pageLimit] = useState(10);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [verifyConfirmModal, setVerifyConfirmModal] = useState<{
+    open: boolean;
+    newsId: string | number | null;
+  }>({ open: false, newsId: null });
+  const [rejectConfirmModal, setRejectConfirmModal] = useState<{
     open: boolean;
     newsId: string | number | null;
   }>({ open: false, newsId: null });
@@ -230,9 +235,15 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     }
   };
 
-  const handleRejectNews = async (newsId: string | number, event: React.MouseEvent) => {
+  const handleRejectNews = (newsId: string | number, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent row click
-    
+    setRejectConfirmModal({ open: true, newsId });
+  };
+
+  const handleRejectConfirm = async () => {
+    const newsId = rejectConfirmModal.newsId;
+    if (!newsId) return;
+
     try {
       const response = await fetch(API_ENDPOINTS.NEWS_STATUS, {
         method: 'PUT',
@@ -265,6 +276,8 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     } catch (error) {
       console.error('Error rejecting news:', error);
       toast.error('Cannot connect to server. Check your connection.');
+    } finally {
+      setRejectConfirmModal({ open: false, newsId: null });
     }
   };
 
@@ -317,6 +330,44 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
       }
     } catch (error) {
       console.error('Error canceling verification:', error);
+      toast.error('Cannot connect to server. Check your connection.');
+    }
+  };
+
+  const handleCancelReject = async (newsId: string | number, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent row click
+    
+    try {
+      const response = await fetch(API_ENDPOINTS.NEWS_STATUS, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          id: String(newsId),
+          status: 'pending',
+        }),
+      });
+
+      if (response.ok) {
+        setNewsData(prevData => 
+          prevData.map(news => 
+            news.id === newsId 
+              ? { ...news, status: 'pending' }
+              : news
+          )
+        );
+        const newsItem = newsData.find(news => news.id === newsId);
+        if (newsItem) {
+          toast.success(`"${newsItem.title}" rejection has been cancelled.`);
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.message || 'Failed to cancel rejection. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error canceling rejection:', error);
       toast.error('Cannot connect to server. Check your connection.');
     }
   };
@@ -603,6 +654,17 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                         <RotateCcw className="w-4 h-4 text-orange-600" />
                       </Button>
                     )}
+                    {news.status === 'rejected' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 w-8 p-0 border-orange-300 hover:bg-orange-50"
+                        onClick={(e) => handleCancelReject(news.id, e)}
+                        title="Cancel rejection - set back to pending"
+                      >
+                        <RotateCcw className="w-4 h-4 text-orange-600" />
+                      </Button>
+                    )}
                   </div>
                 </td>
                   </tr>
@@ -676,6 +738,13 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
         open={verifyConfirmModal.open}
         onOpenChange={(open) => setVerifyConfirmModal({ open, newsId: open ? verifyConfirmModal.newsId : null })}
         onConfirm={handleVerifyConfirm}
+      />
+
+      {/* Reject Confirmation Modal */}
+      <RejectConfirmationModal
+        open={rejectConfirmModal.open}
+        onOpenChange={(open) => setRejectConfirmModal({ open, newsId: open ? rejectConfirmModal.newsId : null })}
+        onConfirm={handleRejectConfirm}
       />
     </div>
   );
