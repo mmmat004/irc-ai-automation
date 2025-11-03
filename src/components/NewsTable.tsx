@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Check, X, CheckSquare, Square, RotateCcw } from "lucide-react";
+import { Check, X, CheckSquare, Square, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { toast } from "sonner";
@@ -44,6 +44,10 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string | number>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageLimit] = useState(10);
   const [verifyConfirmModal, setVerifyConfirmModal] = useState<{
     open: boolean;
     newsId: string | number | null;
@@ -54,21 +58,21 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     const fetchNewsData = async () => {
       try {
         setIsLoading(true);
-        const searchPayload: any = {};
         
-        // Build search payload from filters
-        if (filters?.search) {
-          searchPayload.search = filters.search;
-        }
-        if (filters?.category && filters.category !== "all") {
-          searchPayload.category = filters.category;
-        }
-        if (filters?.status && filters.status !== "all") {
-          searchPayload.status = filters.status;
-        }
-        if (filters?.dateRange && filters.dateRange !== "all") {
-          searchPayload.dateRange = filters.dateRange;
-        }
+        // Build search payload according to API specification
+        const searchPayload: {
+          page: number;
+          limit: number;
+          keyword: string | null;
+          categoryId: string | null;
+          status: string | null;
+        } = {
+          page: currentPage,
+          limit: pageLimit,
+          keyword: filters?.search && filters.search.trim() !== "" ? filters.search.trim() : null,
+          categoryId: filters?.category && filters.category !== "all" ? filters.category : null,
+          status: filters?.status && filters.status !== "all" ? filters.status : null,
+        };
 
         const response = await fetch(API_ENDPOINTS.NEWS_SEARCH, {
           method: 'POST',
@@ -88,6 +92,19 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
             rawItems = data;
           } else if (data && typeof data === 'object') {
             rawItems = data.items || data.data || data.news || data.results || [];
+          }
+          
+          // Update pagination info
+          if (data && typeof data === 'object') {
+            if (typeof data.currentPage === 'number') {
+              setCurrentPage(data.currentPage);
+            }
+            if (typeof data.totalPage === 'number') {
+              setTotalPages(data.totalPage);
+            }
+            if (typeof data.totalItems === 'number') {
+              setTotalItems(data.totalItems);
+            }
           }
           
           // Map API response fields to component interface
@@ -114,6 +131,11 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     };
 
     fetchNewsData();
+  }, [filters, currentPage, pageLimit]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
   }, [filters]);
 
   const handleNewsClick = (newsId: string | number) => {
@@ -380,7 +402,8 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
       {/* Results Counter and Bulk Actions */}
       <div className="px-6 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          Showing {filteredNewsData.length} article{filteredNewsData.length !== 1 ? 's' : ''}
+          Showing {filteredNewsData.length} of {totalItems} article{totalItems !== 1 ? 's' : ''}
+          {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
         </p>
         
         {selectedItems.size > 0 && (
@@ -453,7 +476,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                   <tr 
                     key={news.id} 
                     className={`
-                      ${isSelected ? "bg-blue-50 border-l-4 border-l-blue-500" : index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                      ${isSelected ? "bg-blue-50 border-l-4 border-l-500" : index % 2 === 0 ? "bg-white" : "bg-gray-50"}
                       cursor-pointer hover:bg-gray-100 transition-all
                       ${isSelected ? "hover:bg-blue-100" : ""}
                     `}
@@ -549,6 +572,64 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Showing page {currentPage} of {totalPages} ({totalItems} total items)
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1 || isLoading}
+              className="h-8 px-3"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Previous
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum: number;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(pageNum)}
+                    disabled={isLoading}
+                    className={`h-8 w-8 p-0 ${currentPage === pageNum ? "bg-blue-600 hover:bg-blue-700 text-white" : ""}`}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages || isLoading}
+              className="h-8 px-3"
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Verify Confirmation Modal */}
       <VerifyConfirmationModal
