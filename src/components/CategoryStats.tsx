@@ -41,26 +41,27 @@ export function CategoryStats() {
           totalCategories:
             Number(
               data.totalCategories ??
-                data.total ??
                 data.totalCategory ??
+                data.total ??
                 data.count ??
                 0
             ) || 0,
           activeCategories:
             Number(
-              data.activeCategories ??
-                data.active ??
+              data.totalActiveCategory ??
+                data.activeCategories ??
                 data.activeCategory ??
+                data.active ??
                 data.activeCount ??
                 0
             ) || 0,
           totalArticles:
             Number(
               data.totalArticles ??
+                data.totalNews ??
                 data.articleCount ??
                 data.totalArticle ??
                 data.articles ??
-                data.totalNews ??
                 0
             ) || 0,
         };

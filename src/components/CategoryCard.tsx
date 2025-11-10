@@ -1,11 +1,9 @@
-import { useState } from "react";
 import {
   Edit2,
   Eye,
   EyeOff,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
 import {
   Card,
   CardContent,
@@ -13,18 +11,12 @@ import {
   CardHeader,
 } from "./ui/card";
 import { Switch } from "./ui/switch";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "./ui/collapsible";
 
 interface Category {
   id: number | string;
   name: string;
   color?: string;
   description?: string;
-  keywords?: string[];
   articleCount?: number;
   isActive?: boolean;
 }
@@ -40,11 +32,8 @@ export function CategoryCard({
   onToggleActive,
   onEdit,
 }: CategoryCardProps) {
-  const [showKeywords, setShowKeywords] = useState(false);
-
   const isActive = category.isActive ?? true;
   const articleCount = Number(category.articleCount ?? 0);
-  const keywords = Array.isArray(category.keywords) ? category.keywords : [];
   const description =
     category.description && category.description.trim().length > 0
       ? category.description
@@ -97,44 +86,6 @@ export function CategoryCard({
             </span>
           </div>
         </div>
-
-        {/* Keywords Section */}
-        <Collapsible
-          open={showKeywords}
-          onOpenChange={setShowKeywords}
-        >
-          <CollapsibleTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full justify-between text-sm border-gray-300 hover:bg-gray-50"
-            >
-              <span>Keywords ({keywords.length})</span>
-              <span className="text-gray-400">
-                {showKeywords ? "−" : "+"}
-              </span>
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-3">
-            <div className="bg-gray-50 rounded-lg p-3">
-              <div className="flex flex-wrap gap-1">
-                {keywords.length === 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    No keywords available
-                  </span>
-                )}
-                {keywords.map((keyword, index) => (
-                  <Badge
-                    key={index}
-                    variant="secondary"
-                    className="text-xs bg-white border border-gray-200 text-gray-700"
-                  >
-                    {keyword}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
       </CardContent>
 
       <CardFooter className="pt-3">

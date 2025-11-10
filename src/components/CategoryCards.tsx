@@ -10,7 +10,6 @@ interface CategoryData {
   name: string;
   color?: string;
   description?: string;
-  keywords?: string[];
   articleCount?: number;
   isActive?: boolean;
 }
@@ -62,21 +61,6 @@ export function CategoryCards({
     let isCancelled = false;
     const controller = new AbortController();
 
-    const mapKeywords = (rawKeywords: unknown): string[] => {
-      if (Array.isArray(rawKeywords)) {
-        return rawKeywords
-          .map((keyword) => String(keyword).trim())
-          .filter(Boolean);
-      }
-      if (typeof rawKeywords === "string") {
-        return rawKeywords
-          .split(",")
-          .map((keyword) => keyword.trim())
-          .filter(Boolean);
-      }
-      return [];
-    };
-
     const fetchCategories = async () => {
       try {
         setIsLoading(true);
@@ -111,8 +95,6 @@ export function CategoryCards({
             item.category_id ??
             `category-${index}`;
 
-          const keywords = mapKeywords(item.keywords ?? item.tags);
-
           const color =
             item.color ??
             item.hexColor ??
@@ -121,6 +103,7 @@ export function CategoryCards({
           const articleCount =
             Number(
               item.articleCount ??
+                item.totalNews ??
                 item.article_count ??
                 item.count ??
                 item.totalArticles ??
@@ -142,7 +125,6 @@ export function CategoryCards({
             id,
             name: item.name ?? item.categoryName ?? item.title ?? `Category ${index + 1}`,
             description: item.description ?? item.summary ?? "",
-            keywords,
             articleCount,
             isActive,
             color,
@@ -187,9 +169,7 @@ export function CategoryCards({
       const description = category.description ?? "";
       return (
         category.name.toLowerCase().includes(query) ||
-        description.toLowerCase().includes(query) ||
-        (category.keywords ?? [])
-          .some((keyword) => keyword.toLowerCase().includes(query))
+        description.toLowerCase().includes(query)
       );
     });
   }, [categories, searchQuery]);
