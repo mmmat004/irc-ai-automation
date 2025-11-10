@@ -9,6 +9,8 @@ export const API_ENDPOINTS = {
   WORKFLOW_CONFIG_CATEGORY: `${API_BASE_URL}/category/workflow-config`,
   WORKFLOW_CONFIG_FORMAT: `${API_BASE_URL}/news-format/workflow-config`,
   WORKFLOW_CONFIG_LATEST_INFO: `${API_BASE_URL}/workflow-config/latest-info`,
+  CATEGORY_OVERVIEW: `${API_BASE_URL}/category/overview`,
+  CATEGORY_SEARCH: `${API_BASE_URL}/category/search`,
   NEWS_GET: `${API_BASE_URL}/news`,
   NEWS_SEARCH: `${API_BASE_URL}/news/search`,
   NEWS_STATUS: `${API_BASE_URL}/news/status`,

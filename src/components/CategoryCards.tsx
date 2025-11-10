@@ -1,101 +1,33 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "./ui/input";
 import { CategoryCard } from "./CategoryCard";
 import { AddCategoryModal } from "./AddCategoryModal";
+import { API_ENDPOINTS } from "../config/api";
 
 interface CategoryData {
-  id: number;
+  id: number | string;
   name: string;
-  color: string;
-  description: string;
-  keywords: string[];
-  articleCount: number;
-  isActive: boolean;
+  color?: string;
+  description?: string;
+  keywords?: string[];
+  articleCount?: number;
+  isActive?: boolean;
 }
 
-const categoriesData: CategoryData[] = [
-  {
-    id: 1,
-    name: "Business",
-    color: "#10b981",
-    description: "Corporate news, market analysis, business strategy",
-    keywords: ["business", "corporate", "market", "strategy", "revenue", "company", "enterprise"],
-    articleCount: 2156,
-    isActive: true
-  },
-  {
-    id: 2,
-    name: "Data",
-    color: "#3b82f6",
-    description: "Data science, analytics, big data, data engineering",
-    keywords: ["data", "analytics", "database", "data science", "big data", "statistics", "metrics"],
-    articleCount: 1834,
-    isActive: true
-  },
-  {
-    id: 3,
-    name: "AI",
-    color: "#8b5cf6",
-    description: "Artificial intelligence, machine learning, neural networks",
-    keywords: ["AI", "artificial intelligence", "machine learning", "neural networks", "deep learning", "automation"],
-    articleCount: 2947,
-    isActive: true
-  },
-  {
-    id: 4,
-    name: "Technology",
-    color: "#06b6d4",
-    description: "Software, hardware, innovation, tech infrastructure",
-    keywords: ["technology", "software", "hardware", "tech", "innovation", "development", "programming"],
-    articleCount: 2387,
-    isActive: true
-  },
-  {
-    id: 5,
-    name: "Startup",
-    color: "#f59e0b",
-    description: "Entrepreneurship, funding, startup ecosystem, venture capital",
-    keywords: ["startup", "entrepreneur", "funding", "venture capital", "seed", "series A", "investment"],
-    articleCount: 1567,
-    isActive: true
-  },
-  {
-    id: 6,
-    name: "Marketing",
-    color: "#ec4899",
-    description: "Digital marketing, advertising, brand strategy, growth",
-    keywords: ["marketing", "advertising", "brand", "growth", "digital marketing", "campaign", "promotion"],
-    articleCount: 1298,
-    isActive: true
-  },
-  {
-    id: 7,
-    name: "Digital Transform",
-    color: "#84cc16",
-    description: "Digital transformation, modernization, cloud adoption",
-    keywords: ["digital transformation", "modernization", "cloud", "digitalization", "automation", "innovation"],
-    articleCount: 987,
-    isActive: true
-  },
-  {
-    id: 8,
-    name: "Economic",
-    color: "#ef4444",
-    description: "Economic trends, policy, global economy, indicators",
-    keywords: ["economic", "economy", "GDP", "inflation", "policy", "growth", "recession"],
-    articleCount: 1734,
-    isActive: true
-  },
-  {
-    id: 9,
-    name: "Finance",
-    color: "#6366f1",
-    description: "Financial markets, banking, fintech, investments",
-    keywords: ["finance", "banking", "fintech", "investment", "money", "financial", "markets"],
-    articleCount: 1643,
-    isActive: true
-  }
+const colorPalette = [
+  "#3b82f6",
+  "#10b981",
+  "#f59e0b",
+  "#8b5cf6",
+  "#ef4444",
+  "#06b6d4",
+  "#ec4899",
+  "#84cc16",
+  "#f97316",
+  "#6366f1",
+  "#14b8a6",
+  "#f43f5e",
 ];
 
 interface CategoryCardsProps {
@@ -111,14 +43,158 @@ export function CategoryCards({
   isAddModalOpen, 
   onCloseAddModal 
 }: CategoryCardsProps) {
-  const [categories, setCategories] = useState<CategoryData[]>(categoriesData);
+  const [categories, setCategories] = useState<CategoryData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [debouncedQuery, setDebouncedQuery] = useState(searchQuery);
 
-  const filteredCategories = categories.filter(category =>
-    category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    category.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    const handler = window.setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 400);
 
-  const handleToggleActive = (categoryId: number) => {
+    return () => {
+      window.clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  useEffect(() => {
+    let isCancelled = false;
+    const controller = new AbortController();
+
+    const mapKeywords = (rawKeywords: unknown): string[] => {
+      if (Array.isArray(rawKeywords)) {
+        return rawKeywords
+          .map((keyword) => String(keyword).trim())
+          .filter(Boolean);
+      }
+      if (typeof rawKeywords === "string") {
+        return rawKeywords
+          .split(",")
+          .map((keyword) => keyword.trim())
+          .filter(Boolean);
+      }
+      return [];
+    };
+
+    const fetchCategories = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const params = new URLSearchParams();
+        params.set("keyword", debouncedQuery.trim());
+
+        const url = `${API_ENDPOINTS.CATEGORY_SEARCH}?${params.toString()}`;
+
+        const response = await fetch(url, {
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (isCancelled) return;
+
+        const rawItems: any[] = Array.isArray(data)
+          ? data
+          : data?.items ?? data?.categories ?? data?.data ?? [];
+
+        const mappedCategories: CategoryData[] = rawItems.map((item, index) => {
+          const id =
+            item.id ??
+            item._id ??
+            item.categoryId ??
+            item.category_id ??
+            `category-${index}`;
+
+          const keywords = mapKeywords(item.keywords ?? item.tags);
+
+          const color =
+            item.color ??
+            item.hexColor ??
+            colorPalette[index % colorPalette.length];
+
+          const articleCount =
+            Number(
+              item.articleCount ??
+                item.article_count ??
+                item.count ??
+                item.totalArticles ??
+                item.total ??
+                item.articles ??
+                0
+            ) || 0;
+
+          const isActive =
+            typeof item.isActive === "boolean"
+              ? item.isActive
+              : typeof item.active === "boolean"
+              ? item.active
+              : item.status
+              ? String(item.status).toLowerCase() !== "inactive"
+              : true;
+
+          return {
+            id,
+            name: item.name ?? item.categoryName ?? item.title ?? `Category ${index + 1}`,
+            description: item.description ?? item.summary ?? "",
+            keywords,
+            articleCount,
+            isActive,
+            color,
+          };
+        });
+
+        // Ensure we have unique categories by id
+        const uniqueCategories = mappedCategories.filter(
+          (category, index, self) =>
+            self.findIndex((item) => item.id === category.id) === index
+        );
+
+        setCategories(uniqueCategories);
+      } catch (err) {
+        if ((err as Error).name === "AbortError") {
+          return;
+        }
+        console.error("Failed to fetch categories:", err);
+        if (!isCancelled) {
+          setError("Unable to load categories right now.");
+          setCategories([]);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchCategories();
+
+    return () => {
+      isCancelled = true;
+      controller.abort();
+    };
+  }, [debouncedQuery]);
+
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery.trim()) return categories;
+    return categories.filter((category) => {
+      const query = searchQuery.toLowerCase();
+      const description = category.description ?? "";
+      return (
+        category.name.toLowerCase().includes(query) ||
+        description.toLowerCase().includes(query) ||
+        (category.keywords ?? [])
+          .some((keyword) => keyword.toLowerCase().includes(query))
+      );
+    });
+  }, [categories, searchQuery]);
+
+  const handleToggleActive = (categoryId: number | string) => {
     setCategories(prev => 
       prev.map(cat => 
         cat.id === categoryId ? { ...cat, isActive: !cat.isActive } : cat
@@ -126,18 +202,16 @@ export function CategoryCards({
     );
   };
 
-  const handleEdit = (categoryId: number) => {
+  const handleEdit = (categoryId: number | string) => {
     console.log("Editing category", categoryId);
     // Handle edit functionality
   };
 
   const handleAddCategory = (newCategory: any) => {
     const category = {
-      id: categories.length + 1,
+      id: `local-${Date.now()}`,
       ...newCategory,
       articleCount: 0,
-      weeklyGrowth: 0,
-      accuracy: 0,
       isActive: true
     };
     setCategories(prev => [...prev, category]);
@@ -161,14 +235,29 @@ export function CategoryCards({
 
       {/* Category Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCategories.map((category) => (
-                      <CategoryCard
-              key={category.id}
-              category={category}
-              onToggleActive={handleToggleActive}
-              onEdit={handleEdit}
-            />
-        ))}
+        {isLoading
+          ? Array.from({ length: 6 }).map((_, index) => (
+              <div
+                key={`category-card-skeleton-${index}`}
+                className="border border-dashed border-gray-200 rounded-xl h-64 animate-pulse bg-gray-50"
+              />
+            ))
+          : filteredCategories.length === 0 ? (
+              <div className="col-span-full text-center py-12 border border-dashed border-gray-200 rounded-xl">
+                <p className="text-sm text-muted-foreground">
+                  {error ? error : "No categories found for this search."}
+                </p>
+              </div>
+            ) : (
+              filteredCategories.map((category) => (
+                <CategoryCard
+                  key={category.id}
+                  category={category}
+                  onToggleActive={handleToggleActive}
+                  onEdit={handleEdit}
+                />
+              ))
+            )}
       </div>
 
       {/* Add Category Modal */}

@@ -3,8 +3,6 @@ import {
   Edit2,
   Eye,
   EyeOff,
-  TrendingUp,
-  TrendingDown,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -22,19 +20,19 @@ import {
 } from "./ui/collapsible";
 
 interface Category {
-  id: number;
+  id: number | string;
   name: string;
-  color: string;
-  description: string;
-  keywords: string[];
-  articleCount: number;
-  isActive: boolean;
+  color?: string;
+  description?: string;
+  keywords?: string[];
+  articleCount?: number;
+  isActive?: boolean;
 }
 
 interface CategoryCardProps {
   category: Category;
-  onToggleActive: (categoryId: number) => void;
-  onEdit: (categoryId: number) => void;
+  onToggleActive: (categoryId: number | string) => void;
+  onEdit: (categoryId: number | string) => void;
 }
 
 export function CategoryCard({
@@ -43,6 +41,15 @@ export function CategoryCard({
   onEdit,
 }: CategoryCardProps) {
   const [showKeywords, setShowKeywords] = useState(false);
+
+  const isActive = category.isActive ?? true;
+  const articleCount = Number(category.articleCount ?? 0);
+  const keywords = Array.isArray(category.keywords) ? category.keywords : [];
+  const description =
+    category.description && category.description.trim().length > 0
+      ? category.description
+      : "No description available.";
+  const indicatorColor = category.color ?? "#3b82f6";
 
 
 
@@ -53,20 +60,20 @@ export function CategoryCard({
           <div className="flex items-center gap-3">
             <div
               className="w-4 h-4 rounded-full"
-              style={{ backgroundColor: category.color }}
+              style={{ backgroundColor: indicatorColor }}
             />
             <h3 className="font-semibold text-gray-900">
               {category.name}
             </h3>
           </div>
           <div className="flex items-center gap-2">
-            {category.isActive ? (
+            {isActive ? (
               <Eye className="w-4 h-4 text-green-600" />
             ) : (
               <EyeOff className="w-4 h-4 text-gray-400" />
             )}
             <Switch
-              checked={category.isActive}
+              checked={isActive}
               onCheckedChange={() =>
                 onToggleActive(category.id)
               }
@@ -74,7 +81,7 @@ export function CategoryCard({
           </div>
         </div>
         <p className="text-sm text-gray-600 leading-relaxed">
-          {category.description}
+          {description}
         </p>
       </CardHeader>
 
@@ -86,7 +93,7 @@ export function CategoryCard({
               Articles
             </span>
             <span className="font-medium text-gray-900">
-              {category.articleCount.toLocaleString()}
+              {articleCount.toLocaleString()}
             </span>
           </div>
         </div>
@@ -101,7 +108,7 @@ export function CategoryCard({
               variant="outline"
               className="w-full justify-between text-sm border-gray-300 hover:bg-gray-50"
             >
-              <span>Keywords ({category.keywords.length})</span>
+              <span>Keywords ({keywords.length})</span>
               <span className="text-gray-400">
                 {showKeywords ? "−" : "+"}
               </span>
@@ -110,7 +117,12 @@ export function CategoryCard({
           <CollapsibleContent className="mt-3">
             <div className="bg-gray-50 rounded-lg p-3">
               <div className="flex flex-wrap gap-1">
-                {category.keywords.map((keyword, index) => (
+                {keywords.length === 0 && (
+                  <span className="text-xs text-muted-foreground">
+                    No keywords available
+                  </span>
+                )}
+                {keywords.map((keyword, index) => (
                   <Badge
                     key={index}
                     variant="secondary"
