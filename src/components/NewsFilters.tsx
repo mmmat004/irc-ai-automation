@@ -149,7 +149,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
                 mode="range"
                 selected={dateRange}
                 onSelect={handleDateRangeChange}
-                numberOfMonths={2}
+                numberOfMonths={1}
                 className="rounded-md border"
               />
               <div className="flex items-center justify-between pt-2 border-t">
