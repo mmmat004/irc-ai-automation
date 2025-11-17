@@ -14,77 +14,43 @@ export function StatsCards() {
   const [statsData, setStatsData] = useState<StatsData[]>([
     { title: "Total News", value: "0", icon: FileText, color: "text-orange-600", bgColor: "bg-orange-50" },
     { title: "Pending Verification", value: "0", icon: Clock, color: "text-orange-600", bgColor: "bg-orange-50" },
-    { title: "Published This Week", value: "0", icon: TrendingUp, color: "text-green-600", bgColor: "bg-green-50" },
+    { title: "Published", value: "0", icon: TrendingUp, color: "text-green-600", bgColor: "bg-green-50" },
     { title: "Categories", value: "0", icon: Tag, color: "text-purple-600", bgColor: "bg-purple-50" },
   ]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch all news to calculate stats
-        const [allNewsResponse, pendingNewsResponse, publishedNewsResponse] = await Promise.all([
-          fetch(API_ENDPOINTS.NEWS_SEARCH, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({}),
-          }),
-          fetch(API_ENDPOINTS.NEWS_SEARCH, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ status: 'pending' }),
-          }),
-          fetch(API_ENDPOINTS.NEWS_SEARCH, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ status: 'published' }),
-          }),
-        ]);
+        setIsLoading(true);
+        const response = await fetch(API_ENDPOINTS.DASHBOARD_COUNT_OVERALL, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
 
-        let totalNews = 0;
-        let pendingCount = 0;
-        let publishedCount = 0;
-        const categories = new Set<string>();
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Map API response to stats
+          const totalNews = data.totalNews || data.total || 0;
+          const pendingCount = data.pendingNews || data.pending || 0;
+          const publishedCount = data.publishedNews || data.published || 0;
+          const categoriesCount = data.totalCategory || data.categories || 0;
 
-        if (allNewsResponse.ok) {
-          const allData = await allNewsResponse.json();
-          const allNews = Array.isArray(allData) ? allData : (allData.items || allData.data || allData.news || []);
-          totalNews = allNews.length;
-          allNews.forEach((item: any) => {
-            if (item.category) categories.add(item.category);
-          });
+          setStatsData([
+            { title: "Total News", value: totalNews.toLocaleString(), icon: FileText, color: "text-orange-600", bgColor: "bg-orange-50" },
+            { title: "Pending Verification", value: pendingCount.toLocaleString(), icon: Clock, color: "text-orange-600", bgColor: "bg-orange-50" },
+            { title: "Published", value: publishedCount.toLocaleString(), icon: TrendingUp, color: "text-green-600", bgColor: "bg-green-50" },
+            { title: "Categories", value: categoriesCount.toLocaleString(), icon: Tag, color: "text-purple-600", bgColor: "bg-purple-50" },
+          ]);
+        } else {
+          console.error('Failed to fetch dashboard stats:', response.status);
         }
-
-        if (pendingNewsResponse.ok) {
-          const pendingData = await pendingNewsResponse.json();
-          const pendingNews = Array.isArray(pendingData) ? pendingData : (pendingData.items || pendingData.data || pendingData.news || []);
-          pendingCount = pendingNews.length;
-        }
-
-        if (publishedNewsResponse.ok) {
-          const publishedData = await publishedNewsResponse.json();
-          const publishedNews = Array.isArray(publishedData) ? publishedData : (publishedData.items || publishedData.data || publishedData.news || []);
-          // Filter by this week
-          const weekAgo = new Date();
-          weekAgo.setDate(weekAgo.getDate() - 7);
-          publishedCount = publishedNews.filter((item: any) => {
-            const itemDate = item.date || item.createdAt;
-            if (!itemDate) return false;
-            const date = new Date(itemDate);
-            return date >= weekAgo;
-          }).length;
-        }
-
-        setStatsData([
-          { title: "Total News", value: totalNews.toLocaleString(), icon: FileText, color: "text-orange-600", bgColor: "bg-orange-50" },
-          { title: "Pending Verification", value: pendingCount.toLocaleString(), icon: Clock, color: "text-orange-600", bgColor: "bg-orange-50" },
-          { title: "Published This Week", value: publishedCount.toLocaleString(), icon: TrendingUp, color: "text-green-600", bgColor: "bg-green-50" },
-          { title: "Categories", value: categories.size.toLocaleString(), icon: Tag, color: "text-purple-600", bgColor: "bg-purple-50" },
-        ]);
       } catch (error) {
         console.error('Error fetching stats:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 

@@ -36,29 +36,24 @@ export function RecentNews({ onNewsSelect }: RecentNewsProps) {
     const fetchRecentNews = async () => {
       try {
         setIsLoading(true);
-        // Fetch recent news (limit to 4 most recent)
-        const response = await fetch(API_ENDPOINTS.NEWS_SEARCH, {
-          method: 'POST',
+        // Fetch recent news from dashboard endpoint
+        const response = await fetch(`${API_ENDPOINTS.DASHBOARD_RECENT_NEWS}?limit=10`, {
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
           credentials: 'include',
-          body: JSON.stringify({
-            limit: 4,
-            sortBy: 'date',
-            sortOrder: 'desc',
-          }),
         });
 
         if (response.ok) {
           const data = await response.json();
           
-          // API returns: { currentPage, totalPage, totalItems, items: [...] }
+          // Handle different response formats
           const rawItems = Array.isArray(data) ? data : (data.items || data.data || data.news || []);
           
           // Map API response fields to component interface
-          const newsItems: RecentNewsItem[] = rawItems.slice(0, 4).map((item: any) => ({
-            id: item.id,
+          const newsItems: RecentNewsItem[] = rawItems.slice(0, 10).map((item: any) => ({
+            id: item.id || item._id,
             title: item.title || '',
             category: item.category || '',
             status: item.status || 'pending',

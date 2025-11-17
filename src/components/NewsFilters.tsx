@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { Search, Calendar, X } from "lucide-react";
+import { Search, Calendar as CalendarIcon, X } from "lucide-react";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import { Calendar } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { DateRange } from "react-day-picker";
 
 const CATEGORY_OPTIONS = [
   "Business",
@@ -21,7 +24,7 @@ export interface FilterState {
   search: string;
   category: string;
   status: string;
-  dateRange: string;
+  dateRange: string | DateRange | undefined;
 }
 
 interface NewsFiltersProps {
@@ -35,8 +38,9 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
     status: "all",
     dateRange: "all"
   });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
-  const updateFilter = (key: keyof FilterState, value: string) => {
+  const updateFilter = (key: keyof FilterState, value: string | DateRange | undefined) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     if (onFiltersChange) {
@@ -44,7 +48,18 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
     }
   };
 
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    setDateRange(range);
+    updateFilter("dateRange", range);
+  };
+
+  const handleAllDates = () => {
+    setDateRange(undefined);
+    updateFilter("dateRange", "all");
+  };
+
   const clearFilters = () => {
+    setDateRange(undefined);
     const clearedFilters: FilterState = {
       search: "",
       category: "all",
@@ -57,7 +72,22 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
     }
   };
 
-  const hasActiveFilters = filters.search !== "" || filters.category !== "all" || filters.status !== "all" || filters.dateRange !== "all";
+  const formatDate = (date: Date): string => {
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const formatDateRange = (range: DateRange | undefined): string => {
+    if (!range) return "All Dates";
+    if (range.from && range.to) {
+      return `${formatDate(range.from)} - ${formatDate(range.to)}`;
+    }
+    if (range.from) {
+      return formatDate(range.from);
+    }
+    return "All Dates";
+  };
+
+  const hasActiveFilters = filters.search !== "" || filters.category !== "all" || filters.status !== "all" || (filters.dateRange !== "all" && filters.dateRange !== undefined);
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -100,19 +130,51 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
           </SelectContent>
         </Select>
 
-        {/* Date Range Dropdown */}
-        <Select value={filters.dateRange} onValueChange={(value: string) => updateFilter("dateRange", value)}>
-          <SelectTrigger className="bg-white border-gray-300">
-            <SelectValue placeholder="All Dates" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Dates</SelectItem>
-            <SelectItem value="today">Today</SelectItem>
-            <SelectItem value="yesterday">Yesterday</SelectItem>
-            <SelectItem value="week">This Week</SelectItem>
-            <SelectItem value="month">This Month</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Date Range Calendar Picker */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full justify-start text-left font-normal bg-white border-gray-300"
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {filters.dateRange === "all" || !dateRange 
+                ? "All Dates" 
+                : formatDateRange(dateRange)}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <div className="p-3 space-y-3">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={handleDateRangeChange}
+                numberOfMonths={2}
+                className="rounded-md border"
+              />
+              <div className="flex items-center justify-between pt-2 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAllDates}
+                  className="text-xs"
+                >
+                  Show All
+                </Button>
+                {dateRange && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDateRangeChange(undefined)}
+                    className="text-xs"
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Active Filters and Clear Button */}
@@ -147,12 +209,15 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
                 />
               </Badge>
             )}
-            {filters.dateRange !== "all" && (
+            {filters.dateRange !== "all" && filters.dateRange !== undefined && (
               <Badge variant="secondary" className="gap-1">
-                Date: {filters.dateRange}
+                Date: {formatDateRange(dateRange)}
                 <X 
                   className="w-3 h-3 cursor-pointer" 
-                  onClick={() => updateFilter("dateRange", "all")}
+                  onClick={() => {
+                    setDateRange(undefined);
+                    updateFilter("dateRange", "all");
+                  }}
                 />
               </Badge>
             )}

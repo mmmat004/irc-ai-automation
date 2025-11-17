@@ -30,38 +30,29 @@ export function CategoryDistribution() {
     const fetchCategoryData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(API_ENDPOINTS.NEWS_SEARCH, {
-          method: 'POST',
+        // Fetch all categories using search with empty keyword
+        const response = await fetch(`${API_ENDPOINTS.CATEGORY_SEARCH}?keyword=`, {
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
           credentials: 'include',
-          body: JSON.stringify({}),
         });
 
         if (response.ok) {
           const data = await response.json();
-          // API returns: { currentPage, totalPage, totalItems, items: [...] }
-          const newsItems = Array.isArray(data) ? data : (data.items || data.data || data.news || []);
           
-          // Count news by category
-          const categoryCounts: Record<string, number> = {};
-          newsItems.forEach((item: any) => {
-            if (item.category) {
-              categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
-            }
-          });
+          // Handle different response formats
+          const categories = Array.isArray(data) ? data : (data.items || data.data || data.categories || []);
+          
+          // Map category data to display format
+          const categoryDataList = categories.map((category: any, index: number) => ({
+            name: category.name || category.category || '',
+            count: category.totalNews || category.articleCount || category.count || 0,
+            color: colors[index % colors.length],
+          })).sort((a: CategoryData, b: CategoryData) => b.count - a.count);
 
-          // Convert to array and sort by count
-          const categories = Object.entries(categoryCounts)
-            .map(([name, count], index) => ({
-              name,
-              count: count as number,
-              color: colors[index % colors.length],
-            }))
-            .sort((a, b) => b.count - a.count);
-
-          setCategoryData(categories);
+          setCategoryData(categoryDataList);
         } else {
           console.error('Failed to fetch category data:', response.status);
         }

@@ -105,6 +105,19 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           }
         }
 
+        // Handle date range filter
+        let startDate: string | null = null;
+        let endDate: string | null = null;
+        
+        if (filters?.dateRange && filters.dateRange !== "all" && typeof filters.dateRange === 'object') {
+          if (filters.dateRange.from) {
+            startDate = filters.dateRange.from.toISOString().split('T')[0];
+          }
+          if (filters.dateRange.to) {
+            endDate = filters.dateRange.to.toISOString().split('T')[0];
+          }
+        }
+
         // Build search payload according to API specification
         const searchPayload: {
           page: number;
@@ -112,12 +125,16 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           keyword: string | null;
           categoryId: string | null;
           status: string | null;
+          startDate?: string | null;
+          endDate?: string | null;
         } = {
           page: currentPage,
           limit: pageLimit,
           keyword: filters?.search && filters.search.trim() !== "" ? filters.search.trim() : null,
           categoryId: categoryId,
           status: filters?.status && filters.status !== "all" ? filters.status : null,
+          ...(startDate && { startDate }),
+          ...(endDate && { endDate }),
         };
 
         const response = await fetch(API_ENDPOINTS.NEWS_SEARCH, {
