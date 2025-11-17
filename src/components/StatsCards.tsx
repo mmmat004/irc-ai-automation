@@ -32,11 +32,11 @@ export function StatsCards() {
         if (response.ok) {
           const data = await response.json();
           
-          // Map API response to stats
-          const totalNews = data.totalNews || data.total || 0;
-          const pendingCount = data.pendingNews || data.pending || 0;
-          const publishedCount = data.publishedNews || data.published || 0;
-          const categoriesCount = data.totalCategory || data.categories || 0;
+          // Map API response to stats - matching exact API response format
+          const totalNews = data.totalNews || 0;
+          const pendingCount = data.totalPendingNews || 0;
+          const publishedCount = data.totalPublishedNews || 0;
+          const categoriesCount = data.totalCategory || 0;
 
           setStatsData([
             { title: "Total News", value: totalNews.toLocaleString(), icon: FileText, color: "text-orange-600", bgColor: "bg-orange-50" },
