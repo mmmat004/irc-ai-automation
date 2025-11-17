@@ -1,5 +1,4 @@
 import { WorkflowHeader } from "../components/WorkflowHeader";
-import { WorkflowGrid } from "../components/WorkflowGrid";
 import { RecentExecutions } from "../components/RecentExecutions";
 import { WeeklyCategoriesConfig } from "../components/WeeklyCategoriesConfig";
 
@@ -16,9 +15,6 @@ export function WorkflowDashboard() {
         
         {/* Weekly Categories Configuration */}
         <WeeklyCategoriesConfig onSave={handleCategorySave} />
-        
-        {/* Workflow Cards Grid */}
-        <WorkflowGrid />
         
         {/* Recent Executions */}
         <RecentExecutions />

@@ -89,12 +89,12 @@ export function CategoryDistribution() {
       ) : (
         <div className="space-y-3">
           {categoryData.map((category, index) => (
-            <div key={index} className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-xl transition-all duration-200 group cursor-pointer hover:-translate-y-0.5 hover:shadow-sm">
+            <div key={index} className="flex items-center justify-between p-3 rounded-xl">
               <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${category.color} group-hover:scale-125 transition-transform duration-200`} />
-                <span className="font-medium text-foreground group-hover:text-primary transition-colors">{category.name}</span>
+                <div className={`w-3 h-3 rounded-full ${category.color}`} />
+                <span className="font-medium text-foreground">{category.name}</span>
               </div>
-              <span className="text-sm font-semibold text-muted-foreground bg-muted px-3 py-1.5 rounded-lg group-hover:scale-105 transition-all duration-200">
+              <span className="text-sm font-semibold text-muted-foreground bg-muted px-3 py-1.5 rounded-lg">
                 {category.count}
               </span>
             </div>

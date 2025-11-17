@@ -30,6 +30,8 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
   const [selectedFormatId, setSelectedFormatId] = useState<string>("");
   const [previousCategoryId, setPreviousCategoryId] = useState<string>("");
   const [previousFormatId, setPreviousFormatId] = useState<string>("");
+  const [previousCategoryName, setPreviousCategoryName] = useState<string>("");
+  const [previousFormatName, setPreviousFormatName] = useState<string>("");
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)); // 1 week ago
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
@@ -84,13 +86,19 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
           const latestInfo = await latestInfoResponse.json();
           console.log('Latest workflow config info:', latestInfo);
           
-          // Set previous configuration from API
-          if (latestInfo.categoryId) {
-            setPreviousCategoryId(latestInfo.categoryId);
+          // Set previous configuration from API - use direct names from API response
+          if (latestInfo.currentCategoryName) {
+            setPreviousCategoryName(latestInfo.currentCategoryName);
+          }
+          if (latestInfo.categoryId || latestInfo.currentCategoryId) {
+            setPreviousCategoryId(latestInfo.categoryId || latestInfo.currentCategoryId);
           }
           
-          if (latestInfo.formatId) {
-            setPreviousFormatId(latestInfo.formatId);
+          if (latestInfo.currentFormatName) {
+            setPreviousFormatName(latestInfo.currentFormatName);
+          }
+          if (latestInfo.formatId || latestInfo.currentFormatId) {
+            setPreviousFormatId(latestInfo.formatId || latestInfo.currentFormatId);
           }
           
           // Set last updated date
@@ -241,15 +249,24 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
       
       setPreviousCategoryId(selectedCategoryId);
       setPreviousFormatId(selectedFormatId);
+      // Update names from selected options
+      const savedCategory = categoryOptions.find(c => c.id === selectedCategoryId);
+      const savedFormat = formatOptions.find(f => f.id === selectedFormatId);
+      if (savedCategory) {
+        setPreviousCategoryName(savedCategory.name);
+      }
+      if (savedFormat) {
+        setPreviousFormatName(savedFormat.name);
+      }
       setLastUpdated(new Date());
       setHasChanges(false);
       
       if (onSave) {
-        const selectedCategory = categoryOptions.find(c => c.id === selectedCategoryId)?.name || '';
-        const selectedFormat = formatOptions.find(f => f.id === selectedFormatId)?.name || '';
+        const categoryName = savedCategory?.name || '';
+        const formatName = savedFormat?.name || '';
         onSave({
-          category: selectedCategory,
-          format: selectedFormat
+          category: categoryName,
+          format: formatName
         });
       }
       
@@ -415,7 +432,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                   variant="secondary" 
                   className="bg-primary/10 text-primary border-primary/20 px-3 py-1"
                 >
-                  {previousCategoryId ? categoryOptions.find(c => c.id === previousCategoryId)?.name || 'Not set' : 'Not set'}
+                  {previousCategoryName || (previousCategoryId ? categoryOptions.find(c => c.id === previousCategoryId)?.name || 'Not set' : 'Not set')}
                 </Badge>
               </div>
 
@@ -425,7 +442,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                   Format:
                 </label>
                 <Badge variant="outline">
-                  {previousFormatId ? formatOptions.find(f => f.id === previousFormatId)?.name || 'Not set' : 'Not set'}
+                  {previousFormatName || (previousFormatId ? formatOptions.find(f => f.id === previousFormatId)?.name || 'Not set' : 'Not set')}
                 </Badge>
               </div>
 
