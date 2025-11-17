@@ -39,11 +39,14 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
     // Load options and current configuration from API
     const loadData = async () => {
       try {
-        const [categoriesResponse, formatsResponse] = await Promise.all([
+        const [categoriesResponse, formatsResponse, latestInfoResponse] = await Promise.all([
           fetch(API_ENDPOINTS.WORKFLOW_CONFIG_CATEGORY, {
             credentials: 'include'
           }),
           fetch(API_ENDPOINTS.WORKFLOW_CONFIG_FORMAT, {
+            credentials: 'include'
+          }),
+          fetch(API_ENDPOINTS.WORKFLOW_CONFIG_LATEST_INFO, {
             credentials: 'include'
           })
         ]);
@@ -76,6 +79,30 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
           console.error(`Formats endpoint failed: ${formatsResponse.status} ${formatsResponse.statusText}`);
         }
 
+        // Load latest configuration info
+        if (latestInfoResponse.ok) {
+          const latestInfo = await latestInfoResponse.json();
+          console.log('Latest workflow config info:', latestInfo);
+          
+          // Set previous configuration from API
+          if (latestInfo.categoryId) {
+            setPreviousCategoryId(latestInfo.categoryId);
+          }
+          
+          if (latestInfo.formatId) {
+            setPreviousFormatId(latestInfo.formatId);
+          }
+          
+          // Set last updated date
+          if (latestInfo.updatedAt || latestInfo.lastUpdated || latestInfo.createdAt) {
+            const updateDate = new Date(latestInfo.updatedAt || latestInfo.lastUpdated || latestInfo.createdAt);
+            if (!isNaN(updateDate.getTime())) {
+              setLastUpdated(updateDate);
+            }
+          }
+        } else {
+          console.warn(`Latest info endpoint failed: ${latestInfoResponse.status} ${latestInfoResponse.statusText}`);
+        }
 
       } catch (error) {
         console.error('Failed to load workflow configuration data:', error);
@@ -88,19 +115,28 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
   }, []);
 
   // Set default selections when options are loaded
+  // Use latest info if available, otherwise use first option
   useEffect(() => {
     if (categoryOptions.length > 0 && selectedCategoryId === "") {
-      setSelectedCategoryId(categoryOptions[0].id);
-      setPreviousCategoryId(categoryOptions[0].id);
+      // Prefer previousCategoryId from API if available, otherwise use first option
+      const defaultCategoryId = previousCategoryId || categoryOptions[0].id;
+      setSelectedCategoryId(defaultCategoryId);
+      if (!previousCategoryId) {
+        setPreviousCategoryId(defaultCategoryId);
+      }
     }
-  }, [categoryOptions, selectedCategoryId]);
+  }, [categoryOptions, selectedCategoryId, previousCategoryId]);
 
   useEffect(() => {
     if (formatOptions.length > 0 && selectedFormatId === "") {
-      setSelectedFormatId(formatOptions[0].id);
-      setPreviousFormatId(formatOptions[0].id);
+      // Prefer previousFormatId from API if available, otherwise use first option
+      const defaultFormatId = previousFormatId || formatOptions[0].id;
+      setSelectedFormatId(defaultFormatId);
+      if (!previousFormatId) {
+        setPreviousFormatId(defaultFormatId);
+      }
     }
-  }, [formatOptions, selectedFormatId]);
+  }, [formatOptions, selectedFormatId, previousFormatId]);
 
   useEffect(() => {
     // Check if current selection differs from previous
