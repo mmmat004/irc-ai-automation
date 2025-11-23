@@ -146,9 +146,6 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           endDate: endDate,
         };
 
-        // Debug: Log the payload to verify dates are included
-        console.log('News search payload:', JSON.stringify(searchPayload, null, 2));
-
         const response = await fetch(API_ENDPOINTS.NEWS_SEARCH, {
           method: 'POST',
           headers: {
