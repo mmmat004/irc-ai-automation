@@ -182,10 +182,6 @@ export function CategoryCards({
     );
   };
 
-  const handleEdit = (categoryId: number | string) => {
-    console.log("Editing category", categoryId);
-    // Handle edit functionality
-  };
 
   const handleAddCategory = (newCategory: any) => {
     const category = {
@@ -234,7 +230,6 @@ export function CategoryCards({
                   key={category.id}
                   category={category}
                   onToggleActive={handleToggleActive}
-                  onEdit={handleEdit}
                 />
               ))
             )}

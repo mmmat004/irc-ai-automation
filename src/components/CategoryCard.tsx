@@ -1,13 +1,10 @@
 import {
-  Edit2,
   Eye,
   EyeOff,
 } from "lucide-react";
-import { Button } from "./ui/button";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
 } from "./ui/card";
 import { Switch } from "./ui/switch";
@@ -24,13 +21,11 @@ interface Category {
 interface CategoryCardProps {
   category: Category;
   onToggleActive: (categoryId: number | string) => void;
-  onEdit: (categoryId: number | string) => void;
 }
 
 export function CategoryCard({
   category,
   onToggleActive,
-  onEdit,
 }: CategoryCardProps) {
   const isActive = category.isActive ?? true;
   const articleCount = Number(category.articleCount ?? 0);
@@ -39,8 +34,6 @@ export function CategoryCard({
       ? category.description
       : "No description available.";
   const indicatorColor = category.color ?? "#3b82f6";
-
-
 
   return (
     <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
@@ -87,17 +80,6 @@ export function CategoryCard({
           </div>
         </div>
       </CardContent>
-
-      <CardFooter className="pt-3">
-        <Button
-          onClick={() => onEdit(category.id)}
-          variant="outline"
-          className="w-full gap-2 border-gray-300 hover:bg-gray-50"
-        >
-          <Edit2 className="w-4 h-4" />
-          Edit Category
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

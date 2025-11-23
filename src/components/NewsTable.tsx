@@ -125,16 +125,16 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           keyword: string | null;
           categoryId: string | null;
           status: string | null;
-          startDate?: string | null;
-          endDate?: string | null;
+          startDate: string | null;
+          endDate: string | null;
         } = {
           page: currentPage,
           limit: pageLimit,
           keyword: filters?.search && filters.search.trim() !== "" ? filters.search.trim() : null,
           categoryId: categoryId,
           status: filters?.status && filters.status !== "all" ? filters.status : null,
-          ...(startDate && { startDate }),
-          ...(endDate && { endDate }),
+          startDate: startDate,
+          endDate: endDate,
         };
 
         const response = await fetch(API_ENDPOINTS.NEWS_SEARCH, {
