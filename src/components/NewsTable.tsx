@@ -110,11 +110,20 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
         let endDate: string | null = null;
         
         if (filters?.dateRange && filters.dateRange !== "all" && typeof filters.dateRange === 'object') {
-          if (filters.dateRange.from) {
-            startDate = filters.dateRange.from.toISOString().split('T')[0];
+          const dateRange = filters.dateRange as { from?: Date; to?: Date };
+          if (dateRange.from) {
+            // Format date as YYYY-MM-DD
+            const year = dateRange.from.getFullYear();
+            const month = String(dateRange.from.getMonth() + 1).padStart(2, '0');
+            const day = String(dateRange.from.getDate()).padStart(2, '0');
+            startDate = `${year}-${month}-${day}`;
           }
-          if (filters.dateRange.to) {
-            endDate = filters.dateRange.to.toISOString().split('T')[0];
+          if (dateRange.to) {
+            // Format date as YYYY-MM-DD
+            const year = dateRange.to.getFullYear();
+            const month = String(dateRange.to.getMonth() + 1).padStart(2, '0');
+            const day = String(dateRange.to.getDate()).padStart(2, '0');
+            endDate = `${year}-${month}-${day}`;
           }
         }
 
@@ -136,6 +145,9 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           startDate: startDate,
           endDate: endDate,
         };
+
+        // Debug: Log the payload to verify dates are included
+        console.log('News search payload:', JSON.stringify(searchPayload, null, 2));
 
         const response = await fetch(API_ENDPOINTS.NEWS_SEARCH, {
           method: 'POST',
