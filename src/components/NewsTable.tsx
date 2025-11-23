@@ -204,14 +204,32 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           };
 
           // Map API response fields to component interface
-          const newsItems: NewsItem[] = rawItems.map((item: any, index: number) => ({
-            id: item.id || item._id || `temp-${index}`,
-            title: item.title || '',
-            category: item.category || '',
-            status: item.status || 'pending', // Default to pending if not provided
-            date: formatDateToYYYYMMDD(item.date || item.createdAt),
-            time: item.time || '',
-          }));
+          const newsItems: NewsItem[] = rawItems.map((item: any, index: number) => {
+            // Try multiple possible date field names
+            const dateValue = item.date 
+              || item.createdAt 
+              || item.created_at 
+              || item.publishedAt 
+              || item.published_at
+              || item.updatedAt
+              || item.updated_at
+              || item.timestamp
+              || null;
+            
+            // Log warning if item has no date field (backend data issue)
+            if (!dateValue && process.env.NODE_ENV === 'development') {
+              console.warn(`News item ${item.id || index} has no date field. Available fields:`, Object.keys(item));
+            }
+            
+            return {
+              id: item.id || item._id || `temp-${index}`,
+              title: item.title || '',
+              category: item.category || '',
+              status: item.status || 'pending', // Default to pending if not provided
+              date: formatDateToYYYYMMDD(dateValue),
+              time: item.time || '',
+            };
+          });
           
           setNewsData(newsItems);
         } else {
