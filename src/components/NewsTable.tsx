@@ -179,13 +179,36 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
             }
           }
           
+          // Helper function to format date to YYYY-MM-DD
+          const formatDateToYYYYMMDD = (dateValue: any): string => {
+            if (!dateValue) {
+              return new Date().toISOString().split('T')[0];
+            }
+            
+            // If it's already a string in YYYY-MM-DD format
+            if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+              return dateValue;
+            }
+            
+            // If it's a Date object or ISO string, extract YYYY-MM-DD
+            const date = new Date(dateValue);
+            if (isNaN(date.getTime())) {
+              return new Date().toISOString().split('T')[0];
+            }
+            
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+          };
+
           // Map API response fields to component interface
           const newsItems: NewsItem[] = rawItems.map((item: any, index: number) => ({
             id: item.id || item._id || `temp-${index}`,
             title: item.title || '',
             category: item.category || '',
             status: item.status || 'pending', // Default to pending if not provided
-            date: item.date || item.createdAt || new Date().toISOString().split('T')[0],
+            date: formatDateToYYYYMMDD(item.date || item.createdAt),
             time: item.time || '',
           }));
           
