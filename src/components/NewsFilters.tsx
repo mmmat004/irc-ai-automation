@@ -39,6 +39,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
     dateRange: "all"
   });
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false);
 
   const updateFilter = (key: keyof FilterState, value: string | DateRange | undefined) => {
     const newFilters = { ...filters, [key]: value };
@@ -51,6 +52,11 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range);
     updateFilter("dateRange", range);
+    
+    // Close popover when both dates are selected
+    if (range?.from && range?.to) {
+      setIsDatePopoverOpen(false);
+    }
   };
 
   const handleAllDates = () => {
@@ -131,7 +137,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
         </Select>
 
         {/* Date Range Calendar Picker */}
-        <Popover>
+        <Popover open={isDatePopoverOpen} onOpenChange={setIsDatePopoverOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
@@ -183,42 +189,68 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm text-muted-foreground">Active filters:</span>
             {filters.search && (
-              <Badge variant="secondary" className="gap-1">
-                Search: "{filters.search}"
-                <X 
-                  className="w-3 h-3 cursor-pointer" 
-                  onClick={() => updateFilter("search", "")}
-                />
+              <Badge variant="secondary" className="gap-1.5 pr-1">
+                <span>Search: "{filters.search}"</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateFilter("search", "");
+                  }}
+                  className="ml-1 rounded-sm hover:bg-gray-200 p-0.5 transition-colors focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  aria-label="Remove search filter"
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </Badge>
             )}
             {filters.category !== "all" && (
-              <Badge variant="secondary" className="gap-1">
-                Category: {filters.category}
-                <X 
-                  className="w-3 h-3 cursor-pointer" 
-                  onClick={() => updateFilter("category", "all")}
-                />
+              <Badge variant="secondary" className="gap-1.5 pr-1">
+                <span>Category: {filters.category}</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateFilter("category", "all");
+                  }}
+                  className="ml-1 rounded-sm hover:bg-gray-200 p-0.5 transition-colors focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  aria-label="Remove category filter"
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </Badge>
             )}
             {filters.status !== "all" && (
-              <Badge variant="secondary" className="gap-1">
-                Status: {filters.status}
-                <X 
-                  className="w-3 h-3 cursor-pointer" 
-                  onClick={() => updateFilter("status", "all")}
-                />
+              <Badge variant="secondary" className="gap-1.5 pr-1">
+                <span>Status: {filters.status}</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateFilter("status", "all");
+                  }}
+                  className="ml-1 rounded-sm hover:bg-gray-200 p-0.5 transition-colors focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  aria-label="Remove status filter"
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </Badge>
             )}
             {filters.dateRange !== "all" && filters.dateRange !== undefined && (
-              <Badge variant="secondary" className="gap-1">
-                Date: {formatDateRange(dateRange)}
-                <X 
-                  className="w-3 h-3 cursor-pointer" 
-                  onClick={() => {
+              <Badge variant="secondary" className="gap-1.5 pr-1">
+                <span>Date: {formatDateRange(dateRange)}</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setDateRange(undefined);
                     updateFilter("dateRange", "all");
                   }}
-                />
+                  className="ml-1 rounded-sm hover:bg-gray-200 p-0.5 transition-colors focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  aria-label="Remove date filter"
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </Badge>
             )}
           </div>

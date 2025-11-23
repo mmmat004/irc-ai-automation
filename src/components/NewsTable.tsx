@@ -111,19 +111,20 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
         
         if (filters?.dateRange && filters.dateRange !== "all" && typeof filters.dateRange === 'object') {
           const dateRange = filters.dateRange as { from?: Date; to?: Date };
-          if (dateRange.from) {
-            // Format date as YYYY-MM-DD
-            const year = dateRange.from.getFullYear();
-            const month = String(dateRange.from.getMonth() + 1).padStart(2, '0');
-            const day = String(dateRange.from.getDate()).padStart(2, '0');
-            startDate = `${year}-${month}-${day}`;
-          }
-          if (dateRange.to) {
-            // Format date as YYYY-MM-DD
-            const year = dateRange.to.getFullYear();
-            const month = String(dateRange.to.getMonth() + 1).padStart(2, '0');
-            const day = String(dateRange.to.getDate()).padStart(2, '0');
-            endDate = `${year}-${month}-${day}`;
+          
+          // Only set dates if both from and to are present (complete range)
+          if (dateRange.from && dateRange.to) {
+            // Format startDate as YYYY-MM-DD
+            const fromYear = dateRange.from.getFullYear();
+            const fromMonth = String(dateRange.from.getMonth() + 1).padStart(2, '0');
+            const fromDay = String(dateRange.from.getDate()).padStart(2, '0');
+            startDate = `${fromYear}-${fromMonth}-${fromDay}`;
+            
+            // Format endDate as YYYY-MM-DD
+            const toYear = dateRange.to.getFullYear();
+            const toMonth = String(dateRange.to.getMonth() + 1).padStart(2, '0');
+            const toDay = String(dateRange.to.getDate()).padStart(2, '0');
+            endDate = `${toYear}-${toMonth}-${toDay}`;
           }
         }
 
