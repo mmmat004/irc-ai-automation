@@ -114,13 +114,13 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           
           // Only set dates if both from and to are present (complete range)
           if (dateRange.from && dateRange.to) {
-            // Format startDate as YYYY-MM-DD
+            // Format startDate as YYYY-MM-DD using local date (not UTC to preserve user's selected date)
             const fromYear = dateRange.from.getFullYear();
             const fromMonth = String(dateRange.from.getMonth() + 1).padStart(2, '0');
             const fromDay = String(dateRange.from.getDate()).padStart(2, '0');
             startDate = `${fromYear}-${fromMonth}-${fromDay}`;
             
-            // Format endDate as YYYY-MM-DD
+            // Format endDate as YYYY-MM-DD using local date
             const toYear = dateRange.to.getFullYear();
             const toMonth = String(dateRange.to.getMonth() + 1).padStart(2, '0');
             const toDay = String(dateRange.to.getDate()).padStart(2, '0');
@@ -146,6 +146,11 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           startDate: startDate,
           endDate: endDate,
         };
+
+        // Debug: Log payload to verify dates are being sent correctly
+        if (process.env.NODE_ENV === 'development' && (startDate || endDate)) {
+          console.log('Date filter payload:', { startDate, endDate, fullPayload: searchPayload });
+        }
 
         const response = await fetch(API_ENDPOINTS.NEWS_SEARCH, {
           method: 'POST',
