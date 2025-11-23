@@ -94,14 +94,14 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
         setIsLoading(true);
         
         // Map category name to category ID
-        let categoryId: string | null = null;
+        let categoryId: string = "";
         if (filters?.category && filters.category !== "all") {
           const category = categories.find(cat => cat.name === filters.category);
           if (category) {
-            categoryId = category.id;
+            categoryId = String(category.id);
           } else {
             // If category not found, try to use the value directly (in case it's already an ID)
-            categoryId = filters.category;
+            categoryId = String(filters.category);
           }
         }
 
@@ -123,7 +123,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           page: number;
           limit: number;
           keyword: string | null;
-          categoryId: string | null;
+          categoryId: string;
           status: string | null;
           startDate: string | null;
           endDate: string | null;
