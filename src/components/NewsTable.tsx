@@ -149,7 +149,12 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
 
         // Debug: Log payload to verify dates are being sent correctly
         if (process.env.NODE_ENV === 'development' && (startDate || endDate)) {
-          console.log('Date filter payload:', { startDate, endDate, fullPayload: searchPayload });
+          console.log('📅 Date filter payload:', { 
+            startDate, 
+            endDate, 
+            dateRange: filters?.dateRange,
+            fullPayload: searchPayload 
+          });
         }
 
         const response = await fetch(API_ENDPOINTS.NEWS_SEARCH, {
@@ -163,6 +168,17 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
 
         if (response.ok) {
           const data = await response.json();
+          
+          // Debug: Log response to verify what's being returned
+          if (process.env.NODE_ENV === 'development' && (startDate || endDate)) {
+            console.log('📥 Date filter response:', { 
+              totalItems: data.totalItems || data.total || 0,
+              itemsCount: Array.isArray(data) ? data.length : (data.items || data.data || data.news || []).length,
+              sampleDates: Array.isArray(data) 
+                ? data.slice(0, 3).map((item: any) => ({ id: item.id, date: item.date, createdAt: item.createdAt }))
+                : (data.items || data.data || data.news || []).slice(0, 3).map((item: any) => ({ id: item.id, date: item.date, createdAt: item.createdAt }))
+            });
+          }
           
           // API returns: { currentPage, totalPage, totalItems, items: [...] }
           let rawItems: any[] = [];
@@ -185,10 +201,10 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
             }
           }
           
-          // Helper function to format date to YYYY-MM-DD
+          // Helper function to format date to YYYY-MM-DD or return "N/A" if no date
           const formatDateToYYYYMMDD = (dateValue: any): string => {
             if (!dateValue) {
-              return new Date().toISOString().split('T')[0];
+              return "N/A";
             }
             
             // If it's already a string in YYYY-MM-DD format
@@ -199,7 +215,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
             // If it's a Date object or ISO string, extract YYYY-MM-DD
             const date = new Date(dateValue);
             if (isNaN(date.getTime())) {
-              return new Date().toISOString().split('T')[0];
+              return "N/A";
             }
             
             const year = date.getFullYear();
@@ -690,8 +706,10 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                   {getStatusBadge(news.status)}
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900">{news.date}</div>
-                  {news.time && <div className="text-sm text-gray-500">{news.time}</div>}
+                  <div className={`text-sm ${news.date === "N/A" ? "text-gray-400 italic" : "text-gray-900"}`}>
+                    {news.date}
+                  </div>
+                  {news.time && news.date !== "N/A" && <div className="text-sm text-gray-500">{news.time}</div>}
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
