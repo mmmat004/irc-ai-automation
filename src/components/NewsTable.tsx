@@ -112,6 +112,16 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
         if (filters?.dateRange && filters.dateRange !== "all" && typeof filters.dateRange === 'object') {
           const dateRange = filters.dateRange as { from?: Date; to?: Date };
           
+          // Debug: Log the raw date range from filters
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📅 Raw date range from filters:', {
+              from: dateRange.from ? dateRange.from.toISOString() : null,
+              to: dateRange.to ? dateRange.to.toISOString() : null,
+              fromLocal: dateRange.from ? dateRange.from.toLocaleDateString() : null,
+              toLocal: dateRange.to ? dateRange.to.toLocaleDateString() : null,
+            });
+          }
+          
           // Only set dates if both from and to are present (complete range)
           if (dateRange.from && dateRange.to) {
             // Format startDate as YYYY-MM-DD using local date (not UTC to preserve user's selected date)

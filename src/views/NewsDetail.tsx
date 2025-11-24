@@ -50,6 +50,29 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [showVerifyConfirm, setShowVerifyConfirm] = useState(false);
 
+  // Helper function to format date to YYYY-MM-DD or return "N/A" if no date
+  const formatDateToYYYYMMDD = (dateValue: any): string => {
+    if (!dateValue) {
+      return "N/A";
+    }
+    
+    // If it's already a string in YYYY-MM-DD format
+    if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+      return dateValue;
+    }
+    
+    // If it's a Date object or ISO string, extract YYYY-MM-DD
+    const date = new Date(dateValue);
+    if (isNaN(date.getTime())) {
+      return "N/A";
+    }
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Fetch news detail from API
   useEffect(() => {
     const fetchNewsDetail = async () => {
@@ -68,13 +91,23 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
 
         if (response.ok) {
           const data = await response.json();
+          // Try multiple possible date field names
+          const dateValue = data.date 
+            || data.createdAt 
+            || data.created_at 
+            || data.publishedAt 
+            || data.published_at
+            || data.updatedAt
+            || data.updated_at
+            || null;
+          
           // Map API response fields to component interface
           const mappedNews: NewsDetailData = {
             id: data.id,
             title: data.title || '',
             category: data.category || '',
             status: data.status || 'pending',
-            date: data.date || data.createdAt || new Date().toISOString().split('T')[0],
+            date: formatDateToYYYYMMDD(dateValue),
             time: data.time || '',
             keywords: data.keyword || data.keywords || [],
             intro: data.introduction || data.intro || '',
@@ -163,12 +196,20 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
           });
           if (refreshResponse.ok) {
             const refreshData = await refreshResponse.json();
+            const dateValue = refreshData.date 
+              || refreshData.createdAt 
+              || refreshData.created_at 
+              || refreshData.publishedAt 
+              || refreshData.published_at
+              || refreshData.updatedAt
+              || refreshData.updated_at
+              || null;
             const mappedNews: NewsDetailData = {
               id: refreshData.id,
               title: refreshData.title || '',
               category: refreshData.category || '',
               status: refreshData.status || 'verified',
-              date: refreshData.date || refreshData.createdAt || new Date().toISOString().split('T')[0],
+              date: formatDateToYYYYMMDD(dateValue),
               time: refreshData.time || '',
               keywords: refreshData.keyword || refreshData.keywords || [],
               intro: refreshData.introduction || refreshData.intro || '',
@@ -299,7 +340,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
               title: updatedNews.title || news.title,
               category: updatedNews.category || news.category,
               status: updatedNews.status || 'pending',
-              date: updatedNews.date || updatedNews.createdAt || news.date,
+              date: formatDateToYYYYMMDD(updatedNews.date || updatedNews.createdAt || updatedNews.created_at || updatedNews.publishedAt || updatedNews.published_at || news.date),
               time: updatedNews.time || news.time,
               keywords: updatedNews.keyword || updatedNews.keywords || news.keywords || [],
               intro: updatedNews.introduction || updatedNews.intro || news.intro,
@@ -385,7 +426,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
               title: updatedNews.title || news.title,
               category: updatedNews.category || news.category,
               status: updatedNews.status || 'pending',
-              date: updatedNews.date || updatedNews.createdAt || news.date,
+              date: formatDateToYYYYMMDD(updatedNews.date || updatedNews.createdAt || updatedNews.created_at || updatedNews.publishedAt || updatedNews.published_at || news.date),
               time: updatedNews.time || news.time,
               keywords: updatedNews.keyword || updatedNews.keywords || news.keywords || [],
               intro: updatedNews.introduction || updatedNews.intro || news.intro,
@@ -409,12 +450,21 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
           });
           if (refreshResponse.ok) {
             const refreshData = await refreshResponse.json();
+            const dateValue = refreshData.date 
+              || refreshData.createdAt 
+              || refreshData.created_at 
+              || refreshData.publishedAt 
+              || refreshData.published_at
+              || refreshData.updatedAt
+              || refreshData.updated_at
+              || news.date
+              || null;
             const mappedNews: NewsDetailData = {
               id: refreshData.id,
               title: refreshData.title || news.title,
               category: refreshData.category || news.category,
               status: refreshData.status || 'pending',
-              date: refreshData.date || refreshData.createdAt || news.date,
+              date: formatDateToYYYYMMDD(dateValue),
               time: refreshData.time || news.time,
               keywords: refreshData.keyword || refreshData.keywords || news.keywords || [],
               intro: refreshData.introduction || refreshData.intro || news.intro,
@@ -562,9 +612,9 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
-                <span>
+                <span className={news.date === "N/A" ? "text-gray-400 italic" : ""}>
                   {news.date}
-                  {news.time && ` at ${news.time}`}
+                  {news.time && news.date !== "N/A" && ` at ${news.time}`}
                 </span>
               </div>
             </div>
