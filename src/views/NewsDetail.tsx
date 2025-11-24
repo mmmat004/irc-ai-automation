@@ -18,6 +18,7 @@ import { Separator } from "../components/ui/separator";
 import { VerifyConfirmationModal } from "../components/VerifyConfirmationModal";
 import { toast } from "sonner";
 import { API_ENDPOINTS } from "../config/api";
+import { extractDateFromItem } from "../utils/dateUtils";
 
 interface NewsDetailProps {
   newsId: string | number;
@@ -50,29 +51,6 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [showVerifyConfirm, setShowVerifyConfirm] = useState(false);
 
-  // Helper function to format date to YYYY-MM-DD or return "N/A" if no date
-  const formatDateToYYYYMMDD = (dateValue: any): string => {
-    if (!dateValue) {
-      return "N/A";
-    }
-    
-    // If it's already a string in YYYY-MM-DD format
-    if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
-      return dateValue;
-    }
-    
-    // If it's a Date object or ISO string, extract YYYY-MM-DD
-    const date = new Date(dateValue);
-    if (isNaN(date.getTime())) {
-      return "N/A";
-    }
-    
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   // Fetch news detail from API
   useEffect(() => {
     const fetchNewsDetail = async () => {
@@ -91,23 +69,15 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
 
         if (response.ok) {
           const data = await response.json();
-          // Try multiple possible date field names
-          const dateValue = data.date 
-            || data.createdAt 
-            || data.created_at 
-            || data.publishedAt 
-            || data.published_at
-            || data.updatedAt
-            || data.updated_at
-            || null;
           
           // Map API response fields to component interface
+          // Use utility function to extract and normalize date to YYYY-MM-DD format
           const mappedNews: NewsDetailData = {
             id: data.id,
             title: data.title || '',
             category: data.category || '',
             status: data.status || 'pending',
-            date: formatDateToYYYYMMDD(dateValue),
+            date: extractDateFromItem(data), // Use utility function to normalize date to YYYY-MM-DD
             time: data.time || '',
             keywords: data.keyword || data.keywords || [],
             intro: data.introduction || data.intro || '',
@@ -196,20 +166,12 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
           });
           if (refreshResponse.ok) {
             const refreshData = await refreshResponse.json();
-            const dateValue = refreshData.date 
-              || refreshData.createdAt 
-              || refreshData.created_at 
-              || refreshData.publishedAt 
-              || refreshData.published_at
-              || refreshData.updatedAt
-              || refreshData.updated_at
-              || null;
             const mappedNews: NewsDetailData = {
               id: refreshData.id,
               title: refreshData.title || '',
               category: refreshData.category || '',
               status: refreshData.status || 'verified',
-              date: formatDateToYYYYMMDD(dateValue),
+              date: extractDateFromItem(refreshData), // Use utility function to normalize date
               time: refreshData.time || '',
               keywords: refreshData.keyword || refreshData.keywords || [],
               intro: refreshData.introduction || refreshData.intro || '',
@@ -283,7 +245,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
               title: refreshData.title || '',
               category: refreshData.category || '',
               status: refreshData.status || 'rejected',
-              date: refreshData.date || refreshData.createdAt || new Date().toISOString().split('T')[0],
+              date: extractDateFromItem(refreshData),
               time: refreshData.time || '',
               keywords: refreshData.keyword || refreshData.keywords || [],
               intro: refreshData.introduction || refreshData.intro || '',
@@ -340,7 +302,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
               title: updatedNews.title || news.title,
               category: updatedNews.category || news.category,
               status: updatedNews.status || 'pending',
-              date: formatDateToYYYYMMDD(updatedNews.date || updatedNews.createdAt || updatedNews.created_at || updatedNews.publishedAt || updatedNews.published_at || news.date),
+              date: extractDateFromItem(updatedNews.date ? updatedNews : { ...updatedNews, date: news.date }),
               time: updatedNews.time || news.time,
               keywords: updatedNews.keyword || updatedNews.keywords || news.keywords || [],
               intro: updatedNews.introduction || updatedNews.intro || news.intro,
@@ -369,7 +331,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
               title: refreshData.title || '',
               category: refreshData.category || '',
               status: refreshData.status || 'pending',
-              date: refreshData.date || refreshData.createdAt || new Date().toISOString().split('T')[0],
+              date: extractDateFromItem(refreshData),
               time: refreshData.time || '',
               keywords: refreshData.keyword || refreshData.keywords || [],
               intro: refreshData.introduction || refreshData.intro || '',
@@ -426,7 +388,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
               title: updatedNews.title || news.title,
               category: updatedNews.category || news.category,
               status: updatedNews.status || 'pending',
-              date: formatDateToYYYYMMDD(updatedNews.date || updatedNews.createdAt || updatedNews.created_at || updatedNews.publishedAt || updatedNews.published_at || news.date),
+              date: extractDateFromItem(updatedNews.date ? updatedNews : { ...updatedNews, date: news.date }),
               time: updatedNews.time || news.time,
               keywords: updatedNews.keyword || updatedNews.keywords || news.keywords || [],
               intro: updatedNews.introduction || updatedNews.intro || news.intro,
@@ -450,21 +412,12 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
           });
           if (refreshResponse.ok) {
             const refreshData = await refreshResponse.json();
-            const dateValue = refreshData.date 
-              || refreshData.createdAt 
-              || refreshData.created_at 
-              || refreshData.publishedAt 
-              || refreshData.published_at
-              || refreshData.updatedAt
-              || refreshData.updated_at
-              || news.date
-              || null;
             const mappedNews: NewsDetailData = {
               id: refreshData.id,
               title: refreshData.title || news.title,
               category: refreshData.category || news.category,
               status: refreshData.status || 'pending',
-              date: formatDateToYYYYMMDD(dateValue),
+              date: extractDateFromItem(refreshData.date ? refreshData : { ...refreshData, date: news.date }),
               time: refreshData.time || news.time,
               keywords: refreshData.keyword || refreshData.keywords || news.keywords || [],
               intro: refreshData.introduction || refreshData.intro || news.intro,

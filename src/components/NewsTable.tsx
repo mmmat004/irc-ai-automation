@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { toast } from "sonner";
 import { showSuccess, showError, NotificationMessages } from "../utils/notifications";
+import { extractDateFromItem, formatDateForAPI } from "../utils/dateUtils";
 import { FilterState } from "./NewsFilters";
 import { API_ENDPOINTS } from "../config/api";
 import { VerifyConfirmationModal } from "./VerifyConfirmationModal";
@@ -124,17 +125,9 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           
           // Only set dates if both from and to are present (complete range)
           if (dateRange.from && dateRange.to) {
-            // Format startDate as YYYY-MM-DD using local date (not UTC to preserve user's selected date)
-            const fromYear = dateRange.from.getFullYear();
-            const fromMonth = String(dateRange.from.getMonth() + 1).padStart(2, '0');
-            const fromDay = String(dateRange.from.getDate()).padStart(2, '0');
-            startDate = `${fromYear}-${fromMonth}-${fromDay}`;
-            
-            // Format endDate as YYYY-MM-DD using local date
-            const toYear = dateRange.to.getFullYear();
-            const toMonth = String(dateRange.to.getMonth() + 1).padStart(2, '0');
-            const toDay = String(dateRange.to.getDate()).padStart(2, '0');
-            endDate = `${toYear}-${toMonth}-${toDay}`;
+            // Format dates using utility function to ensure consistent YYYY-MM-DD format
+            startDate = formatDateForAPI(dateRange.from);
+            endDate = formatDateForAPI(dateRange.to);
           }
         }
 
@@ -211,32 +204,10 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
             }
           }
           
-          // Helper function to format date to YYYY-MM-DD or return "N/A" if no date
-          const formatDateToYYYYMMDD = (dateValue: any): string => {
-            if (!dateValue) {
-              return "N/A";
-            }
-            
-            // If it's already a string in YYYY-MM-DD format
-            if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
-              return dateValue;
-            }
-            
-            // If it's a Date object or ISO string, extract YYYY-MM-DD
-            const date = new Date(dateValue);
-            if (isNaN(date.getTime())) {
-              return "N/A";
-            }
-            
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-          };
-
           // Map API response fields to component interface
+          // Use utility function to extract and normalize dates to YYYY-MM-DD format
           const newsItems: NewsItem[] = rawItems.map((item: any, index: number) => {
-            // Try multiple possible date field names
+            // Log warning if item has no date field (backend data issue)
             const dateValue = item.date 
               || item.createdAt 
               || item.created_at 
@@ -247,7 +218,6 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
               || item.timestamp
               || null;
             
-            // Log warning if item has no date field (backend data issue)
             if (!dateValue && process.env.NODE_ENV === 'development') {
               console.warn(`News item ${item.id || index} has no date field. Available fields:`, Object.keys(item));
             }
@@ -257,7 +227,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
               title: item.title || '',
               category: item.category || '',
               status: item.status || 'pending', // Default to pending if not provided
-              date: formatDateToYYYYMMDD(dateValue),
+              date: extractDateFromItem(item), // Use utility function to normalize date to YYYY-MM-DD
               time: item.time || '',
             };
           });
