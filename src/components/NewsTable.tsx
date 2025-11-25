@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Check, X, CheckSquare, Square, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -94,16 +94,10 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
       try {
         setIsLoading(true);
         
-        // Map category name to category ID
-        let categoryId: string = "";
+        let categoryId = "";
         if (filters?.category && filters.category !== "all") {
           const category = categories.find(cat => cat.name === filters.category);
-          if (category) {
-            categoryId = String(category.id);
-          } else {
-            // If category not found, try to use the value directly (in case it's already an ID)
-            categoryId = String(filters.category);
-          }
+          categoryId = category ? String(category.id) : String(filters.category);
         }
 
         // Handle date range filter
@@ -113,25 +107,12 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
         if (filters?.dateRange && filters.dateRange !== "all" && typeof filters.dateRange === 'object') {
           const dateRange = filters.dateRange as { from?: Date; to?: Date };
           
-          // Debug: Log the raw date range from filters
-          if (process.env.NODE_ENV === 'development') {
-            console.log('📅 Raw date range from filters:', {
-              from: dateRange.from ? dateRange.from.toISOString() : null,
-              to: dateRange.to ? dateRange.to.toISOString() : null,
-              fromLocal: dateRange.from ? dateRange.from.toLocaleDateString() : null,
-              toLocal: dateRange.to ? dateRange.to.toLocaleDateString() : null,
-            });
-          }
-          
-          // Only set dates if both from and to are present (complete range)
           if (dateRange.from && dateRange.to) {
-            // Format dates using utility function to ensure consistent YYYY-MM-DD format
             startDate = formatDateForAPI(dateRange.from);
             endDate = formatDateForAPI(dateRange.to);
           }
         }
 
-        // Build search payload according to API specification
         const searchPayload: {
           page: number;
           limit: number;
@@ -150,16 +131,6 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           endDate: endDate,
         };
 
-        // Debug: Log payload to verify dates are being sent correctly
-        if (process.env.NODE_ENV === 'development' && (startDate || endDate)) {
-          console.log('📅 Date filter payload:', { 
-            startDate, 
-            endDate, 
-            dateRange: filters?.dateRange,
-            fullPayload: searchPayload 
-          });
-        }
-
         const response = await fetch(API_ENDPOINTS.NEWS_SEARCH, {
           method: 'POST',
           headers: {
@@ -172,18 +143,6 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
         if (response.ok) {
           const data = await response.json();
           
-          // Debug: Log response to verify what's being returned
-          if (process.env.NODE_ENV === 'development' && (startDate || endDate)) {
-            console.log('📥 Date filter response:', { 
-              totalItems: data.totalItems || data.total || 0,
-              itemsCount: Array.isArray(data) ? data.length : (data.items || data.data || data.news || []).length,
-              sampleDates: Array.isArray(data) 
-                ? data.slice(0, 3).map((item: any) => ({ id: item.id, date: item.date, createdAt: item.createdAt }))
-                : (data.items || data.data || data.news || []).slice(0, 3).map((item: any) => ({ id: item.id, date: item.date, createdAt: item.createdAt }))
-            });
-          }
-          
-          // API returns: { currentPage, totalPage, totalItems, items: [...] }
           let rawItems: any[] = [];
           if (Array.isArray(data)) {
             rawItems = data;
@@ -191,46 +150,20 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
             rawItems = data.items || data.data || data.news || data.results || [];
           }
           
-          // Update pagination info
           if (data && typeof data === 'object') {
-            if (typeof data.currentPage === 'number') {
-              setCurrentPage(data.currentPage);
-            }
-            if (typeof data.totalPage === 'number') {
-              setTotalPages(data.totalPage);
-            }
-            if (typeof data.totalItems === 'number') {
-              setTotalItems(data.totalItems);
-            }
+            if (typeof data.currentPage === 'number') setCurrentPage(data.currentPage);
+            if (typeof data.totalPage === 'number') setTotalPages(data.totalPage);
+            if (typeof data.totalItems === 'number') setTotalItems(data.totalItems);
           }
           
-          // Map API response fields to component interface
-          // Use utility function to extract and normalize dates to YYYY-MM-DD format
-          const newsItems: NewsItem[] = rawItems.map((item: any, index: number) => {
-            // Log warning if item has no date field (backend data issue)
-            const dateValue = item.date 
-              || item.createdAt 
-              || item.created_at 
-              || item.publishedAt 
-              || item.published_at
-              || item.updatedAt
-              || item.updated_at
-              || item.timestamp
-              || null;
-            
-            if (!dateValue && process.env.NODE_ENV === 'development') {
-              console.warn(`News item ${item.id || index} has no date field. Available fields:`, Object.keys(item));
-            }
-            
-            return {
-              id: item.id || item._id || `temp-${index}`,
-              title: item.title || '',
-              category: item.category || '',
-              status: item.status || 'pending', // Default to pending if not provided
-              date: extractDateFromItem(item), // Use utility function to normalize date to YYYY-MM-DD
-              time: item.time || '',
-            };
-          });
+          const newsItems: NewsItem[] = rawItems.map((item: any, index: number) => ({
+            id: item.id || item._id || `temp-${index}`,
+            title: item.title || '',
+            category: item.category || '',
+            status: item.status || 'pending',
+            date: extractDateFromItem(item),
+            time: item.time || '',
+          }));
           
           setNewsData(newsItems);
         } else {

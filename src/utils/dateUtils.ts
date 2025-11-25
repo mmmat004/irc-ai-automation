@@ -68,37 +68,3 @@ export const formatDateForAPI = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
-/**
- * Checks if a date string (YYYY-MM-DD) falls within a date range (inclusive)
- * 
- * @param dateStr - Date string in YYYY-MM-DD format
- * @param startDate - Start date string in YYYY-MM-DD format
- * @param endDate - End date string in YYYY-MM-DD format
- * @returns true if date falls within range (inclusive), false otherwise
- */
-export const isDateInRange = (dateStr: string, startDate: string, endDate: string): boolean => {
-  if (dateStr === "N/A") {
-    return false;
-  }
-  
-  // Simple string comparison works for YYYY-MM-DD format
-  return dateStr >= startDate && dateStr <= endDate;
-};
-
-/**
- * Compares two date strings in YYYY-MM-DD format
- * 
- * @param date1 - First date string in YYYY-MM-DD format
- * @param date2 - Second date string in YYYY-MM-DD format
- * @returns -1 if date1 < date2, 0 if equal, 1 if date1 > date2
- */
-export const compareDates = (date1: string, date2: string): number => {
-  if (date1 === "N/A" || date2 === "N/A") {
-    return 0;
-  }
-  
-  if (date1 < date2) return -1;
-  if (date1 > date2) return 1;
-  return 0;
-};
-
