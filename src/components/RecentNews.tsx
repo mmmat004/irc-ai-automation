@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "../contexts/LanguageContext";
 import { API_ENDPOINTS } from "../config/api";
 import { toast } from "sonner";
 
@@ -29,6 +30,7 @@ interface RecentNewsProps {
 }
 
 export function RecentNews({ onNewsSelect }: RecentNewsProps) {
+  const { language } = useLanguage();
   const [recentNewsData, setRecentNewsData] = useState<RecentNewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -41,6 +43,7 @@ export function RecentNews({ onNewsSelect }: RecentNewsProps) {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'irc-lang': language === 'th' ? 'th' : 'en',
           },
           credentials: 'include',
         });
@@ -73,7 +76,7 @@ export function RecentNews({ onNewsSelect }: RecentNewsProps) {
     };
 
     fetchRecentNews();
-  }, []);
+  }, [language]);
 
   const handleNewsClick = (newsId: string | number) => {
     if (onNewsSelect) {

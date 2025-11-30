@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "../contexts/LanguageContext";
 import {
   ArrowLeft,
   Clock,
@@ -45,6 +46,7 @@ interface NewsDetailData {
 }
 
 export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
+  const { language } = useLanguage();
   const [news, setNews] = useState<NewsDetailData | null>(null);
   const [isTranslated, setIsTranslated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,6 +65,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'irc-lang': language === 'th' ? 'th' : 'en',
           },
           credentials: 'include',
         });
@@ -104,7 +107,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
     };
 
     fetchNewsDetail();
-  }, [newsId, onBack]);
+  }, [newsId, onBack, language]);
 
   const handleShare = () => {
     toast("Link copied to clipboard!");

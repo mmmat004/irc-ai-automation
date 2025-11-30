@@ -10,6 +10,7 @@ import { Profile } from "./views/Profile";
 import { Login } from "./views/Login";
 import { NewsDetail } from "./views/NewsDetail";
 import { API_ENDPOINTS } from "./config/api";
+import { LanguageProvider } from "./contexts/LanguageContext";
 
 
 function AppContent() {
@@ -247,5 +248,9 @@ function AppContent() {
 }
 
 export default function App() {
-  return <AppContent />;
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
+  );
 }

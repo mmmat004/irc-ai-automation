@@ -6,8 +6,10 @@ import {
   Workflow, 
   User,
   LogOut,
-  Circle
+  Circle,
+  Languages
 } from "lucide-react";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface SidebarProps {
   currentPage: string;
@@ -16,16 +18,22 @@ interface SidebarProps {
 }
 
 export function Sidebar({ currentPage, onNavigate, onLogout }: SidebarProps) {
+  const { language, setLanguage, t } = useLanguage();
+  
   const navigationItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'news', label: 'News Management', icon: FileText },
-    { id: 'categories', label: 'Categories', icon: Tag },
-    { id: 'workflows', label: 'n8n Workflows', icon: Workflow },
-    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'dashboard', label: t('sidebar.dashboard'), icon: Home, key: 'sidebar.dashboard' },
+    { id: 'news', label: t('sidebar.newsManagement'), icon: FileText, key: 'sidebar.newsManagement' },
+    { id: 'categories', label: t('sidebar.categories'), icon: Tag, key: 'sidebar.categories' },
+    { id: 'workflows', label: t('sidebar.workflows'), icon: Workflow, key: 'sidebar.workflows' },
+    { id: 'profile', label: t('sidebar.profile'), icon: User, key: 'sidebar.profile' },
   ];
 
   const handleNavigation = (page: string) => {
     onNavigate(page);
+  };
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'th' : 'en');
   };
 
   return (
@@ -78,15 +86,24 @@ export function Sidebar({ currentPage, onNavigate, onLogout }: SidebarProps) {
       </nav>
 
       {/* User Profile Section */}
-      <div className="p-4 border-t border-sidebar-border">
+      <div className="p-4 border-t border-sidebar-border space-y-2">
+        {/* Language Switcher */}
+        <button
+          onClick={toggleLanguage}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group"
+          title={t('sidebar.changeLanguage')}
+        >
+          <Languages className="w-5 h-5 text-sidebar-foreground/70 group-hover:text-sidebar-accent-foreground" />
+          <span className="font-medium">{language === 'en' ? 'ไทย' : 'English'}</span>
+        </button>
         
-        
+        {/* Sign Out */}
         <button
           onClick={onLogout}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left text-sidebar-foreground hover:bg-red-50 hover:text-red-600 group"
         >
           <LogOut className="w-5 h-5 text-sidebar-foreground/70 group-hover:text-red-600" />
-          <span className="font-medium">Sign Out</span>
+          <span className="font-medium">{t('sidebar.signOut')}</span>
         </button>
       </div>
     </div>

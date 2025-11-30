@@ -9,6 +9,7 @@ import { FilterState } from "./NewsFilters";
 import { API_ENDPOINTS } from "../config/api";
 import { VerifyConfirmationModal } from "./VerifyConfirmationModal";
 import { RejectConfirmationModal } from "./RejectConfirmationModal";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface NewsItem {
   id: string | number;
@@ -49,6 +50,7 @@ interface CategoryOption {
 }
 
 export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
+  const { language } = useLanguage();
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string | number>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
@@ -135,6 +137,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'irc-lang': language === 'th' ? 'th' : 'en',
           },
           credentials: 'include',
           body: JSON.stringify(searchPayload),
@@ -179,7 +182,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     };
 
     fetchNewsData();
-  }, [filters, currentPage, pageLimit, categories]);
+  }, [filters, currentPage, pageLimit, categories, language]);
 
   // Reset to page 1 when filters change
   useEffect(() => {

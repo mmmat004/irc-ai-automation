@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "../contexts/LanguageContext";
 import { VerificationCard } from "./VerificationCard";
 import { toast } from "sonner";
 import { API_ENDPOINTS } from "../config/api";
@@ -22,6 +23,7 @@ interface VerificationCardsProps {
 }
 
 export function VerificationCards({ onNewsSelect }: VerificationCardsProps) {
+  const { language } = useLanguage();
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -34,6 +36,7 @@ export function VerificationCards({ onNewsSelect }: VerificationCardsProps) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'irc-lang': language === 'th' ? 'th' : 'en',
           },
           credentials: 'include',
           body: JSON.stringify({
@@ -74,7 +77,7 @@ export function VerificationCards({ onNewsSelect }: VerificationCardsProps) {
     };
 
     fetchPendingNews();
-  }, []);
+  }, [language]);
 
   const handleApprove = async (newsId: string | number, notes: string) => {
     try {

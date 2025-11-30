@@ -13,6 +13,7 @@ import { Profile } from "../views/Profile";
 import { Login } from "../views/Login";
 import { NewsDetail } from "../views/NewsDetail";
 import { API_ENDPOINTS } from "../config/api";
+import { LanguageProvider } from "../contexts/LanguageContext";
 
 export const dynamic = 'force-dynamic';
 
@@ -29,8 +30,18 @@ function HomePageContent() {
       if (newsIdParam && !pageParam) {
         return 'news-detail';
       }
-      if (pageParam) return pageParam;
+      if (pageParam) {
+        // If page is dashboard, ensure we don't have news detail state
+        if (pageParam === 'dashboard') {
+          return 'dashboard';
+        }
+        return pageParam;
+      }
       const savedPage = localStorage.getItem('currentPage');
+      // If saved page is dashboard, always use dashboard
+      if (savedPage === 'dashboard') {
+        return 'dashboard';
+      }
       // If saved page is news-detail but no newsId, fallback to dashboard
       if (savedPage === 'news-detail' && !localStorage.getItem('selectedNewsId')) {
         return 'dashboard';
@@ -44,8 +55,18 @@ function HomePageContent() {
   const [selectedNewsId, setSelectedNewsId] = useState<string | number | null>(() => {
     if (typeof window !== 'undefined') {
       const searchParams = new URLSearchParams(window.location.search);
+      const pageParam = searchParams.get('page');
       const newsIdParam = searchParams.get('newsId');
+      // If page is explicitly dashboard, don't restore newsId
+      if (pageParam === 'dashboard') {
+        return null;
+      }
       if (newsIdParam) return newsIdParam;
+      const savedPage = localStorage.getItem('currentPage');
+      // If saved page is dashboard, don't restore newsId
+      if (savedPage === 'dashboard') {
+        return null;
+      }
       const savedNewsId = localStorage.getItem('selectedNewsId');
       if (savedNewsId) return savedNewsId;
     }
@@ -149,6 +170,16 @@ function HomePageContent() {
             console.log('✅ Token exchange successful!', data);
             setIsAuthenticated(true);
             setAuthError(null);
+            // Reset to dashboard on successful login
+            setCurrentPage('dashboard');
+            setSelectedNewsId(null);
+            setPreviousPage('dashboard');
+            // Clear navigation-related localStorage
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('currentPage');
+              localStorage.removeItem('selectedNewsId');
+              localStorage.removeItem('previousPage');
+            }
           } else {
             const errorData = await response.json().catch(() => ({}));
             console.error('❌ Token exchange failed:', errorData);
@@ -207,6 +238,23 @@ function HomePageContent() {
           console.log('✅ Authentication successful! User:', userData);
           setIsAuthenticated(true);
           setAuthError(null);
+          // On successful auth check, ensure we start at dashboard if no valid news detail state
+          const savedPage = localStorage.getItem('currentPage');
+          const savedNewsId = localStorage.getItem('selectedNewsId');
+          // Only restore news-detail if both page and newsId are present
+          if (savedPage === 'news-detail' && savedNewsId) {
+            // Keep the saved state
+          } else {
+            // Reset to dashboard if invalid state
+            setCurrentPage('dashboard');
+            setSelectedNewsId(null);
+            setPreviousPage('dashboard');
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('currentPage');
+              localStorage.removeItem('selectedNewsId');
+              localStorage.setItem('previousPage', 'dashboard');
+            }
+          }
         } else if (response.status === 401) {
           // Unauthorized - cookies not present or invalid
           console.warn('❌ Authentication failed: No valid session cookies');
@@ -246,6 +294,10 @@ function HomePageContent() {
       setSelectedNewsId(null);
       setPreviousPage('dashboard');
       setAuthError(null);
+      // Clear all navigation-related localStorage
+      localStorage.removeItem('currentPage');
+      localStorage.removeItem('selectedNewsId');
+      localStorage.removeItem('previousPage');
       // Redirect to clear any session
       window.location.href = '/';
     }
@@ -260,6 +312,21 @@ function HomePageContent() {
   const handleBackFromNewsDetail = () => {
     setSelectedNewsId(null);
     setCurrentPage(previousPage);
+  };
+
+  // Custom navigation handler that clears news detail state when navigating to dashboard
+  const handleNavigate = (page: string) => {
+    if (page === 'dashboard') {
+      // Clear news detail state when navigating to dashboard
+      setSelectedNewsId(null);
+      setPreviousPage('dashboard');
+      // Clear localStorage for news detail
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('selectedNewsId');
+        localStorage.setItem('previousPage', 'dashboard');
+      }
+    }
+    setCurrentPage(page);
   };
 
   const renderCurrentPage = () => {
@@ -311,7 +378,7 @@ function HomePageContent() {
     <div className="h-screen w-screen flex bg-background">
       <Sidebar 
         currentPage={currentPage} 
-        onNavigate={setCurrentPage}
+        onNavigate={handleNavigate}
         onLogout={handleLogout}
       />
       <main className="flex-1 bg-secondary">
@@ -323,5 +390,9 @@ function HomePageContent() {
 }
 
 export default function HomePage() {
-  return <HomePageContent />;
+  return (
+    <LanguageProvider>
+      <HomePageContent />
+    </LanguageProvider>
+  );
 }

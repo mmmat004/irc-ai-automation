@@ -5,6 +5,7 @@ import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface AddCategoryModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ const colorOptions = [
 ];
 
 export function AddCategoryModal({ isOpen, onClose, onAddCategory }: AddCategoryModalProps) {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -47,37 +49,37 @@ export function AddCategoryModal({ isOpen, onClose, onAddCategory }: AddCategory
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add New Category</DialogTitle>
+          <DialogTitle>{t('category.addNew')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Category Name */}
           <div className="space-y-2">
-            <Label htmlFor="name">Category Name</Label>
+            <Label htmlFor="name">{t('category.name')}</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="Enter category name"
+              placeholder={t('category.namePlaceholder')}
               className="border-gray-300"
             />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t('category.description')}</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Describe what this category covers for AI classification"
+              placeholder={t('category.descriptionPlaceholder')}
               className="min-h-[80px] resize-none border-gray-300"
             />
           </div>
 
           {/* Color Selection */}
           <div className="space-y-2">
-            <Label>Category Color</Label>
+            <Label>{t('category.color')}</Label>
             <div className="flex flex-wrap gap-2">
               {colorOptions.map((color) => (
                 <button
@@ -102,13 +104,13 @@ export function AddCategoryModal({ isOpen, onClose, onAddCategory }: AddCategory
               onClick={handleClose}
               className="flex-1 border-gray-300"
             >
-              Cancel
+              {t('category.cancel')}
             </Button>
             <Button
               type="submit"
               className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
             >
-              Add Category
+              {t('category.add')}
             </Button>
           </div>
         </form>

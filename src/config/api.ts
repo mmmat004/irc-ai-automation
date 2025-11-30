@@ -16,4 +16,5 @@ export const API_ENDPOINTS = {
   NEWS_GET: `${API_BASE_URL}/news`,
   NEWS_SEARCH: `${API_BASE_URL}/news/search`,
   NEWS_STATUS: `${API_BASE_URL}/news/status`,
+  WORKFLOW_LOG_SEARCH: `${API_BASE_URL}/workflow-log/search`,
 } as const;
