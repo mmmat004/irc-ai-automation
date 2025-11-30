@@ -238,23 +238,8 @@ function HomePageContent() {
           console.log('✅ Authentication successful! User:', userData);
           setIsAuthenticated(true);
           setAuthError(null);
-          // On successful auth check, ensure we start at dashboard if no valid news detail state
-          const savedPage = localStorage.getItem('currentPage');
-          const savedNewsId = localStorage.getItem('selectedNewsId');
-          // Only restore news-detail if both page and newsId are present
-          if (savedPage === 'news-detail' && savedNewsId) {
-            // Keep the saved state
-          } else {
-            // Reset to dashboard if invalid state
-            setCurrentPage('dashboard');
-            setSelectedNewsId(null);
-            setPreviousPage('dashboard');
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem('currentPage');
-              localStorage.removeItem('selectedNewsId');
-              localStorage.setItem('previousPage', 'dashboard');
-            }
-          }
+          // Don't reset page on auth check - preserve user's current page
+          // Only reset to dashboard on logout/login (handled in OAuth exchange above)
         } else if (response.status === 401) {
           // Unauthorized - cookies not present or invalid
           console.warn('❌ Authentication failed: No valid session cookies');

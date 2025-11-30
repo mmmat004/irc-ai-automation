@@ -63,7 +63,7 @@ export function RecentExecutions() {
           // Map API response to component format
           const mappedLogs: WorkflowLog[] = rawItems.map((item: any) => ({
             id: item.id || item.logId || Math.random(),
-            workflowName: item.workflowName || item.workflow || item.name || 'Unknown Workflow',
+            workflowName: item.step || item.workflowName || item.workflow || item.name || 'Unknown Workflow',
             status: item.status || (item.success ? 'success' : 'error') || 'pending',
             timestamp: item.timestamp || item.createdAt || item.executedAt || new Date().toISOString(),
             duration: item.duration || 
