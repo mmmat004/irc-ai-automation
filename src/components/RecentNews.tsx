@@ -30,7 +30,7 @@ interface RecentNewsProps {
 }
 
 export function RecentNews({ onNewsSelect }: RecentNewsProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [recentNewsData, setRecentNewsData] = useState<RecentNewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -102,10 +102,10 @@ export function RecentNews({ onNewsSelect }: RecentNewsProps) {
   if (isLoading) {
     return (
       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-        <h2 className="text-xl font-semibold text-foreground mb-6">Recent News</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-6">{t('dashboard.recentNews')}</h2>
         <div className="text-center py-8">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/30 border-t-primary mx-auto" />
-          <p className="mt-4 text-sm text-muted-foreground">Loading...</p>
+          <p className="mt-4 text-sm text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -113,11 +113,11 @@ export function RecentNews({ onNewsSelect }: RecentNewsProps) {
 
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border p-6 hover:shadow-md transition-shadow duration-300">
-      <h2 className="text-xl font-semibold text-foreground mb-6">Recent News</h2>
+      <h2 className="text-xl font-semibold text-foreground mb-6">{t('dashboard.recentNews')}</h2>
       
       {recentNewsData.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-sm text-muted-foreground">No recent news available</p>
+          <p className="text-sm text-muted-foreground">{t('common.noData')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -140,7 +140,7 @@ export function RecentNews({ onNewsSelect }: RecentNewsProps) {
                 </div>
               </div>
               <span className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 group-hover:scale-105 ${getStatusBadge(news.status)}`}>
-                {news.status.charAt(0).toUpperCase() + news.status.slice(1)}
+                {t(`news.${news.status}`)}
               </span>
             </div>
           ))}

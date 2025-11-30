@@ -20,20 +20,7 @@ interface NewsItem {
   time?: string;
 }
 
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case 'published':
-      return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Published</Badge>;
-    case 'verified':
-      return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Verified</Badge>;
-    case 'pending':
-      return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>;
-    case 'rejected':
-      return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Rejected</Badge>;
-    default:
-      return <Badge variant="secondary">{status}</Badge>;
-  }
-};
+// Note: getStatusBadge is now defined inside the component to access t() function
 
 const getCategoryBadge = (category: string) => {
   return <Badge className="bg-orange-50 text-orange-700 hover:bg-orange-50">{category}</Badge>;
@@ -50,7 +37,7 @@ interface CategoryOption {
 }
 
 export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string | number>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
@@ -59,6 +46,21 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
   const [totalItems, setTotalItems] = useState(0);
   const [pageLimit] = useState(10);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
+  
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'published':
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">{t('news.published')}</Badge>;
+      case 'verified':
+        return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">{t('news.verified')}</Badge>;
+      case 'pending':
+        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">{t('news.pending')}</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">{t('news.rejected')}</Badge>;
+      default:
+        return <Badge variant="secondary">{t(`news.${status}`) || status}</Badge>;
+    }
+  };
   const [verifyConfirmModal, setVerifyConfirmModal] = useState<{
     open: boolean;
     newsId: string | number | null;
