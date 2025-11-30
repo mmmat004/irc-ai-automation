@@ -69,6 +69,9 @@ const translations: Record<Language, Record<string, string>> = {
     'categories.title': 'Categories',
     'categories.add': 'Add Category',
     'categories.search': 'Search categories...',
+    'categories.management': 'Category Management',
+    'categories.noCategories': 'No categories found for this search.',
+    'categories.unableToLoad': 'Unable to load categories right now.',
     
     // Dashboard
     'dashboard.title': 'Dashboard',
@@ -78,6 +81,45 @@ const translations: Record<Language, Record<string, string>> = {
     // Workflows
     'workflows.title': 'Workflows',
     'workflows.recentExecutions': 'Recent Executions',
+    'workflows.noLogs': 'No workflow logs found.',
+    'workflows.loading': 'Loading...',
+    'workflows.success': 'Success',
+    'workflows.error': 'Error',
+    'workflows.running': 'Running',
+    'workflows.pending': 'Pending',
+    'workflows.showingPage': 'Showing page',
+    'workflows.of': 'of',
+    'workflows.totalItems': 'total items',
+    
+    // News Detail
+    'newsDetail.back': 'Back',
+    'newsDetail.share': 'Share',
+    'newsDetail.bookmark': 'Bookmark',
+    'newsDetail.translate': 'Translate',
+    'newsDetail.originalSources': 'Original Sources',
+    'newsDetail.keywords': 'Keywords',
+    'newsDetail.articleStatus': 'Article Status',
+    'newsDetail.verify': 'Verify Article',
+    'newsDetail.reject': 'Reject Article',
+    'newsDetail.cancelVerify': 'Cancel Verification',
+    'newsDetail.cancelReject': 'Cancel Rejection',
+    'newsDetail.verifiedSuccess': 'News article verified successfully!',
+    'newsDetail.rejectedSuccess': 'News article rejected.',
+    'newsDetail.cancelVerifySuccess': 'Verification cancelled.',
+    'newsDetail.cancelRejectSuccess': 'Rejection cancelled.',
+    'newsDetail.notFound': 'News article not found',
+    'newsDetail.loadError': 'Failed to load news article. Please try again.',
+    'newsDetail.serverError': 'Cannot connect to server. Check your connection.',
+    'newsDetail.linkCopied': 'Link copied to clipboard!',
+    'newsDetail.articleBookmarked': 'Article bookmarked!',
+    'newsDetail.switchedToEnglish': 'Switched to English',
+    'newsDetail.switchedToThai': 'Switched to Thai',
+    
+    // Verification
+    'verification.noItems': 'No items pending verification',
+    'verification.allProcessed': 'All news items have been processed.',
+    'verification.approve': 'Approve',
+    'verification.reject': 'Reject',
     
     // Profile
     'profile.title': 'Profile',
@@ -139,6 +181,9 @@ const translations: Record<Language, Record<string, string>> = {
     'categories.title': 'หมวดหมู่',
     'categories.add': 'เพิ่มหมวดหมู่',
     'categories.search': 'ค้นหาหมวดหมู่...',
+    'categories.management': 'จัดการหมวดหมู่',
+    'categories.noCategories': 'ไม่พบหมวดหมู่สำหรับการค้นหานี้',
+    'categories.unableToLoad': 'ไม่สามารถโหลดหมวดหมู่ได้ในขณะนี้',
     
     // Dashboard
     'dashboard.title': 'แดชบอร์ด',
@@ -148,6 +193,45 @@ const translations: Record<Language, Record<string, string>> = {
     // Workflows
     'workflows.title': 'เวิร์กโฟลว์',
     'workflows.recentExecutions': 'การดำเนินการล่าสุด',
+    'workflows.noLogs': 'ไม่พบบันทึกเวิร์กโฟลว์',
+    'workflows.loading': 'กำลังโหลด...',
+    'workflows.success': 'สำเร็จ',
+    'workflows.error': 'ข้อผิดพลาด',
+    'workflows.running': 'กำลังทำงาน',
+    'workflows.pending': 'รอดำเนินการ',
+    'workflows.showingPage': 'แสดงหน้า',
+    'workflows.of': 'จาก',
+    'workflows.totalItems': 'รายการทั้งหมด',
+    
+    // News Detail
+    'newsDetail.back': 'กลับ',
+    'newsDetail.share': 'แชร์',
+    'newsDetail.bookmark': 'บุ๊กมาร์ก',
+    'newsDetail.translate': 'แปล',
+    'newsDetail.originalSources': 'แหล่งข้อมูลต้นฉบับ',
+    'newsDetail.keywords': 'คำสำคัญ',
+    'newsDetail.articleStatus': 'สถานะบทความ',
+    'newsDetail.verify': 'ยืนยันบทความ',
+    'newsDetail.reject': 'ปฏิเสธบทความ',
+    'newsDetail.cancelVerify': 'ยกเลิกการยืนยัน',
+    'newsDetail.cancelReject': 'ยกเลิกการปฏิเสธ',
+    'newsDetail.verifiedSuccess': 'ยืนยันบทความข่าวสำเร็จ!',
+    'newsDetail.rejectedSuccess': 'ปฏิเสธบทความข่าวแล้ว',
+    'newsDetail.cancelVerifySuccess': 'ยกเลิกการยืนยันแล้ว',
+    'newsDetail.cancelRejectSuccess': 'ยกเลิกการปฏิเสธแล้ว',
+    'newsDetail.notFound': 'ไม่พบบทความข่าว',
+    'newsDetail.loadError': 'โหลดบทความข่าวไม่สำเร็จ กรุณาลองอีกครั้ง',
+    'newsDetail.serverError': 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ ตรวจสอบการเชื่อมต่อของคุณ',
+    'newsDetail.linkCopied': 'คัดลอกลิงก์ไปยังคลิปบอร์ดแล้ว!',
+    'newsDetail.articleBookmarked': 'บุ๊กมาร์กบทความแล้ว!',
+    'newsDetail.switchedToEnglish': 'เปลี่ยนเป็นภาษาอังกฤษ',
+    'newsDetail.switchedToThai': 'เปลี่ยนเป็นภาษาไทย',
+    
+    // Verification
+    'verification.noItems': 'ไม่มีรายการที่รอการยืนยัน',
+    'verification.allProcessed': 'รายการข่าวทั้งหมดได้รับการประมวลผลแล้ว',
+    'verification.approve': 'อนุมัติ',
+    'verification.reject': 'ปฏิเสธ',
     
     // Profile
     'profile.title': 'โปรไฟล์',

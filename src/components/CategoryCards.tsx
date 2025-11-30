@@ -4,6 +4,7 @@ import { Input } from "./ui/input";
 import { CategoryCard } from "./CategoryCard";
 import { AddCategoryModal } from "./AddCategoryModal";
 import { API_ENDPOINTS } from "../config/api";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface CategoryData {
   id: number | string;
@@ -42,6 +43,7 @@ export function CategoryCards({
   isAddModalOpen, 
   onCloseAddModal 
 }: CategoryCardsProps) {
+  const { t } = useLanguage();
   const [categories, setCategories] = useState<CategoryData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -144,7 +146,7 @@ export function CategoryCards({
         }
         console.error("Failed to fetch categories:", err);
         if (!isCancelled) {
-          setError("Unable to load categories right now.");
+          setError(t('categories.unableToLoad'));
           setCategories([]);
         }
       } finally {
@@ -197,11 +199,11 @@ export function CategoryCards({
     <div>
       {/* Search and Filters */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Category Management</h2>
+        <h2 className="text-xl font-semibold text-gray-900">{t('categories.management')}</h2>
         <div className="relative w-80">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
-            placeholder="Search categories..."
+            placeholder={t('categories.search')}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-10 border-gray-300"
@@ -221,7 +223,7 @@ export function CategoryCards({
           : filteredCategories.length === 0 ? (
               <div className="col-span-full text-center py-12 border border-dashed border-gray-200 rounded-xl">
                 <p className="text-sm text-muted-foreground">
-                  {error ? error : "No categories found for this search."}
+                  {error ? error : t('categories.noCategories')}
                 </p>
               </div>
             ) : (

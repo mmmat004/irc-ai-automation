@@ -46,7 +46,7 @@ interface NewsDetailData {
 }
 
 export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [news, setNews] = useState<NewsDetailData | null>(null);
   const [isTranslated, setIsTranslated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,15 +92,15 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
           };
           setNews(mappedNews);
         } else if (response.status === 404) {
-          toast.error('News article not found');
+          toast.error(t('newsDetail.notFound'));
           onBack();
         } else {
           console.error('Failed to fetch news detail:', response.status);
-          toast.error('Failed to load news article. Please try again.');
+          toast.error(t('newsDetail.loadError'));
         }
       } catch (error) {
         console.error('Error fetching news detail:', error);
-        toast.error('Cannot connect to server. Check your connection.');
+        toast.error(t('newsDetail.serverError'));
       } finally {
         setIsLoading(false);
       }
@@ -110,16 +110,16 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
   }, [newsId, onBack, language]);
 
   const handleShare = () => {
-    toast("Link copied to clipboard!");
+    toast(t('newsDetail.linkCopied'));
   };
 
   const handleBookmark = () => {
-    toast("Article bookmarked!");
+    toast(t('newsDetail.articleBookmarked'));
   };
 
   const handleTranslate = () => {
     setIsTranslated(!isTranslated);
-    toast(isTranslated ? "Switched to English" : "Switched to Thai");
+    toast(isTranslated ? t('newsDetail.switchedToEnglish') : t('newsDetail.switchedToThai'));
   };
 
   const handleVerifyClick = () => {
@@ -164,7 +164,10 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
           // Refetch to get updated data from server
           const refreshResponse = await fetch(`${API_ENDPOINTS.NEWS_GET}/${encodeURIComponent(String(newsId))}`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'irc-lang': language === 'th' ? 'th' : 'en',
+            },
             credentials: 'include',
           });
           if (refreshResponse.ok) {
@@ -187,15 +190,15 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             setNews(mappedNews);
           }
         }
-        toast.success('News article verified successfully!');
+        toast.success(t('newsDetail.verifiedSuccess'));
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error('Failed to verify news:', response.status, errorData);
-        toast.error(errorData.message || 'Failed to verify news article. Please try again.');
+        toast.error(errorData.message || t('newsDetail.loadError'));
       }
     } catch (error) {
       console.error('Error verifying news:', error);
-      toast.error('Cannot connect to server. Check your connection.');
+      toast.error(t('newsDetail.serverError'));
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -238,7 +241,10 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
           // Refetch to get updated data from server
           const refreshResponse = await fetch(`${API_ENDPOINTS.NEWS_GET}/${encodeURIComponent(String(newsId))}`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'irc-lang': language === 'th' ? 'th' : 'en',
+            },
             credentials: 'include',
           });
           if (refreshResponse.ok) {
@@ -261,15 +267,15 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             setNews(mappedNews);
           }
         }
-        toast.success('News article rejected.');
+        toast.success(t('newsDetail.rejectedSuccess'));
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error('Failed to reject news:', response.status, errorData);
-        toast.error(errorData.message || 'Failed to reject news article. Please try again.');
+        toast.error(errorData.message || t('newsDetail.loadError'));
       }
     } catch (error) {
       console.error('Error rejecting news:', error);
-      toast.error('Cannot connect to server. Check your connection.');
+      toast.error(t('newsDetail.serverError'));
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -324,7 +330,10 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
           // Refetch to get updated data from server
           const refreshResponse = await fetch(`${API_ENDPOINTS.NEWS_GET}/${encodeURIComponent(String(newsId))}`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'irc-lang': language === 'th' ? 'th' : 'en',
+            },
             credentials: 'include',
           });
           if (refreshResponse.ok) {
@@ -347,15 +356,15 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             setNews(mappedNews);
           }
         }
-        toast.success('Verification cancelled. Article status set back to pending.');
+        toast.success(t('newsDetail.cancelVerifySuccess'));
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error('Failed to cancel verification:', response.status, errorData);
-        toast.error(errorData.message || 'Failed to cancel verification. Please try again.');
+        toast.error(errorData.message || t('newsDetail.loadError'));
       }
     } catch (error) {
       console.error('Error canceling verification:', error);
-      toast.error('Cannot connect to server. Check your connection.');
+      toast.error(t('newsDetail.serverError'));
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -410,7 +419,10 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
           // Refetch to get updated data from server
           const refreshResponse = await fetch(`${API_ENDPOINTS.NEWS_GET}/${encodeURIComponent(String(newsId))}`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'irc-lang': language === 'th' ? 'th' : 'en',
+            },
             credentials: 'include',
           });
           if (refreshResponse.ok) {
@@ -433,15 +445,15 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             setNews(mappedNews);
           }
         }
-        toast.success('Rejection cancelled. Article status set back to pending.');
+        toast.success(t('newsDetail.cancelRejectSuccess'));
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error('Failed to cancel rejection:', response.status, errorData);
-        toast.error(errorData.message || 'Failed to cancel rejection. Please try again.');
+        toast.error(errorData.message || t('newsDetail.loadError'));
       }
     } catch (error) {
       console.error('Error canceling rejection:', error);
-      toast.error('Cannot connect to server. Check your connection.');
+      toast.error(t('newsDetail.serverError'));
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -473,25 +485,25 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
       case "published":
         return (
           <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-            Published
+            {t('news.published')}
           </Badge>
         );
       case "verified":
         return (
           <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
-            Verified
+            {t('news.verified')}
           </Badge>
         );
       case "pending":
         return (
           <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
-            Pending
+            {t('news.pending')}
           </Badge>
         );
       case "rejected":
         return (
           <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
-            Rejected
+            {t('news.rejected')}
           </Badge>
         );
       default:
@@ -517,10 +529,10 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
         <div className="max-w-4xl mx-auto p-8">
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
-              <p className="text-muted-foreground mb-4">News article not found</p>
+              <p className="text-muted-foreground mb-4">{t('newsDetail.notFound')}</p>
               <Button variant="outline" onClick={onBack}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Dashboard
+                {t('newsDetail.back')}
               </Button>
             </div>
           </div>
@@ -539,7 +551,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             className="gap-2 text-muted-foreground hover:text-foreground rounded-lg"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
+            {t('newsDetail.back')}
           </Button>
           
           <Button
@@ -619,7 +631,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             <Card className="border border-border shadow-sm rounded-xl">
               <CardHeader>
                 <h3 className="font-semibold text-foreground">
-                  {translateText("Original Sources")}
+                  {t('newsDetail.originalSources')}
                 </h3>
               </CardHeader>
               <CardContent className="overflow-hidden">
@@ -655,7 +667,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
               <CardHeader>
                 <h3 className="font-semibold text-foreground flex items-center gap-2">
                   <Hash className="w-4 h-4" />
-                  {translateText("Keywords")}
+                  {t('newsDetail.keywords')}
                 </h3>
               </CardHeader>
               <CardContent>
@@ -680,16 +692,16 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             <Card className="border border-border shadow-sm rounded-xl">
               <CardHeader>
                 <h3 className="font-semibold text-foreground">
-                  {translateText("Article Status")}
+                  {t('newsDetail.articleStatus')}
                 </h3>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">
-                    {translateText("Status")}
+                    {t('news.status')}
                   </span>
                   <span className="font-medium text-foreground capitalize">
-                    {translateText(news.status)}
+                    {t(`news.${news.status}`)}
                   </span>
                 </div>
                 
@@ -705,7 +717,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                         className="gap-2 bg-green-600 hover:bg-green-700 text-white w-full"
                       >
                         <Check className="w-4 h-4" />
-                        Verify
+                        {t('newsDetail.verify')}
                       </Button>
                       <Button
                         variant="outline"
@@ -714,7 +726,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                         className="gap-2 border-red-300 hover:bg-red-50 text-red-700 w-full"
                       >
                         <X className="w-4 h-4" />
-                        Reject
+                        {t('newsDetail.reject')}
                       </Button>
                     </div>
                   </>
@@ -730,7 +742,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                       className="gap-2 border-orange-300 hover:bg-orange-50 text-orange-700 w-full"
                     >
                       <RotateCcw className="w-4 h-4" />
-                      Cancel Verification
+                      {t('newsDetail.cancelVerify')}
                     </Button>
                   </>
                 )}
@@ -745,7 +757,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                       className="gap-2 border-orange-300 hover:bg-orange-50 text-orange-700 w-full"
                     >
                       <RotateCcw className="w-4 h-4" />
-                      Cancel Rejection
+                      {t('newsDetail.cancelReject')}
                     </Button>
                   </>
                 )}

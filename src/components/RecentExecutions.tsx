@@ -3,6 +3,7 @@ import { Check, X, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { API_ENDPOINTS } from "../config/api";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface WorkflowLog {
   id: string | number;
@@ -24,6 +25,7 @@ interface WorkflowLogResponse {
 }
 
 export function RecentExecutions() {
+  const { t } = useLanguage();
   const [logs, setLogs] = useState<WorkflowLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -122,16 +124,16 @@ export function RecentExecutions() {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       <div className="p-6 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900">Recent Executions</h2>
+        <h2 className="text-xl font-semibold text-gray-900">{t('workflows.recentExecutions')}</h2>
       </div>
       
       {isLoading ? (
         <div className="p-6 text-center text-gray-500">
-          Loading...
+          {t('workflows.loading')}
         </div>
       ) : logs.length === 0 ? (
         <div className="p-6 text-center text-gray-500">
-          No workflow logs found.
+          {t('workflows.noLogs')}
         </div>
       ) : (
         <>
@@ -168,12 +170,12 @@ export function RecentExecutions() {
                         }
                       >
                         {execution.status === 'success' 
-                          ? 'Success' 
+                          ? t('workflows.success')
                           : execution.status === 'error'
-                          ? 'Error'
+                          ? t('workflows.error')
                           : execution.status === 'running'
-                          ? 'Running'
-                          : 'Pending'}
+                          ? t('workflows.running')
+                          : t('workflows.pending')}
                       </Badge>
                       <span className="text-sm text-gray-500">{formatTimestamp(execution.timestamp)}</span>
                     </div>
@@ -194,7 +196,7 @@ export function RecentExecutions() {
           {totalPages > 1 && (
             <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
               <div className="text-sm text-gray-600">
-                Showing page {currentPage} of {totalPages} ({totalItems} total items)
+                {t('workflows.showingPage')} {currentPage} {t('workflows.of')} {totalPages} ({totalItems} {t('workflows.totalItems')})
               </div>
               <div className="flex items-center gap-2">
                 <Button

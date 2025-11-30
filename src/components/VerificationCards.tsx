@@ -23,7 +23,7 @@ interface VerificationCardsProps {
 }
 
 export function VerificationCards({ onNewsSelect }: VerificationCardsProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -179,8 +179,8 @@ export function VerificationCards({ onNewsSelect }: VerificationCardsProps) {
       ) : (
         <div className="text-center py-12">
           <div className="bg-muted rounded-xl p-8">
-            <h3 className="text-lg font-medium text-foreground mb-2">No items pending verification</h3>
-            <p className="text-muted-foreground">All news items have been processed.</p>
+            <h3 className="text-lg font-medium text-foreground mb-2">{t('verification.noItems')}</h3>
+            <p className="text-muted-foreground">{t('verification.allProcessed')}</p>
           </div>
         </div>
       )}
