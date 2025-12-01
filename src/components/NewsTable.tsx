@@ -173,11 +173,11 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           setNewsData(newsItems);
         } else {
           console.error('Failed to fetch news:', response.status);
-          toast.error('Failed to load news articles. Please try again.');
+          toast.error(t('newsTable.failedToLoad'));
         }
       } catch (error) {
         console.error('Error fetching news:', error);
-        toast.error('Cannot connect to server. Check your connection.');
+        toast.error(t('newsDetail.serverError'));
       } finally {
         setIsLoading(false);
       }
@@ -279,11 +279,11 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
-        toast.error(errorData.message || 'Failed to reject news article. Please try again.');
+        toast.error(errorData.message || t('newsTable.failedToReject'));
       }
     } catch (error) {
       console.error('Error rejecting news:', error);
-      toast.error('Cannot connect to server. Check your connection.');
+      toast.error(t('newsDetail.serverError'));
     } finally {
       setRejectConfirmModal({ open: false, newsId: null });
     }
@@ -330,15 +330,15 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
         );
         const newsItem = newsData.find(news => news.id === newsId);
         if (newsItem) {
-          toast.success(`"${newsItem.title}" verification has been cancelled.`);
+          toast.success(`"${newsItem.title}" ${t('newsTable.verificationCancelled')}`);
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
-        toast.error(errorData.message || 'Failed to cancel verification. Please try again.');
+        toast.error(errorData.message || t('newsTable.failedToCancelVerify'));
       }
     } catch (error) {
       console.error('Error canceling verification:', error);
-      toast.error('Cannot connect to server. Check your connection.');
+      toast.error(t('newsDetail.serverError'));
     }
   };
 
@@ -368,15 +368,15 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
         );
         const newsItem = newsData.find(news => news.id === newsId);
         if (newsItem) {
-          toast.success(`"${newsItem.title}" rejection has been cancelled.`);
+          toast.success(`"${newsItem.title}" ${t('newsTable.rejectionCancelled')}`);
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
-        toast.error(errorData.message || 'Failed to cancel rejection. Please try again.');
+        toast.error(errorData.message || t('newsTable.failedToCancelReject'));
       }
     } catch (error) {
       console.error('Error canceling rejection:', error);
-      toast.error('Cannot connect to server. Check your connection.');
+      toast.error(t('newsDetail.serverError'));
     }
   };
 
@@ -394,7 +394,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
 
   const handleBulkVerify = async () => {
     if (selectedItems.size === 0) {
-      toast.warning("Please select items to verify");
+        toast.warning(t('newsTable.selectItemsToVerify'));
       return;
     }
     
@@ -424,20 +424,20 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
               : news
           )
         );
-        toast.success(`${selectedItems.size} items have been verified successfully!`);
+        toast.success(`${selectedItems.size} ${t('newsTable.itemsVerified')}`);
         setSelectedItems(new Set());
       } else {
-        toast.error('Some items failed to verify. Please try again.');
+        toast.error(t('newsTable.someFailedVerify'));
       }
     } catch (error) {
       console.error('Error bulk verifying news:', error);
-      toast.error('Cannot connect to server. Check your connection.');
+      toast.error(t('newsDetail.serverError'));
     }
   };
 
   const handleBulkReject = async () => {
     if (selectedItems.size === 0) {
-      toast.warning("Please select items to reject");
+        toast.warning(t('newsTable.selectItemsToReject'));
       return;
     }
     
@@ -467,14 +467,14 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
               : news
           )
         );
-        toast.success(`${selectedItems.size} items have been rejected!`);
+        toast.success(`${selectedItems.size} ${t('newsTable.itemsRejected')}`);
         setSelectedItems(new Set());
       } else {
-        toast.error('Some items failed to reject. Please try again.');
+        toast.error(t('newsTable.someFailedReject'));
       }
     } catch (error) {
       console.error('Error bulk rejecting news:', error);
-      toast.error('Cannot connect to server. Check your connection.');
+      toast.error(t('newsDetail.serverError'));
     }
   };
 
@@ -490,7 +490,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-12 text-center">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/30 border-t-primary mx-auto" />
-          <p className="mt-4 text-sm text-gray-600">Loading news articles...</p>
+          <p className="mt-4 text-sm text-gray-600">{t('newsTable.loading')}</p>
         </div>
       </div>
     );
@@ -501,14 +501,14 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
       {/* Results Counter and Bulk Actions */}
       <div className="px-6 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          Showing {filteredNewsData.length} of {totalItems} article{totalItems !== 1 ? 's' : ''}
+          {t('newsTable.showing')} {filteredNewsData.length} {t('workflows.of')} {totalItems} {totalItems !== 1 ? t('newsTable.articles') : t('newsTable.article')}
           {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
         </p>
         
         {selectedItems.size > 0 && (
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">
-              {selectedItems.size} selected
+              {selectedItems.size} {t('newsTable.selected')}
             </span>
             <Button
               variant="outline"
@@ -517,7 +517,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
               className="h-8 px-3 border-green-300 hover:bg-green-50 text-green-700"
             >
               <Check className="w-4 h-4 mr-1" />
-              Verify All
+              {t('newsTable.verifyAll')}
             </Button>
             <Button
               variant="outline"
@@ -526,7 +526,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
               className="h-8 px-3 border-red-300 hover:bg-red-50 text-red-700"
             >
               <X className="w-4 h-4 mr-1" />
-              Reject All
+              {t('newsTable.rejectAll')}
             </Button>
           </div>
         )}
@@ -546,14 +546,14 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                   ) : (
                     <Square className="w-4 h-4 text-gray-400" />
                   )}
-                  Select All
+                  {t('newsTable.selectAll')}
                 </button>
               </th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Title</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Category</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Status</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Date</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Actions</th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">{t('news.title')}</th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">{t('news.category')}</th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">{t('news.status')}</th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">{t('news.date')}</th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">{t('news.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -561,8 +561,8 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center">
                   <div className="text-gray-500">
-                    <p className="mb-2">No news articles found</p>
-                    <p className="text-sm">Try adjusting your filters or search terms</p>
+                    <p className="mb-2">{t('newsTable.noArticles')}</p>
+                    <p className="text-sm">{t('newsTable.tryAdjusting')}</p>
                   </div>
                 </td>
               </tr>
@@ -638,7 +638,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                           size="sm"
                           className="h-8 w-8 p-0 border-green-300 hover:bg-green-50"
                           onClick={(e) => handleVerifyNews(news.id, e)}
-                          title="Verify this news article"
+                          title={t('newsTable.verifyThis')}
                         >
                           <Check className="w-4 h-4 text-green-600" />
                         </Button>
@@ -647,7 +647,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                           size="sm"
                           className="h-8 w-8 p-0 border-red-300 hover:bg-red-50"
                           onClick={(e) => handleRejectNews(news.id, e)}
-                          title="Reject this news article"
+                          title={t('newsTable.rejectThis')}
                         >
                           <X className="w-4 h-4 text-red-600" />
                         </Button>
@@ -659,7 +659,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                         size="sm"
                         className="h-8 w-8 p-0 border-orange-300 hover:bg-orange-50"
                         onClick={(e) => handleCancelVerify(news.id, e)}
-                        title="Cancel verification - set back to pending"
+                        title={t('newsTable.cancelVerifyDesc')}
                       >
                         <RotateCcw className="w-4 h-4 text-orange-600" />
                       </Button>
@@ -670,7 +670,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                         size="sm"
                         className="h-8 w-8 p-0 border-orange-300 hover:bg-orange-50"
                         onClick={(e) => handleCancelReject(news.id, e)}
-                        title="Cancel rejection - set back to pending"
+                        title={t('newsTable.cancelRejectDesc')}
                       >
                         <RotateCcw className="w-4 h-4 text-orange-600" />
                       </Button>
@@ -689,7 +689,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
       {totalPages > 1 && (
         <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
           <div className="text-sm text-gray-600">
-            Showing page {currentPage} of {totalPages} ({totalItems} total items)
+            {t('newsTable.showingPage')} {currentPage} {t('workflows.of')} {totalPages} ({totalItems} {t('workflows.totalItems')})
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -700,7 +700,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
               className="h-8 px-3"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
-              Previous
+              {t('common.previous')}
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -736,7 +736,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
               disabled={currentPage === totalPages || isLoading}
               className="h-8 px-3"
             >
-              Next
+              {t('common.next')}
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>

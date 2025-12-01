@@ -7,6 +7,7 @@ import { Badge } from "./ui/badge";
 import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { DateRange } from "react-day-picker";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const CATEGORY_OPTIONS = [
   "Business",
@@ -32,6 +33,7 @@ interface NewsFiltersProps {
 }
 
 export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
+  const { t } = useLanguage();
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     category: "all",
@@ -83,14 +85,14 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
   };
 
   const formatDateRange = (range: DateRange | undefined): string => {
-    if (!range) return "All Dates";
+    if (!range) return t('newsFilters.showAll');
     if (range.from && range.to) {
       return `${formatDate(range.from)} - ${formatDate(range.to)}`;
     }
     if (range.from) {
       return formatDate(range.from);
     }
-    return "All Dates";
+    return t('newsFilters.showAll');
   };
 
   const hasActiveFilters = filters.search !== "" || filters.category !== "all" || filters.status !== "all" || (filters.dateRange !== "all" && filters.dateRange !== undefined);
@@ -101,7 +103,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
-            placeholder="Search news articles..."
+            placeholder={t('newsFilters.searchPlaceholder')}
             className="pl-10 bg-white border-gray-300"
             value={filters.search}
             onChange={(e) => updateFilter("search", e.target.value)}
@@ -111,10 +113,10 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
         {/* Category Dropdown */}
         <Select value={filters.category} onValueChange={(value: string) => updateFilter("category", value)}>
           <SelectTrigger className="bg-white border-gray-300">
-            <SelectValue placeholder="All Categories" />
+            <SelectValue placeholder={t('newsFilters.allCategories')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="all">{t('newsFilters.allCategories')}</SelectItem>
             {CATEGORY_OPTIONS.map((category) => (
               <SelectItem key={category} value={category}>
                 {category}
@@ -126,13 +128,13 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
         {/* Status Dropdown */}
         <Select value={filters.status} onValueChange={(value: string) => updateFilter("status", value)}>
           <SelectTrigger className="bg-white border-gray-300">
-            <SelectValue placeholder="All Statuses" />
+            <SelectValue placeholder={t('newsFilters.allStatuses')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="verified">Verified</SelectItem>
-            <SelectItem value="published">Published</SelectItem>
+            <SelectItem value="all">{t('newsFilters.allStatuses')}</SelectItem>
+            <SelectItem value="pending">{t('news.pending')}</SelectItem>
+            <SelectItem value="verified">{t('news.verified')}</SelectItem>
+            <SelectItem value="published">{t('news.published')}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -145,7 +147,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {filters.dateRange === "all" || !dateRange 
-                ? "All Dates" 
+                ? t('newsFilters.showAll') 
                 : formatDateRange(dateRange)}
             </Button>
           </PopoverTrigger>
@@ -165,7 +167,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
                   onClick={handleAllDates}
                   className="text-xs"
                 >
-                  Show All
+                  {t('newsFilters.showAll')}
                 </Button>
                 {dateRange && (
                   <Button
@@ -174,7 +176,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
                     onClick={() => handleDateRangeChange(undefined)}
                     className="text-xs"
                   >
-                    Clear
+                    {t('newsFilters.clear')}
                   </Button>
                 )}
               </div>
@@ -187,10 +189,10 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
       {hasActiveFilters && (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm text-muted-foreground">Active filters:</span>
+            <span className="text-sm text-muted-foreground">{t('newsFilters.activeFilters')}</span>
             {filters.search && (
               <Badge variant="secondary" className="gap-1.5 pr-1">
-                <span>Search: "{filters.search}"</span>
+                <span>{t('newsFilters.search')}{filters.search}"</span>
                 <button
                   type="button"
                   onClick={(e) => {
@@ -198,7 +200,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
                     updateFilter("search", "");
                   }}
                   className="ml-1 rounded-sm hover:bg-gray-200 p-0.5 transition-colors focus:outline-none focus:ring-1 focus:ring-gray-400"
-                  aria-label="Remove search filter"
+                  aria-label={t('newsFilters.removeSearch')}
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -206,7 +208,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
             )}
             {filters.category !== "all" && (
               <Badge variant="secondary" className="gap-1.5 pr-1">
-                <span>Category: {filters.category}</span>
+                <span>{t('newsFilters.category')} {filters.category}</span>
                 <button
                   type="button"
                   onClick={(e) => {
@@ -214,7 +216,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
                     updateFilter("category", "all");
                   }}
                   className="ml-1 rounded-sm hover:bg-gray-200 p-0.5 transition-colors focus:outline-none focus:ring-1 focus:ring-gray-400"
-                  aria-label="Remove category filter"
+                  aria-label={t('newsFilters.removeCategory')}
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -222,7 +224,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
             )}
             {filters.status !== "all" && (
               <Badge variant="secondary" className="gap-1.5 pr-1">
-                <span>Status: {filters.status}</span>
+                <span>{t('newsFilters.status')} {t(`news.${filters.status}`)}</span>
                 <button
                   type="button"
                   onClick={(e) => {
@@ -230,7 +232,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
                     updateFilter("status", "all");
                   }}
                   className="ml-1 rounded-sm hover:bg-gray-200 p-0.5 transition-colors focus:outline-none focus:ring-1 focus:ring-gray-400"
-                  aria-label="Remove status filter"
+                  aria-label={t('newsFilters.removeStatus')}
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -238,7 +240,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
             )}
             {filters.dateRange !== "all" && filters.dateRange !== undefined && (
               <Badge variant="secondary" className="gap-1.5 pr-1">
-                <span>Date: {formatDateRange(dateRange)}</span>
+                <span>{t('newsFilters.date')} {formatDateRange(dateRange)}</span>
                 <button
                   type="button"
                   onClick={(e) => {
@@ -247,7 +249,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
                     updateFilter("dateRange", "all");
                   }}
                   className="ml-1 rounded-sm hover:bg-gray-200 p-0.5 transition-colors focus:outline-none focus:ring-1 focus:ring-gray-400"
-                  aria-label="Remove date filter"
+                  aria-label={t('newsFilters.removeDate')}
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -255,7 +257,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
             )}
           </div>
           <Button variant="outline" size="sm" onClick={clearFilters}>
-            Clear All
+            {t('newsFilters.clearAll')}
           </Button>
         </div>
       )}

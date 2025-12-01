@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Textarea } from "./ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface NewsItem {
   id: string | number;
@@ -24,6 +25,7 @@ interface VerificationCardProps {
 }
 
 export function VerificationCard({ newsItem, onNewsSelect, onApprove, onReject }: VerificationCardProps) {
+  const { t } = useLanguage();
   const [isSourcesOpen, setIsSourcesOpen] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
 
@@ -62,7 +64,7 @@ export function VerificationCard({ newsItem, onNewsSelect, onApprove, onReject }
                 {newsItem.category}
               </Badge>
               <span className="text-sm text-muted-foreground">
-                {newsItem.date} at {newsItem.time}
+                {newsItem.date} {t('verification.at')} {newsItem.time}
               </span>
             </div>
           </div>
@@ -74,7 +76,7 @@ export function VerificationCard({ newsItem, onNewsSelect, onApprove, onReject }
               className="ml-4 gap-2"
             >
               <Eye className="w-4 h-4" />
-              View Details
+              {t('verification.viewDetails')}
             </Button>
           )}
         </div>
@@ -93,7 +95,7 @@ export function VerificationCard({ newsItem, onNewsSelect, onApprove, onReject }
               variant="outline"
               className="w-full justify-between mb-4 border-border hover:bg-muted rounded-lg"
             >
-              <span className="font-medium">Sources ({newsItem.sources.length})</span>
+              <span className="font-medium">{t('verification.sources')}{newsItem.sources.length})</span>
               {isSourcesOpen ? (
                 <ChevronUp className="h-4 w-4" />
               ) : (
@@ -118,10 +120,10 @@ export function VerificationCard({ newsItem, onNewsSelect, onApprove, onReject }
         {/* Admin Notes */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-foreground mb-2">
-            Admin Notes
+            {t('verification.adminNotes')}
           </label>
           <Textarea
-            placeholder="Add your verification notes here..."
+            placeholder={t('verification.addNotes')}
             value={adminNotes}
             onChange={(e) => setAdminNotes(e.target.value)}
             className="min-h-[80px] resize-none border-border rounded-lg"
@@ -135,7 +137,7 @@ export function VerificationCard({ newsItem, onNewsSelect, onApprove, onReject }
             className="bg-green-600 hover:bg-green-700 text-white gap-2 flex-1 rounded-lg hover:scale-105 transition-transform duration-200"
           >
             <Check className="w-4 h-4" />
-            Approve
+            {t('verification.approve')}
           </Button>
           <Button
             onClick={handleReject}
@@ -143,7 +145,7 @@ export function VerificationCard({ newsItem, onNewsSelect, onApprove, onReject }
             className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 gap-2 flex-1 rounded-lg hover:scale-105 transition-all duration-200"
           >
             <X className="w-4 h-4" />
-            Reject
+            {t('verification.reject')}
           </Button>
         </div>
       </div>

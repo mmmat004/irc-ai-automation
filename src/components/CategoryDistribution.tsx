@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "../config/api";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface CategoryData {
   name: string;
@@ -23,6 +24,7 @@ const colors = [
 ];
 
 export function CategoryDistribution() {
+  const { t } = useLanguage();
   const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -69,10 +71,10 @@ export function CategoryDistribution() {
   if (isLoading) {
     return (
       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-        <h2 className="text-xl font-semibold text-foreground mb-6">Category Distribution</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-6">{t('categoryDistribution.title')}</h2>
         <div className="text-center py-8">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/30 border-t-primary mx-auto" />
-          <p className="mt-4 text-sm text-muted-foreground">Loading...</p>
+          <p className="mt-4 text-sm text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -80,11 +82,11 @@ export function CategoryDistribution() {
 
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border p-6 hover:shadow-md transition-shadow duration-300">
-      <h2 className="text-xl font-semibold text-foreground mb-6">Category Distribution</h2>
+      <h2 className="text-xl font-semibold text-foreground mb-6">{t('categoryDistribution.title')}</h2>
       
       {categoryData.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-sm text-muted-foreground">No category data available</p>
+          <p className="text-sm text-muted-foreground">{t('categoryDistribution.noData')}</p>
         </div>
       ) : (
         <div className="space-y-3">

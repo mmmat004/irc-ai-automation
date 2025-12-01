@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Target, FileText, CheckCircle } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { API_ENDPOINTS } from "../config/api";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface CategoryOverview {
   totalCategories: number;
@@ -10,6 +11,7 @@ interface CategoryOverview {
 }
 
 export function CategoryStats() {
+  const { t } = useLanguage();
   const [overview, setOverview] = useState<CategoryOverview>({
     totalCategories: 0,
     activeCategories: 0,
@@ -70,7 +72,7 @@ export function CategoryStats() {
       } catch (err) {
         console.error("Failed to fetch category overview:", err);
         if (!isCancelled) {
-          setError("Unable to load category overview right now.");
+          setError(t('categories.unableToLoad'));
         }
       } finally {
         if (!isCancelled) {
@@ -88,21 +90,21 @@ export function CategoryStats() {
 
   const statsData = [
     {
-      title: "Total Categories",
+      title: t('categoryStats.totalCategories'),
       value: overview.totalCategories,
       icon: Target,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
     },
     {
-      title: "Active Categories",
+      title: t('categoryStats.activeCategories'),
       value: overview.activeCategories,
       icon: CheckCircle,
       color: "text-emerald-600",
       bgColor: "bg-emerald-50",
     },
     {
-      title: "Total Articles",
+      title: t('categoryStats.totalArticles'),
       value: overview.totalArticles,
       icon: FileText,
       color: "text-purple-600",
@@ -112,7 +114,7 @@ export function CategoryStats() {
 
   return (
     <div className="mb-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Overview</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('categoryStats.overview')}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {isLoading
           ? Array.from({ length: 3 }).map((_, index) => (

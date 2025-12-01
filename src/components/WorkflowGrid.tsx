@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { WorkflowCard } from "./WorkflowCard";
 import { API_ENDPOINTS } from "../config/api";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const workflowData = [
   {
@@ -14,6 +15,7 @@ const workflowData = [
 ];
 
 export function WorkflowGrid() {
+  const { t } = useLanguage();
   const [currentConfig, setCurrentConfig] = useState<{
     category?: string;
     format?: string;
@@ -54,7 +56,7 @@ export function WorkflowGrid() {
 
   return (
     <div className="mb-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Active Workflow (mockup)</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('workflows.activeWorkflow')}</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {workflowData.map((workflow) => (
           <WorkflowCard 

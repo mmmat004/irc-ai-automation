@@ -6,6 +6,7 @@ import { Badge } from "./ui/badge";
 import { Calendar, Check, Clock, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { API_ENDPOINTS, API_BASE_URL } from "../config/api";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface WeeklyCategoriesConfigProps {
   onSave?: (config: { category: string; format: string }) => void;
@@ -24,6 +25,7 @@ interface NewsFormatOption {
 }
 
 export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) {
+  const { t } = useLanguage();
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [formatOptions, setFormatOptions] = useState<NewsFormatOption[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
@@ -168,12 +170,12 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
 
   const handleSave = async () => {
     if (!selectedCategoryId || selectedCategoryId === "") {
-      toast.error("Please select a category before saving");
+      toast.error(t('weeklyConfig.chooseCategory'));
       return;
     }
 
     if (!selectedFormatId || selectedFormatId === "") {
-      toast.error("Please select a news format before saving");
+      toast.error(t('weeklyConfig.chooseFormat'));
       return;
     }
 
@@ -271,14 +273,14 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
       }
       
       console.log('✅ Workflow configuration saved successfully');
-      toast.success("Weekly configuration updated successfully");
+      toast.success(t('common.success'));
     } catch (error) {
       console.error('❌ Save configuration error:', error);
       
       // Don't show additional error toast if we already showed one above
       const errorMessage = error instanceof Error ? error.message : String(error);
       if (!errorMessage.includes('HTTP 500') && !errorMessage.includes('HTTP 401') && !errorMessage.includes('HTTP 403')) {
-        toast.error("Failed to save configuration. Please try again.");
+        toast.error(t('common.error'));
       }
     } finally {
       setIsSaving(false);
@@ -312,10 +314,10 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-primary" />
-                Weekly Categories Configuration
+                {t('weeklyConfig.title')}
               </CardTitle>
               <CardDescription>
-                Configure the news topic for automated AI workflow collection
+                {t('weeklyConfig.description')}
               </CardDescription>
             </div>
           </div>
@@ -323,7 +325,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
         <CardContent className="space-y-6">
           <div className="flex items-center justify-center py-8">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
-            <span className="ml-3 text-sm text-muted-foreground">Loading options...</span>
+            <span className="ml-3 text-sm text-muted-foreground">{t('weeklyConfig.loadingOptions')}</span>
           </div>
         </CardContent>
       </Card>
@@ -337,15 +339,15 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
           <div>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-primary" />
-              Weekly Categories Configuration
+              {t('weeklyConfig.title')}
             </CardTitle>
             <CardDescription>
-              Configure the news topic for automated AI workflow collection
+              {t('weeklyConfig.description')}
             </CardDescription>
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
             <Clock className="h-3 w-3" />
-            Last updated: {formatDate(lastUpdated)}
+            {t('weeklyConfig.lastUpdated')} {formatDate(lastUpdated)}
           </div>
         </div>
       </CardHeader>
@@ -421,12 +423,12 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
           {/* Right Column - Summary */}
           <div className="space-y-4">
             <div className="bg-muted/50 rounded-lg p-4 space-y-4">
-              <h4 className="font-medium">Configuration Summary</h4>
+              <h4 className="font-medium">{t('weeklyConfig.summary')}</h4>
               
               {/* Last Saved Category Tag */}
               <div className="space-y-2">
                 <label className="text-sm font-medium block">
-                  Topic:
+                  {t('weeklyConfig.topic')}
                 </label>
                 <Badge 
                   variant="secondary" 
@@ -439,7 +441,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
               {/* Last Saved Format */}
               <div className="space-y-2">
                 <label className="text-sm font-medium block">
-                  Format:
+                  {t('weeklyConfig.format')}
                 </label>
                 <Badge variant="outline">
                   {previousFormatName || (previousFormatId ? formatOptions.find(f => f.id === previousFormatId)?.name || 'Not set' : 'Not set')}
@@ -449,7 +451,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
               {!hasChanges && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground pt-2 border-t">
                   <Check className="h-3 w-3" />
-                  Configuration matches previous week
+                  {t('weeklyConfig.matchesPrevious')}
                 </div>
               )}
             </div>
@@ -458,17 +460,17 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
             {hasChanges && (
               <div className="space-y-2">
                 <label className="text-sm font-medium block text-muted-foreground">
-                  Previous Week's Configuration:
+                  {t('weeklyConfig.previousWeek')}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {previousCategoryId && (
                     <Badge variant="outline" className="text-muted-foreground">
-                      Topic: {categoryOptions.find(c => c.id === previousCategoryId)?.name}
+                      {t('weeklyConfig.topic')} {categoryOptions.find(c => c.id === previousCategoryId)?.name}
                     </Badge>
                   )}
                   {previousFormatId && (
                     <Badge variant="outline" className="text-muted-foreground">
-                      Format: {formatOptions.find(f => f.id === previousFormatId)?.name}
+                      {t('weeklyConfig.format')} {formatOptions.find(f => f.id === previousFormatId)?.name}
                     </Badge>
                   )}
                 </div>
@@ -481,8 +483,8 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
         <div className="flex items-center justify-between pt-4 border-t">
           <div className="text-sm text-muted-foreground">
             {hasChanges 
-              ? "You have unsaved changes" 
-              : "Configuration is up to date"
+              ? t('weeklyConfig.unsavedChanges') 
+              : t('weeklyConfig.upToDate')
             }
           </div>
           <Button 
@@ -490,7 +492,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
             disabled={!selectedCategoryId || !selectedFormatId || selectedCategoryId === "" || selectedFormatId === "" || isSaving}
             className="bg-primary hover:bg-primary/90"
           >
-            {isSaving ? "Saving..." : "Save Configuration"}
+            {isSaving ? t('weeklyConfig.saving') : t('weeklyConfig.saveConfig')}
           </Button>
         </div>
       </CardContent>

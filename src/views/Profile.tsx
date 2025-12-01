@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Badge } from "../components/ui/badge";
 import { toast } from "sonner";
 import { API_ENDPOINTS } from "../config/api";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface GoogleProfile {
   id: string;
@@ -19,6 +20,7 @@ interface GoogleProfile {
 }
 
 export function Profile() {
+  const { t } = useLanguage();
   const [profileData, setProfileData] = useState<GoogleProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -48,14 +50,14 @@ export function Profile() {
           setProfileData(data);
         } else if (response.status === 401) {
           console.warn('Profile fetch failed: 401 Unauthorized - Session expired or cookies not sent');
-          toast.error('Session expired. Please log in again.');
+          toast.error(t('profile.failedToLoad'));
         } else {
           console.error('Profile fetch failed with status:', response.status);
-          toast.error('Failed to load profile. Please try again.');
+          toast.error(t('profile.failedToLoad'));
         }
       } catch (error) {
         console.error('Profile fetch error:', error);
-        toast.error('Cannot connect to server. Check your connection.');
+        toast.error(t('newsDetail.serverError'));
       } finally {
         setIsLoading(false);
       }
@@ -73,7 +75,7 @@ export function Profile() {
     } catch (error) {
     } finally {
       localStorage.removeItem('auth_token');
-      toast("Signed out successfully");
+      toast(t('common.success'));
       window.location.reload();
     }
   };
@@ -85,7 +87,7 @@ export function Profile() {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading profile...</p>
+              <p className="text-muted-foreground">{t('profile.loading')}</p>
             </div>
           </div>
         </div>
@@ -99,7 +101,7 @@ export function Profile() {
         <div className="p-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <p className="text-muted-foreground">Failed to load profile data</p>
+              <p className="text-muted-foreground">{t('profile.failedToLoad')}</p>
             </div>
           </div>
         </div>
@@ -111,8 +113,8 @@ export function Profile() {
     <div className="h-full overflow-auto bg-background">
       <div className="p-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
-          <p className="text-muted-foreground mt-2">Your Google account information</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('profile.title')}</h1>
+          <p className="text-muted-foreground mt-2">{t('profile.yourGoogleAccount')}</p>
         </div>
 
         <div className="max-w-2xl space-y-8">
@@ -120,7 +122,7 @@ export function Profile() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5 text-primary" />
-                Profile Information
+                {t('profile.information')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -138,7 +140,7 @@ export function Profile() {
                     {profileData.email_verified && (
                       <Badge variant="secondary">
                         <Shield className="w-3 h-3 mr-1" />
-                        Email Verified
+                        {t('profile.emailVerified')}
                       </Badge>
                     )}
                   </div>
@@ -147,22 +149,22 @@ export function Profile() {
 
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-muted-foreground">First Name</span>
+                  <span className="text-muted-foreground">{t('profile.firstName')}</span>
                   <span className="font-medium">{profileData.firstName}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-muted-foreground">Last Name</span>
+                  <span className="text-muted-foreground">{t('profile.lastName')}</span>
                   <span className="font-medium">{profileData.lastName}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-muted-foreground">Email Address</span>
+                  <span className="text-muted-foreground">{t('profile.emailAddress')}</span>
                   <span className="font-medium">{profileData.email}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-muted-foreground">Role</span>
+                  <span className="text-muted-foreground">{t('profile.role')}</span>
                   <span className="font-medium">{profileData.role}</span>
                 </div>
               </div>
@@ -173,13 +175,13 @@ export function Profile() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Mail className="w-5 h-5 text-primary" />
-                Account Details
+                {t('profile.accountDetails')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center py-2">
-                <span className="text-muted-foreground">Account Type</span>
-                <span className="font-medium">Google Account</span>
+                <span className="text-muted-foreground">{t('profile.accountType')}</span>
+                <span className="font-medium">{t('profile.googleAccount')}</span>
               </div>
   
             </CardContent>
@@ -189,16 +191,16 @@ export function Profile() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-red-600">
                 <LogOut className="w-5 h-5" />
-                Sign Out
+                {t('sidebar.signOut')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Sign out of your Google account. You'll need to sign in again to access the application.
+                {t('profile.signOutDescription')}
               </p>
               <Button onClick={handleSignOut} variant="outline">
                 <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
+                {t('sidebar.signOut')}
               </Button>
             </CardContent>
           </Card>

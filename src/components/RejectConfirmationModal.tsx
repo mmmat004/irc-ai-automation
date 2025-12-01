@@ -9,6 +9,7 @@ import {
   AlertDialogTitle,
 } from "./ui/alert-dialog";
 import { X, AlertTriangle } from "lucide-react";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface RejectConfirmationModalProps {
   open: boolean;
@@ -22,9 +23,13 @@ export function RejectConfirmationModal({
   open,
   onOpenChange,
   onConfirm,
-  title = "Confirm Rejection",
-  description = "Are you sure you want to reject this news article? This action will mark the article as rejected and it cannot be easily undone.",
+  title,
+  description,
 }: RejectConfirmationModalProps) {
+  const { t } = useLanguage();
+  const defaultTitle = t('verification.yesReject');
+  const defaultDescription = t('newsDetail.reject');
+  
   const handleConfirm = () => {
     onConfirm();
     onOpenChange(false);
@@ -38,20 +43,20 @@ export function RejectConfirmationModal({
             <div className="rounded-full bg-red-100 p-2">
               <AlertTriangle className="w-5 h-5 text-red-600" />
             </div>
-            <AlertDialogTitle>{title}</AlertDialogTitle>
+            <AlertDialogTitle>{title || defaultTitle}</AlertDialogTitle>
           </div>
           <AlertDialogDescription className="pt-2">
-            {description}
+            {description || defaultDescription}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
             className="bg-red-600 hover:bg-red-700 text-white"
           >
             <X className="w-4 h-4 mr-2" />
-            Yes, Reject
+            {t('verification.yesReject')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -8,6 +8,7 @@ import {
   CardHeader,
 } from "./ui/card";
 import { Switch } from "./ui/switch";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface Category {
   id: number | string;
@@ -27,12 +28,13 @@ export function CategoryCard({
   category,
   onToggleActive,
 }: CategoryCardProps) {
+  const { t } = useLanguage();
   const isActive = category.isActive ?? true;
   const articleCount = Number(category.articleCount ?? 0);
   const description =
     category.description && category.description.trim().length > 0
       ? category.description
-      : "No description available.";
+      : t('common.noData');
   const indicatorColor = category.color ?? "#3b82f6";
 
   return (
@@ -72,7 +74,7 @@ export function CategoryCard({
         <div className="space-y-3 mb-4">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">
-              Articles
+              {t('categoryCard.articles')}
             </span>
             <span className="font-medium text-gray-900">
               {articleCount.toLocaleString()}

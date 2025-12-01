@@ -658,7 +658,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No sources available</p>
+                  <p className="text-sm text-muted-foreground">{t('newsDetail.noSources')}</p>
                 )}
               </CardContent>
             </Card>
@@ -684,7 +684,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No keywords available</p>
+                  <p className="text-sm text-muted-foreground">{t('newsDetail.noKeywords')}</p>
                 )}
               </CardContent>
             </Card>
