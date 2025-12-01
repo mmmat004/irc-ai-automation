@@ -722,7 +722,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                     size="sm"
                     onClick={() => setCurrentPage(pageNum)}
                     disabled={isLoading}
-                    className={`h-8 w-8 p-0 ${currentPage === pageNum ? "bg-blue-600 hover:bg-blue-700 text-white" : ""}`}
+                    className={`h-8 w-8 p-0 ${currentPage === pageNum ? "bg-primary hover:bg-primary/90 text-primary-foreground" : ""}`}
                   >
                     {pageNum}
                   </Button>

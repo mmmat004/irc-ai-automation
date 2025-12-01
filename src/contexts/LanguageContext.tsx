@@ -146,6 +146,8 @@ const translations: Record<Language, Record<string, string>> = {
     'workflows.topic': 'Topic:',
     'workflows.format': 'Format:',
     'workflows.viewLogs': 'View Logs',
+    'workflows.currentTopic': 'Current Topic',
+    'workflows.currentFormat': 'Current Format',
     
     // Weekly Categories Config
     'weeklyConfig.title': 'Weekly Categories Configuration',
@@ -386,6 +388,8 @@ const translations: Record<Language, Record<string, string>> = {
     'workflows.topic': 'หัวข้อ:',
     'workflows.format': 'รูปแบบ:',
     'workflows.viewLogs': 'ดูบันทึก',
+    'workflows.currentTopic': 'หัวข้อปัจจุบัน',
+    'workflows.currentFormat': 'รูปแบบปัจจุบัน',
     
     // Weekly Categories Config
     'weeklyConfig.title': 'การตั้งค่าหมวดหมู่อาทิตย์',

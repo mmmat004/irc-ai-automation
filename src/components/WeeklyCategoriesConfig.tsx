@@ -428,7 +428,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
               {/* Last Saved Category Tag */}
               <div className="space-y-2">
                 <label className="text-sm font-medium block">
-                  {t('weeklyConfig.topic')}
+                  {t('workflows.currentTopic')}
                 </label>
                 <Badge 
                   variant="secondary" 
@@ -441,7 +441,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
               {/* Last Saved Format */}
               <div className="space-y-2">
                 <label className="text-sm font-medium block">
-                  {t('weeklyConfig.format')}
+                  {t('workflows.currentFormat')}
                 </label>
                 <Badge variant="outline">
                   {previousFormatName || (previousFormatId ? formatOptions.find(f => f.id === previousFormatId)?.name || 'Not set' : 'Not set')}
