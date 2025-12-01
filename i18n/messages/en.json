@@ -1,0 +1,229 @@
+{
+  "WorkflowHeader": {
+    "n8n-workflows": "n8n Workflows",
+    "open-n8n-editor": "Open n8n Editor"
+  },
+  "WorkflowGrid": {
+    "active-workflow-mockup": "Active Workflow (mockup)"
+  },
+  "WorkflowCard": {
+    "last-run": "Last run:",
+    "next-run": "Next run:",
+    "current-configuration": "Current Configuration:",
+    "topic": "Topic:",
+    "format": "Format:",
+    "view-logs": "View Logs",
+    "edit": "Edit"
+  },
+  "WeeklyCategoriesConfig": {
+    "weekly-categories-configuration": "Weekly Categories Configuration",
+    "configure-the-news-topic-for": "Configure the news topic for automated AI workflow collection",
+    "loading-options": "Loading options...",
+    "last-updated": "Last updated:",
+    "select-news-topic-for-this": "Select News Topic for This Week",
+    "choose-a-category": "Choose a category...",
+    "no-categories-available": "No categories available",
+    "select-news-format": "Select News Format",
+    "choose-a-news-format": "Choose a news format...",
+    "no-formats-available": "No formats available",
+    "configuration-summary": "Configuration Summary",
+    "topic": "Topic:",
+    "format": "Format:",
+    "configuration-matches-previous-week": "Configuration matches previous week",
+    "previous-weeks-configuration": "Previous Week's Configuration:"
+  },
+  "VerifyConfirmationModal": {
+    "cancel": "Cancel",
+    "yes-verify": "Yes, Verify"
+  },
+  "VerificationHeader": {
+    "verification-queue": "Verification Queue",
+    "23-items-pending": "23 items pending"
+  },
+  "VerificationCards": {
+    "loading-pending-news": "Loading pending news..."
+  },
+  "VerificationCard": {
+    "at": "at",
+    "view-details": "View Details",
+    "sources": "Sources (",
+    "admin-notes": "Admin Notes",
+    "add-your-verification-notes-here": "Add your verification notes here...",
+    "approve": "Approve",
+    "reject": "Reject"
+  },
+  "StatsCards": {
+    "p-3-rounded-xl-group": " p-3 rounded-xl group-hover:scale-110 transition-transform duration-300",
+    "w-6-h-6": "w-6 h-6 "
+  },
+  "Sidebar": {
+    "ireadcustomer": "iReadCustomer",
+    "news-automation": "News automation",
+    "w-full-flex-items-center": "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left group ",
+    "w-5-h-5-transition": "w-5 h-5 transition-colors ",
+    "sidebar": "Sidebar",
+    "displays-the-mobile-sidebar": "Displays the mobile sidebar."
+  },
+  "RejectConfirmationModal": {
+    "cancel": "Cancel",
+    "yes-reject": "Yes, Reject"
+  },
+  "RecentNews": {
+    "px-3-py-15-rounded": "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 group-hover:scale-105 "
+  },
+  "RecentExecutions": {
+    "previous": "Previous",
+    "h-8-w-8-p": "h-8 w-8 p-0 ",
+    "next": "Next"
+  },
+  "NewsTable": {
+    "loading-news-articles": "Loading news articles...",
+    "showing": "Showing",
+    "of": "of",
+    "article": "article",
+    "selected": "selected",
+    "verify-all": "Verify All",
+    "reject-all": "Reject All",
+    "select-all": "Select All",
+    "title": "Title",
+    "category": "Category",
+    "status": "Status",
+    "date": "Date",
+    "actions": "Actions",
+    "no-news-articles-found": "No news articles found",
+    "try-adjusting-your-filters-or": "Try adjusting your filters or search terms",
+    "cursor-pointer-hoverbg-gray-100": " cursor-pointer hover:bg-gray-100 transition-all ",
+    "text-sm": "text-sm ",
+    "verify-this-news-article": "Verify this news article",
+    "reject-this-news-article": "Reject this news article",
+    "cancel-verification-set-back-to": "Cancel verification - set back to pending",
+    "cancel-rejection-set-back-to": "Cancel rejection - set back to pending",
+    "showing-page": "Showing page",
+    "total-items": "total items)",
+    "previous": "Previous",
+    "h-8-w-8-p": "h-8 w-8 p-0 ",
+    "next": "Next"
+  },
+  "NewsHeader": {
+    "news-management": "News Management"
+  },
+  "NewsFilters": {
+    "search-news-articles": "Search news articles...",
+    "all-categories": "All Categories",
+    "all-statuses": "All Statuses",
+    "pending": "Pending",
+    "verified": "Verified",
+    "published": "Published",
+    "show-all": "Show All",
+    "clear": "Clear",
+    "active-filters": "Active filters:",
+    "search": "Search: \"",
+    "remove-search-filter": "Remove search filter",
+    "category": "Category:",
+    "remove-category-filter": "Remove category filter",
+    "status": "Status:",
+    "remove-status-filter": "Remove status filter",
+    "date": "Date:",
+    "remove-date-filter": "Remove date filter",
+    "clear-all": "Clear All"
+  },
+  "CategoryStats": {
+    "overview": "Overview",
+    "category-stat-skeleton": "category-stat-skeleton-",
+    "w-12-h-12-rounded": "w-12 h-12 rounded-lg ",
+    "flex-items-center-justify-center": " flex items-center justify-center",
+    "w-6-h-6": "w-6 h-6 "
+  },
+  "CategoryDistribution": {
+    "category-distribution": "Category Distribution",
+    "loading": "Loading...",
+    "no-category-data-available": "No category data available",
+    "w-3-h-3-rounded": "w-3 h-3 rounded-full "
+  },
+  "CategoryCards": {
+    "category-card-skeleton": "category-card-skeleton-"
+  },
+  "CategoryCard": {
+    "articles": "Articles"
+  },
+  "Breadcrumb": {
+    "ireadcustomer": "iReadCustomer",
+    "transition-colors-hovertext-foreground": "transition-colors hover:text-foreground ",
+    "breadcrumb": "breadcrumb"
+  },
+  "AddCategoryModal": {
+    "w-8-h-8-rounded": "w-8 h-8 rounded-full border-2 transition-all "
+  },
+  "SidebarTrigger": {
+    "toggle-sidebar": "Toggle Sidebar"
+  },
+  "SidebarRail": {
+    "toggle-sidebar": "Toggle Sidebar"
+  },
+  "SheetContent": {
+    "close": "Close"
+  },
+  "Pagination": {
+    "pagination": "pagination"
+  },
+  "PaginationPrevious": {
+    "go-to-previous-page": "Go to previous page",
+    "previous": "Previous"
+  },
+  "PaginationNext": {
+    "go-to-next-page": "Go to next page",
+    "next": "Next"
+  },
+  "PaginationEllipsis": {
+    "more-pages": "More pages"
+  },
+  "DialogContent": {
+    "close": "Close"
+  },
+  "CarouselPrevious": {
+    "previous-slide": "Previous slide"
+  },
+  "CarouselNext": {
+    "next-slide": "Next slide"
+  },
+  "BreadcrumbEllipsis": {
+    "more": "More"
+  },
+  "ImageWithFallback": {
+    "inline-block-bg-gray-100": "inline-block bg-gray-100 text-center align-middle ",
+    "error-loading-image": "Error loading image"
+  },
+  "Profile": {
+    "loading-profile": "Loading profile...",
+    "failed-to-load-profile-data": "Failed to load profile data",
+    "profile": "Profile",
+    "your-google-account-information": "Your Google account information",
+    "profile-information": "Profile Information",
+    "email-verified": "Email Verified",
+    "first-name": "First Name",
+    "last-name": "Last Name",
+    "email-address": "Email Address",
+    "role": "Role",
+    "account-details": "Account Details",
+    "account-type": "Account Type",
+    "google-account": "Google Account",
+    "sign-out": "Sign Out",
+    "sign-out-of-your-google": "Sign out of your Google account. You'll need to sign in again to access the application."
+  },
+  "NewsDetail": {
+    "no-sources-available": "No sources available",
+    "no-keywords-available": "No keywords available"
+  },
+  "Login": {
+    "ireadcustomer": "iReadCustomer",
+    "welcome-back": "Welcome Back",
+    "sign-in-to-your-admin": "Sign in to your admin dashboard",
+    "sign-in": "Sign In",
+    "continue-with-google": "Continue with Google",
+    "c-2025-ireadcustomer-all-rights": "© 2025 iReadCustomer. All rights reserved."
+  },
+  "Dashboard": {
+    "dashboard": "Dashboard",
+    "heres-whats-happening-with-your": "Here's what's happening with your news automation system."
+  }
+}
