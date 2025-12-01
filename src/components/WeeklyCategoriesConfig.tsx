@@ -34,6 +34,11 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
   const [previousFormatId, setPreviousFormatId] = useState<string>("");
   const [previousCategoryName, setPreviousCategoryName] = useState<string>("");
   const [previousFormatName, setPreviousFormatName] = useState<string>("");
+  // Separate state for previous week's configuration (should not be updated when saving)
+  const [previousWeekCategoryId, setPreviousWeekCategoryId] = useState<string>("");
+  const [previousWeekFormatId, setPreviousWeekFormatId] = useState<string>("");
+  const [previousWeekCategoryName, setPreviousWeekCategoryName] = useState<string>("");
+  const [previousWeekFormatName, setPreviousWeekFormatName] = useState<string>("");
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)); // 1 week ago
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
@@ -88,7 +93,22 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
           const latestInfo = await latestInfoResponse.json();
           console.log('Latest workflow config info:', latestInfo);
           
-          // Set previous configuration from API - use direct names from API response
+          // Set last updated date
+          let updateDate: Date | null = null;
+          if (latestInfo.updatedAt || latestInfo.lastUpdated || latestInfo.createdAt) {
+            const parsedDate = new Date(latestInfo.updatedAt || latestInfo.lastUpdated || latestInfo.createdAt);
+            if (!isNaN(parsedDate.getTime())) {
+              updateDate = parsedDate;
+              setLastUpdated(parsedDate);
+            }
+          }
+          
+          // Determine if this is from a previous week (more than 7 days ago)
+          const now = new Date();
+          const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const isFromPreviousWeek = updateDate && updateDate < oneWeekAgo;
+          
+          // Set current/previous configuration from API
           if (latestInfo.currentCategoryName) {
             setPreviousCategoryName(latestInfo.currentCategoryName);
           }
@@ -103,11 +123,37 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
             setPreviousFormatId(latestInfo.formatId || latestInfo.currentFormatId);
           }
           
-          // Set last updated date
-          if (latestInfo.updatedAt || latestInfo.lastUpdated || latestInfo.createdAt) {
-            const updateDate = new Date(latestInfo.updatedAt || latestInfo.lastUpdated || latestInfo.createdAt);
-            if (!isNaN(updateDate.getTime())) {
-              setLastUpdated(updateDate);
+          // If the config is from a previous week, also set it as previous week's config
+          // Otherwise, we'll need to fetch or calculate the actual previous week's config
+          if (isFromPreviousWeek) {
+            if (latestInfo.currentCategoryName) {
+              setPreviousWeekCategoryName(latestInfo.currentCategoryName);
+            }
+            if (latestInfo.categoryId || latestInfo.currentCategoryId) {
+              setPreviousWeekCategoryId(latestInfo.categoryId || latestInfo.currentCategoryId);
+            }
+            if (latestInfo.currentFormatName) {
+              setPreviousWeekFormatName(latestInfo.currentFormatName);
+            }
+            if (latestInfo.formatId || latestInfo.currentFormatId) {
+              setPreviousWeekFormatId(latestInfo.formatId || latestInfo.currentFormatId);
+            }
+          } else {
+            // If current config is recent, try to get previous week's config from API
+            // For now, we'll use the current config as previous week if no separate endpoint exists
+            // This is a limitation - ideally the API should provide previous week's config separately
+            // Check if API provides previousWeekCategoryName or similar fields
+            if (latestInfo.previousWeekCategoryName || latestInfo.previousCategoryName) {
+              setPreviousWeekCategoryName(latestInfo.previousWeekCategoryName || latestInfo.previousCategoryName);
+            }
+            if (latestInfo.previousWeekCategoryId || latestInfo.previousCategoryId) {
+              setPreviousWeekCategoryId(latestInfo.previousWeekCategoryId || latestInfo.previousCategoryId);
+            }
+            if (latestInfo.previousWeekFormatName || latestInfo.previousFormatName) {
+              setPreviousWeekFormatName(latestInfo.previousWeekFormatName || latestInfo.previousFormatName);
+            }
+            if (latestInfo.previousWeekFormatId || latestInfo.previousFormatId) {
+              setPreviousWeekFormatId(latestInfo.previousWeekFormatId || latestInfo.previousFormatId);
             }
           }
         } else {
@@ -249,6 +295,18 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
         throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
       }
       
+      // Before updating current config, save it as previous week's config if it's been more than a week
+      const now = new Date();
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      if (lastUpdated < oneWeekAgo && previousCategoryId && previousFormatId) {
+        // The current config is from a previous week, so save it as previous week's config
+        setPreviousWeekCategoryId(previousCategoryId);
+        setPreviousWeekFormatId(previousFormatId);
+        setPreviousWeekCategoryName(previousCategoryName);
+        setPreviousWeekFormatName(previousFormatName);
+      }
+      
+      // Update current configuration
       setPreviousCategoryId(selectedCategoryId);
       setPreviousFormatId(selectedFormatId);
       // Update names from selected options
@@ -463,14 +521,14 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                   {t('weeklyConfig.previousWeek')}
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {previousCategoryId && (
+                  {(previousWeekCategoryId || previousWeekCategoryName) && (
                     <Badge variant="outline" className="text-muted-foreground">
-                      {t('weeklyConfig.topic')} {categoryOptions.find(c => c.id === previousCategoryId)?.name}
+                      {t('workflows.topic')} {previousWeekCategoryName || (previousWeekCategoryId ? categoryOptions.find(c => c.id === previousWeekCategoryId)?.name : '')}
                     </Badge>
                   )}
-                  {previousFormatId && (
+                  {(previousWeekFormatId || previousWeekFormatName) && (
                     <Badge variant="outline" className="text-muted-foreground">
-                      {t('weeklyConfig.format')} {formatOptions.find(f => f.id === previousFormatId)?.name}
+                      {t('workflows.format')} {previousWeekFormatName || (previousWeekFormatId ? formatOptions.find(f => f.id === previousWeekFormatId)?.name : '')}
                     </Badge>
                   )}
                 </div>
