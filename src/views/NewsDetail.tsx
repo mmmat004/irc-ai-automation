@@ -7,7 +7,6 @@ import {
   ExternalLink,
   Share2,
   Bookmark,
-  Globe,
   Check,
   X,
   RotateCcw,
@@ -48,7 +47,6 @@ interface NewsDetailData {
 export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
   const { language, t } = useLanguage();
   const [news, setNews] = useState<NewsDetailData | null>(null);
-  const [isTranslated, setIsTranslated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [showVerifyConfirm, setShowVerifyConfirm] = useState(false);
@@ -115,12 +113,6 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
 
   const handleBookmark = () => {
     toast(t('newsDetail.articleBookmarked'));
-  };
-
-  const handleTranslate = () => {
-    const newTranslatedState = !isTranslated;
-    setIsTranslated(newTranslatedState);
-    toast(newTranslatedState ? t('newsDetail.switchedToThai') : t('newsDetail.switchedToEnglish'));
   };
 
   const handleVerifyClick = () => {
@@ -460,27 +452,6 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
     }
   };
 
-  // Translation function
-  const translateText = (text: string) => {
-    if (!isTranslated) return text;
-    
-    // Basic Thai translations
-    const translations: Record<string, string> = {
-      "Technology": "เทคโนโลยี",
-      "Environment": "สิ่งแวดล้อม",
-      "Published": "เผยแพร่แล้ว",
-      "Verified": "ยืนยันแล้ว",
-      "Pending": "รอดำเนินการ",
-      "Rejected": "ปฏิเสธแล้ว",
-      "Original Sources": "แหล่งข้อมูลต้นฉบับ",
-      "Keywords": "คำสำคัญ",
-      "Article Status": "สถานะบทความ",
-      "Status": "สถานะ"
-    };
-    
-    return translations[text] || text;
-  };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "published":
@@ -554,29 +525,19 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
             <ArrowLeft className="w-4 h-4" />
             {t('newsDetail.back')}
           </Button>
-          
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleTranslate}
-            className="gap-2 border-gray-300 hover:bg-gray-50"
-          >
-            <Globe className="w-4 h-4" />
-            {isTranslated ? "English" : "ไทย"}
-          </Button>
         </div>
 
         <Card className="border border-border shadow-sm rounded-xl mb-6">
           <CardHeader className="pb-4">
             <div className="flex items-start justify-between mb-4">
               <Badge className="bg-primary/10 text-primary hover:bg-primary/10">
-                {translateText(news.category)}
+                {news.category}
               </Badge>
               {getStatusBadge(news.status)}
             </div>
 
             <h1 className="text-3xl font-bold text-foreground mb-4 leading-tight">
-              {translateText(news.title)}
+              {news.title}
             </h1>
 
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
