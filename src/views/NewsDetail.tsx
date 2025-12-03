@@ -118,8 +118,9 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
   };
 
   const handleTranslate = () => {
-    setIsTranslated(!isTranslated);
-    toast(isTranslated ? t('newsDetail.switchedToEnglish') : t('newsDetail.switchedToThai'));
+    const newTranslatedState = !isTranslated;
+    setIsTranslated(newTranslatedState);
+    toast(newTranslatedState ? t('newsDetail.switchedToThai') : t('newsDetail.switchedToEnglish'));
   };
 
   const handleVerifyClick = () => {
@@ -555,6 +556,7 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
           </Button>
           
           <Button
+            type="button"
             variant="outline"
             onClick={handleTranslate}
             className="gap-2 border-gray-300 hover:bg-gray-50"
