@@ -195,7 +195,8 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
   }, [formatOptions, selectedFormatId, previousFormatId]);
 
   useEffect(() => {
-    // Check if current selection differs from previous
+    // Check if current selection differs from the last saved configuration
+    // Compare against previousCategoryId/previousFormatId (the last saved values)
     setHasChanges(
       selectedCategoryId !== previousCategoryId || 
       selectedFormatId !== previousFormatId
@@ -295,18 +296,17 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
         throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
       }
       
-      // Before updating current config, save it as previous week's config if it's been more than a week
-      const now = new Date();
-      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      if (lastUpdated < oneWeekAgo && previousCategoryId && previousFormatId) {
-        // The current config is from a previous week, so save it as previous week's config
+      // Before updating current config, save the current values as previous week's config
+      // This ensures we always have the previous week's settings to compare against
+      if (previousCategoryId && previousFormatId) {
+        // Save current config as previous week's config before updating
         setPreviousWeekCategoryId(previousCategoryId);
         setPreviousWeekFormatId(previousFormatId);
         setPreviousWeekCategoryName(previousCategoryName);
         setPreviousWeekFormatName(previousFormatName);
       }
       
-      // Update current configuration
+      // Update current configuration with newly saved values
       setPreviousCategoryId(selectedCategoryId);
       setPreviousFormatId(selectedFormatId);
       // Update names from selected options
@@ -506,10 +506,20 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                 </Badge>
               </div>
 
-              {!hasChanges && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground pt-2 border-t">
-                  <Check className="h-3 w-3" />
-                  {t('weeklyConfig.matchesPrevious')}
+              {!hasChanges && (previousWeekCategoryName || previousWeekCategoryId) && (
+                <div className="space-y-2 pt-2 border-t">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Check className="h-3 w-3" />
+                    {t('weeklyConfig.matchesPrevious')}
+                  </div>
+                  {/* Show what the previous week's settings were */}
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <div>
+                      {t('weeklyConfig.previousWeek')}: {previousWeekCategoryName || (previousWeekCategoryId ? categoryOptions.find(c => c.id === previousWeekCategoryId)?.name : '')}
+                      {previousWeekFormatName && ` • ${previousWeekFormatName}`}
+                      {!previousWeekFormatName && previousWeekFormatId && ` • ${formatOptions.find(f => f.id === previousWeekFormatId)?.name || ''}`}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
