@@ -506,29 +506,13 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                 </Badge>
               </div>
 
-              {!hasChanges && (previousWeekCategoryName || previousWeekCategoryId) && (
-                <div className="space-y-2 pt-2 border-t">
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Check className="h-3 w-3" />
-                    {t('weeklyConfig.matchesPrevious')}
-                  </div>
-                  {/* Show what the previous week's settings were */}
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <div>
-                      {t('weeklyConfig.previousWeek')}: {previousWeekCategoryName || (previousWeekCategoryId ? categoryOptions.find(c => c.id === previousWeekCategoryId)?.name : '')}
-                      {previousWeekFormatName && ` • ${previousWeekFormatName}`}
-                      {!previousWeekFormatName && previousWeekFormatId && ` • ${formatOptions.find(f => f.id === previousWeekFormatId)?.name || ''}`}
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
-            {/* Previous Week Reference */}
+            {/* Previous Configuration Reference */}
             {hasChanges && (
               <div className="space-y-2">
                 <label className="text-sm font-medium block text-muted-foreground">
-                  {t('weeklyConfig.previousWeek')}
+                  Previous Configuration
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {(previousWeekCategoryId || previousWeekCategoryName) && (
