@@ -91,13 +91,31 @@ export function CategoryCards({
           ? data
           : data?.items ?? data?.categories ?? data?.data ?? [];
 
-        const mappedCategories: CategoryData[] = rawItems.map((item, index) => {
-          const id =
-            item.id ??
-            item._id ??
-            item.categoryId ??
-            item.category_id ??
-            `category-${index}`;
+        // Debug: Log first item to see structure
+        if (rawItems.length > 0) {
+          console.log('Sample category item from API:', rawItems[0]);
+        }
+
+        const mappedCategories: CategoryData[] = rawItems
+          .map((item, index) => {
+            // Always use the actual database ID - prioritize _id (MongoDB standard)
+            // Check all possible ID fields
+            const id =
+              item._id ??  // MongoDB _id is most common
+              item.id ??
+              item.categoryId ??
+              item.category_id;
+            
+            // If no valid ID found, skip this item
+            if (!id) {
+              console.error('Category item missing ID, skipping:', item);
+              return null;
+            }
+            
+            // Warn if we're about to use a generated ID (shouldn't happen now)
+            if (String(id).startsWith('category-')) {
+              console.warn('Warning: Using generated ID instead of database ID:', id, item);
+            }
 
           const color =
             item.color ??
@@ -137,8 +155,9 @@ export function CategoryCards({
           };
         });
 
-        // Ensure we have unique categories by id
-        const uniqueCategories = mappedCategories.filter(
+        // Filter out null entries and ensure we have unique categories by id
+        const validCategories = mappedCategories.filter((cat): cat is CategoryData => cat !== null);
+        const uniqueCategories = validCategories.filter(
           (category, index, self) =>
             self.findIndex((item) => item.id === category.id) === index
         );
@@ -187,7 +206,17 @@ export function CategoryCards({
 
   const handleToggleActive = async (categoryId: number | string) => {
     const category = categories.find(cat => cat.id === categoryId);
-    if (!category) return;
+    if (!category) {
+      console.error('Category not found:', categoryId);
+      return;
+    }
+
+    // Ensure we have a valid database ID (not a generated one)
+    if (String(categoryId).startsWith('category-')) {
+      console.error('Invalid category ID (generated fallback):', categoryId);
+      toast.error('Invalid category ID. Please refresh the page.');
+      return;
+    }
 
     const newIsActive = !category.isActive;
 
@@ -206,7 +235,7 @@ export function CategoryCards({
         },
         credentials: 'include',
         body: JSON.stringify({
-          categoryId: String(categoryId),
+          categoryId: String(categoryId), // This should be the actual database ID
           isVisible: newIsActive,
         }),
       });
