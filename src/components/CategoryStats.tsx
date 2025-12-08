@@ -10,7 +10,11 @@ interface CategoryOverview {
   totalArticles: number;
 }
 
-export function CategoryStats() {
+interface CategoryStatsProps {
+  refreshTrigger?: number;
+}
+
+export function CategoryStats({ refreshTrigger = 0 }: CategoryStatsProps) {
   const { t } = useLanguage();
   const [overview, setOverview] = useState<CategoryOverview>({
     totalCategories: 0,
@@ -86,7 +90,7 @@ export function CategoryStats() {
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [refreshTrigger, t]);
 
   const statsData = [
     {

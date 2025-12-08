@@ -36,13 +36,15 @@ interface CategoryCardsProps {
   onSearchChange: (query: string) => void;
   isAddModalOpen: boolean;
   onCloseAddModal: () => void;
+  onCategoryVisibilityChange?: () => void;
 }
 
 export function CategoryCards({ 
   searchQuery, 
   onSearchChange, 
   isAddModalOpen, 
-  onCloseAddModal 
+  onCloseAddModal,
+  onCategoryVisibilityChange
 }: CategoryCardsProps) {
   const { t } = useLanguage();
   const [categories, setCategories] = useState<CategoryData[]>([]);
@@ -302,8 +304,10 @@ export function CategoryCards({
         throw new Error(`Failed to update visibility: ${response.status}`);
       }
 
-      // Optionally refresh categories to ensure sync with backend
-      // The optimistic update should be sufficient, but we can refresh if needed
+      // Refresh overview stats after successful visibility update
+      if (onCategoryVisibilityChange) {
+        onCategoryVisibilityChange();
+      }
     } catch (error) {
       console.error('Error updating category visibility:', error);
       toast.error(t('common.error'));
