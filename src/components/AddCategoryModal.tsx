@@ -39,6 +39,33 @@ export function AddCategoryModal({ isOpen, onClose, onAddCategory, onCategoryAdd
       return;
     }
 
+    // Check for duplicate category name before submitting
+    try {
+      const checkResponse = await fetch(`${API_ENDPOINTS.CATEGORY_SEARCH}?keyword=${encodeURIComponent(formData.name.trim())}`, {
+        credentials: 'include'
+      });
+
+      if (checkResponse.ok) {
+        const existingCategories = await checkResponse.json();
+        const categories = Array.isArray(existingCategories) ? existingCategories : (existingCategories.items || existingCategories.data || existingCategories.categories || []);
+        
+        // Check if any category has the same name (case-insensitive, trimmed)
+        const normalizedNewName = formData.name.trim().toLowerCase();
+        const duplicateExists = categories.some((cat: any) => {
+          const existingName = (cat.name || cat.categoryName || '').trim().toLowerCase();
+          return existingName === normalizedNewName;
+        });
+
+        if (duplicateExists) {
+          toast.error('This category already exists');
+          return;
+        }
+      }
+    } catch (error) {
+      console.warn('Error checking for duplicate category:', error);
+      // Continue with submission if check fails - let backend handle validation
+    }
+
     setIsSubmitting(true);
     try {
       const response = await fetch(API_ENDPOINTS.CATEGORY_ADD, {
@@ -59,10 +86,33 @@ export function AddCategoryModal({ isOpen, onClose, onAddCategory, onCategoryAdd
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Failed to add category: ${response.status}`);
+        const errorMessage = errorData.message || errorData.error || `Failed to add category: ${response.status}`;
+        
+        // Check if error indicates duplicate category
+        if (errorMessage.toLowerCase().includes('already exist') || 
+            errorMessage.toLowerCase().includes('duplicate') ||
+            errorMessage.toLowerCase().includes('unique') ||
+            response.status === 409) {
+          throw new Error('This category already exists');
+        }
+        
+        throw new Error(errorMessage);
       }
 
-      const data = await response.json();
+      // Handle response - may be empty on success
+      let data: any = {};
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text.trim()) {
+          try {
+            data = JSON.parse(text);
+          } catch (e) {
+            console.warn('Response is not valid JSON, but request succeeded:', e);
+          }
+        }
+      }
+
       toast.success(t('category.add') + ' ' + t('common.success'));
       
       // Call the callback to refresh categories

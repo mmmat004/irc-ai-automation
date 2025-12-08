@@ -76,8 +76,10 @@ export function CategoryCards({
             const idMap = new Map<string, string>();
             categoriesData.forEach((cat: any) => {
               const id = cat._id ?? cat.id ?? cat.categoryId;
-              const name = cat.name ?? cat.categoryName;
+              // Try multiple name fields and normalize (trim whitespace)
+              const name = (cat.name ?? cat.categoryName ?? cat.title)?.trim();
               if (id && name) {
+                // Store with normalized name (trimmed)
                 idMap.set(name, String(id));
               }
             });
@@ -143,12 +145,12 @@ export function CategoryCards({
             // If no ID in response, look it up from the category ID mapping
             // This mapping is fetched from WORKFLOW_CONFIG_CATEGORY endpoint
             // Note: categoryIdMap is accessed via closure, not dependency, to avoid unnecessary re-renders
-            const categoryName = item.name ?? item.categoryName ?? item.title;
-            const finalId = id ?? (categoryName ? categoryIdMap.get(categoryName) : null) ?? categoryName ?? `category-${index}`;
-            
-            if (!id && categoryName && !categoryIdMap.has(categoryName)) {
-              console.warn('Category ID not found in mapping for:', categoryName);
-            }
+            const categoryName = (item.name ?? item.categoryName ?? item.title)?.trim();
+            // Try to get ID from mapping using normalized name
+            const mappedId = categoryName ? categoryIdMap.get(categoryName) : null;
+            // Use mapped ID if available, otherwise use the API ID, or generate a unique fallback
+            // For fallback, use index to ensure uniqueness even if multiple categories have same name
+            const finalId = id ?? mappedId ?? (categoryName ? `${categoryName}-${index}` : `category-${index}`);
 
           const color =
             item.color ??
@@ -219,7 +221,7 @@ export function CategoryCards({
       isCancelled = true;
       controller.abort();
     };
-  }, [debouncedQuery, refreshTrigger, t]);
+  }, [debouncedQuery, refreshTrigger, t, categoryIdMap.size]);
 
   // Function to refresh categories (can be called after adding)
   const refreshCategories = () => {
@@ -315,8 +317,9 @@ export function CategoryCards({
   };
 
   const handleCategoryAdded = () => {
-    // Refresh the categories list after adding
-    refreshCategories();
+    // Refresh both the category ID mapping and the categories list after adding
+    // This ensures new categories are properly mapped and displayed
+    setRefreshTrigger(prev => prev + 1);
   };
 
   return (
