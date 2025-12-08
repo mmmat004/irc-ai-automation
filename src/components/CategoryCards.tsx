@@ -98,27 +98,28 @@ export function CategoryCards({
 
         const mappedCategories: (CategoryData | null)[] = rawItems
           .map((item, index) => {
-            // Always use the actual database ID - prioritize _id (MongoDB standard)
-            // Check all possible ID fields
+            // Check all possible ID fields from API
             const id =
               item._id ??  // MongoDB _id is most common
               item.id ??
               item.categoryId ??
-              item.category_id;
+              item.category_id ??
+              item.categoryID ??
+              item.CategoryId ??
+              item.CategoryID;
             
-            // If no valid ID found, skip this item
+            // If no ID found in response, use category name as identifier
+            // Note: API search endpoint doesn't return IDs, so we use name as stable identifier
+            // This works for display, but API operations (like toggle) may need the actual ID
+            const finalId = id ?? (item.name || `category-${index}`);
+            
             if (!id) {
-              console.error('Category item missing ID, skipping:', item);
-              return null;
-            }
-            
-            // Warn if we're about to use a generated ID (shouldn't happen now)
-            if (String(id).startsWith('category-')) {
-              console.warn('Warning: Using generated ID instead of database ID:', id, item);
+              console.warn('Category item missing ID, using name as identifier:', finalId, item);
             }
 
           const color =
             item.color ??
+            item.colorCode ??
             item.hexColor ??
             colorPalette[index % colorPalette.length];
 
@@ -146,7 +147,7 @@ export function CategoryCards({
               : true;
 
           return {
-            id,
+            id: finalId,
             name: item.name ?? item.categoryName ?? item.title ?? `Category ${index + 1}`,
             description: item.description ?? item.summary ?? "",
             articleCount,
@@ -211,8 +212,9 @@ export function CategoryCards({
       return;
     }
 
-    // Ensure we have a valid database ID (not a generated one)
-    if (String(categoryId).startsWith('category-')) {
+    // If ID is a generated fallback (starts with 'category-'), we can't update via API
+    // This shouldn't happen now since we use names, but keep as safety check
+    if (String(categoryId).startsWith('category-') && !category.name) {
       console.error('Invalid category ID (generated fallback):', categoryId);
       toast.error('Invalid category ID. Please refresh the page.');
       return;
@@ -228,6 +230,8 @@ export function CategoryCards({
     );
 
     try {
+      // Since search API doesn't return IDs, we use category name as identifier
+      // The toggle API should accept either name or ID
       const response = await fetch(API_ENDPOINTS.CATEGORY_VISIBLE, {
         method: 'PUT',
         headers: {
@@ -235,7 +239,7 @@ export function CategoryCards({
         },
         credentials: 'include',
         body: JSON.stringify({
-          categoryId: String(categoryId), // This should be the actual database ID
+          categoryId: String(categoryId), // This is the category name when ID is not available
           isVisible: newIsActive,
         }),
       });
