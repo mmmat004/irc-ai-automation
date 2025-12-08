@@ -70,7 +70,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     newsId: string | number | null;
   }>({ open: false, newsId: null });
 
-  // Fetch categories on mount
+  // Fetch categories on mount - only visible categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -81,7 +81,17 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
         if (response.ok) {
           const categoriesData = await response.json();
           if (Array.isArray(categoriesData)) {
-            setCategories(categoriesData);
+            // Filter out invisible categories
+            const visibleCategories = categoriesData.filter((cat: any) => {
+              const isVisible = 
+                typeof cat.isVisible === "boolean" ? cat.isVisible :
+                typeof cat.isActive === "boolean" ? cat.isActive :
+                typeof cat.active === "boolean" ? cat.active :
+                cat.status ? String(cat.status).toLowerCase() !== "inactive" :
+                true; // Default to visible if not specified
+              return isVisible;
+            });
+            setCategories(visibleCategories);
           }
         }
       } catch (error) {

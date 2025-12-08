@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Calendar as CalendarIcon, X } from "lucide-react";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -8,18 +8,7 @@ import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { DateRange } from "react-day-picker";
 import { useLanguage } from "../contexts/LanguageContext";
-
-const CATEGORY_OPTIONS = [
-  "Business",
-  "Data",
-  "AI",
-  "Technology",
-  "Startup",
-  "Marketing",
-  "Digital Transform",
-  "Economic",
-  "Finance"
-];
+import { API_ENDPOINTS } from "../config/api";
 
 export interface FilterState {
   search: string;
@@ -42,6 +31,43 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
   });
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false);
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
+
+  // Fetch visible categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(API_ENDPOINTS.CATEGORY_SEARCH + '?keyword=', {
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const categoriesData = await response.json();
+          const categories = Array.isArray(categoriesData) ? categoriesData : (categoriesData.items || categoriesData.data || categoriesData.categories || []);
+          
+          // Filter only visible categories and extract names
+          const visibleCategoryNames = categories
+            .filter((cat: any) => {
+              const isVisible = 
+                typeof cat.isVisible === "boolean" ? cat.isVisible :
+                typeof cat.isActive === "boolean" ? cat.isActive :
+                typeof cat.active === "boolean" ? cat.active :
+                cat.status ? String(cat.status).toLowerCase() !== "inactive" :
+                true;
+              return isVisible;
+            })
+            .map((cat: any) => cat.name || cat.categoryName || cat.title)
+            .filter((name: string) => name); // Remove any empty names
+          
+          setCategoryOptions(visibleCategoryNames);
+        }
+      } catch (error) {
+        console.error('Error fetching categories for filters:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const updateFilter = (key: keyof FilterState, value: string | DateRange | undefined) => {
     const newFilters = { ...filters, [key]: value };
@@ -117,7 +143,7 @@ export function NewsFilters({ onFiltersChange }: NewsFiltersProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('newsFilters.allCategories')}</SelectItem>
-            {CATEGORY_OPTIONS.map((category) => (
+            {categoryOptions.map((category) => (
               <SelectItem key={category} value={category}>
                 {category}
               </SelectItem>

@@ -48,11 +48,12 @@ export function AddCategoryModal({ isOpen, onClose, onAddCategory, onCategoryAdd
         },
         credentials: 'include',
         body: JSON.stringify({
-          name: formData.name.trim(),
-          nameThai: formData.nameThai.trim() || formData.name.trim(),
-          description: formData.description.trim(),
-          descriptionThai: formData.descriptionThai.trim() || formData.description.trim(),
-          color: formData.color, // Already in hex format
+          nameEn: formData.name.trim(),
+          nameTh: formData.nameThai.trim() || formData.name.trim(),
+          descriptionEn: formData.description.trim(),
+          descriptionTh: formData.descriptionThai.trim() || formData.description.trim(),
+          colorCode: formData.color, // API expects colorCode instead of color
+          isVisible: true, // Default to visible when creating
         }),
       });
 

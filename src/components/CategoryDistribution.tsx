@@ -32,19 +32,31 @@ export function CategoryDistribution() {
           // Handle different response formats
           const categories = Array.isArray(data) ? data : (data.items || data.data || data.categories || []);
           
-          // Map category data to display format
-          const categoryDataList = categories.map((category: any, index: number) => {
-            // Use colorCode from API, fallback to a default color if not available
-            const colorCode = category.colorCode || category.color || category.hexColor;
-            // Convert hex color to a valid color string (use inline style later)
-            const color = colorCode || `#${((index * 137.508) % 256).toString(16).padStart(2, '0')}${((index * 199.508) % 256).toString(16).padStart(2, '0')}${((index * 37.508) % 256).toString(16).padStart(2, '0')}`;
-            
-            return {
-              name: category.name || category.category || '',
-              count: category.totalNews || category.articleCount || category.count || 0,
-              color: color,
-            };
-          }).sort((a: CategoryData, b: CategoryData) => b.count - a.count);
+          // Filter out invisible categories and map to display format
+          const categoryDataList = categories
+            .filter((category: any) => {
+              // Only show visible categories
+              const isVisible = 
+                typeof category.isVisible === "boolean" ? category.isVisible :
+                typeof category.isActive === "boolean" ? category.isActive :
+                typeof category.active === "boolean" ? category.active :
+                category.status ? String(category.status).toLowerCase() !== "inactive" :
+                true; // Default to visible if not specified
+              return isVisible;
+            })
+            .map((category: any, index: number) => {
+              // Use colorCode from API, fallback to a default color if not available
+              const colorCode = category.colorCode || category.color || category.hexColor;
+              // Convert hex color to a valid color string (use inline style later)
+              const color = colorCode || `#${((index * 137.508) % 256).toString(16).padStart(2, '0')}${((index * 199.508) % 256).toString(16).padStart(2, '0')}${((index * 37.508) % 256).toString(16).padStart(2, '0')}`;
+              
+              return {
+                name: category.name || category.category || '',
+                count: category.totalNews || category.articleCount || category.count || 0,
+                color: color,
+              };
+            })
+            .sort((a: CategoryData, b: CategoryData) => b.count - a.count);
 
           setCategoryData(categoryDataList);
         } else {
