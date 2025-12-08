@@ -47,8 +47,13 @@ export function CategoryDistribution() {
             .map((category: any, index: number) => {
               // Use colorCode from API, fallback to a default color if not available
               const colorCode = category.colorCode || category.color || category.hexColor;
-              // Convert hex color to a valid color string (use inline style later)
-              const color = colorCode || `#${((index * 137.508) % 256).toString(16).padStart(2, '0')}${((index * 199.508) % 256).toString(16).padStart(2, '0')}${((index * 37.508) % 256).toString(16).padStart(2, '0')}`;
+              // Generate fallback hex color with proper integer conversion
+              // Convert floating-point results to integers before hex conversion
+              const r = Math.floor((index * 137.508) % 256);
+              const g = Math.floor((index * 199.508) % 256);
+              const b = Math.floor((index * 37.508) % 256);
+              const fallbackColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+              const color = colorCode || fallbackColor;
               
               return {
                 name: category.name || category.category || '',

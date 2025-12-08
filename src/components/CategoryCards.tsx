@@ -142,6 +142,7 @@ export function CategoryCards({
             
             // If no ID in response, look it up from the category ID mapping
             // This mapping is fetched from WORKFLOW_CONFIG_CATEGORY endpoint
+            // Note: categoryIdMap is accessed via closure, not dependency, to avoid unnecessary re-renders
             const categoryName = item.name ?? item.categoryName ?? item.title;
             const finalId = id ?? (categoryName ? categoryIdMap.get(categoryName) : null) ?? categoryName ?? `category-${index}`;
             
@@ -218,7 +219,7 @@ export function CategoryCards({
       isCancelled = true;
       controller.abort();
     };
-  }, [debouncedQuery, refreshTrigger, t, categoryIdMap]);
+  }, [debouncedQuery, refreshTrigger, t]);
 
   // Function to refresh categories (can be called after adding)
   const refreshCategories = () => {
