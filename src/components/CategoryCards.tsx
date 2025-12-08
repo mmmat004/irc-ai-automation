@@ -5,6 +5,7 @@ import { CategoryCard } from "./CategoryCard";
 import { AddCategoryModal } from "./AddCategoryModal";
 import { API_ENDPOINTS } from "../config/api";
 import { useLanguage } from "../contexts/LanguageContext";
+import { toast } from "sonner";
 
 interface CategoryData {
   id: number | string;
@@ -48,6 +49,7 @@ export function CategoryCards({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [debouncedQuery, setDebouncedQuery] = useState(searchQuery);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     const handler = window.setTimeout(() => {
@@ -115,7 +117,9 @@ export function CategoryCards({
             ) || 0;
 
           const isActive =
-            typeof item.isActive === "boolean"
+            typeof item.isVisible === "boolean"
+              ? item.isVisible
+              : typeof item.isActive === "boolean"
               ? item.isActive
               : typeof item.active === "boolean"
               ? item.active
@@ -162,7 +166,12 @@ export function CategoryCards({
       isCancelled = true;
       controller.abort();
     };
-  }, [debouncedQuery]);
+  }, [debouncedQuery, refreshTrigger, t]);
+
+  // Function to refresh categories (can be called after adding)
+  const refreshCategories = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   const filteredCategories = useMemo(() => {
     if (!searchQuery.trim()) return categories;
@@ -176,23 +185,59 @@ export function CategoryCards({
     });
   }, [categories, searchQuery]);
 
-  const handleToggleActive = (categoryId: number | string) => {
+  const handleToggleActive = async (categoryId: number | string) => {
+    const category = categories.find(cat => cat.id === categoryId);
+    if (!category) return;
+
+    const newIsActive = !category.isActive;
+
+    // Optimistically update UI
     setCategories(prev => 
       prev.map(cat => 
-        cat.id === categoryId ? { ...cat, isActive: !cat.isActive } : cat
+        cat.id === categoryId ? { ...cat, isActive: newIsActive } : cat
       )
     );
+
+    try {
+      const response = await fetch(API_ENDPOINTS.CATEGORY_VISIBLE, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          categoryId: String(categoryId),
+          isVisible: newIsActive,
+        }),
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        setCategories(prev => 
+          prev.map(cat => 
+            cat.id === categoryId ? { ...cat, isActive: !newIsActive } : cat
+          )
+        );
+        throw new Error(`Failed to update visibility: ${response.status}`);
+      }
+
+      // Optionally refresh categories to ensure sync with backend
+      // The optimistic update should be sufficient, but we can refresh if needed
+    } catch (error) {
+      console.error('Error updating category visibility:', error);
+      toast.error(t('common.error'));
+    }
   };
 
 
   const handleAddCategory = (newCategory: any) => {
-    const category = {
-      id: `local-${Date.now()}`,
-      ...newCategory,
-      articleCount: 0,
-      isActive: true
-    };
-    setCategories(prev => [...prev, category]);
+    // This is called for backward compatibility, but we mainly use onCategoryAdded
+    // The refresh will happen via onCategoryAdded callback
+  };
+
+  const handleCategoryAdded = () => {
+    // Refresh the categories list after adding
+    refreshCategories();
   };
 
   return (
@@ -242,6 +287,7 @@ export function CategoryCards({
         isOpen={isAddModalOpen}
         onClose={onCloseAddModal}
         onAddCategory={handleAddCategory}
+        onCategoryAdded={handleCategoryAdded}
       />
     </div>
   );

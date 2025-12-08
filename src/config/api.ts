@@ -11,6 +11,8 @@ export const API_ENDPOINTS = {
   WORKFLOW_CONFIG_LATEST_INFO: `${API_BASE_URL}/workflow-config/latest-info`,
   CATEGORY_OVERVIEW: `${API_BASE_URL}/category/overview`,
   CATEGORY_SEARCH: `${API_BASE_URL}/category/search`,
+  CATEGORY_ADD: `${API_BASE_URL}/category/add`,
+  CATEGORY_VISIBLE: `${API_BASE_URL}/category/visible`,
   DASHBOARD_COUNT_OVERALL: `${API_BASE_URL}/dashboard/count-overall`,
   DASHBOARD_RECENT_NEWS: `${API_BASE_URL}/dashboard/recent-news`,
   NEWS_GET: `${API_BASE_URL}/news`,

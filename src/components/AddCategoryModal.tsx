@@ -1,16 +1,18 @@
 import { useState } from "react";
-import { X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { useLanguage } from "../contexts/LanguageContext";
+import { API_ENDPOINTS } from "../config/api";
+import { toast } from "sonner";
 
 interface AddCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddCategory: (category: any) => void;
+  onCategoryAdded?: () => void;
 }
 
 const colorOptions = [
@@ -19,26 +21,75 @@ const colorOptions = [
   "#f97316", "#6366f1", "#14b8a6", "#f43f5e"
 ];
 
-export function AddCategoryModal({ isOpen, onClose, onAddCategory }: AddCategoryModalProps) {
+export function AddCategoryModal({ isOpen, onClose, onAddCategory, onCategoryAdded }: AddCategoryModalProps) {
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: "",
+    nameThai: "",
     description: "",
+    descriptionThai: "",
     color: colorOptions[0]
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) return;
+    if (!formData.name.trim()) {
+      toast.error(t('category.name') + ' is required');
+      return;
+    }
 
-    onAddCategory(formData);
-    handleClose();
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(API_ENDPOINTS.CATEGORY_ADD, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          nameThai: formData.nameThai.trim() || formData.name.trim(),
+          description: formData.description.trim(),
+          descriptionThai: formData.descriptionThai.trim() || formData.description.trim(),
+          color: formData.color, // Already in hex format
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to add category: ${response.status}`);
+      }
+
+      const data = await response.json();
+      toast.success(t('category.add') + ' ' + t('common.success'));
+      
+      // Call the callback to refresh categories
+      if (onCategoryAdded) {
+        onCategoryAdded();
+      }
+      
+      // Also call the old callback for backward compatibility
+      onAddCategory({
+        ...formData,
+        id: data.id || data.categoryId || data._id,
+      });
+      
+      handleClose();
+    } catch (error) {
+      console.error('Error adding category:', error);
+      toast.error(error instanceof Error ? error.message : t('common.error'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClose = () => {
     setFormData({
       name: "",
+      nameThai: "",
       description: "",
+      descriptionThai: "",
       color: colorOptions[0]
     });
     onClose();
@@ -53,26 +104,51 @@ export function AddCategoryModal({ isOpen, onClose, onAddCategory }: AddCategory
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Category Name */}
+          {/* Category Name (English) */}
           <div className="space-y-2">
-            <Label htmlFor="name">{t('category.name')}</Label>
+            <Label htmlFor="name">{t('category.name')} (English)</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               placeholder={t('category.namePlaceholder')}
               className="border-gray-300"
+              required
             />
           </div>
 
-          {/* Description */}
+          {/* Category Name (Thai) */}
           <div className="space-y-2">
-            <Label htmlFor="description">{t('category.description')}</Label>
+            <Label htmlFor="nameThai">{t('category.name')} (ไทย)</Label>
+            <Input
+              id="nameThai"
+              value={formData.nameThai}
+              onChange={(e) => setFormData(prev => ({ ...prev, nameThai: e.target.value }))}
+              placeholder="กรอกชื่อหมวดหมู่ (ภาษาไทย)"
+              className="border-gray-300"
+            />
+          </div>
+
+          {/* Description (English) */}
+          <div className="space-y-2">
+            <Label htmlFor="description">{t('category.description')} (English)</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               placeholder={t('category.descriptionPlaceholder')}
+              className="min-h-[80px] resize-none border-gray-300"
+            />
+          </div>
+
+          {/* Description (Thai) */}
+          <div className="space-y-2">
+            <Label htmlFor="descriptionThai">{t('category.description')} (ไทย)</Label>
+            <Textarea
+              id="descriptionThai"
+              value={formData.descriptionThai}
+              onChange={(e) => setFormData(prev => ({ ...prev, descriptionThai: e.target.value }))}
+              placeholder="อธิบายว่าหมวดหมู่นี้ครอบคลุมอะไรสำหรับการจัดประเภท AI (ภาษาไทย)"
               className="min-h-[80px] resize-none border-gray-300"
             />
           </div>
@@ -109,8 +185,9 @@ export function AddCategoryModal({ isOpen, onClose, onAddCategory }: AddCategory
             <Button
               type="submit"
               className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
+              disabled={isSubmitting}
             >
-              {t('category.add')}
+              {isSubmitting ? t('common.loading') : t('category.add')}
             </Button>
           </div>
         </form>
