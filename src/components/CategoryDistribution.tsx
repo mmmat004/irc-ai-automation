@@ -5,23 +5,8 @@ import { useLanguage } from "../contexts/LanguageContext";
 interface CategoryData {
   name: string;
   count: number;
-  color: string;
+  color: string; // This will be a hex color code from the API
 }
-
-const colors = [
-  "bg-purple-500",
-  "bg-cyan-500",
-  "bg-emerald-500",
-  "bg-blue-500",
-  "bg-red-500",
-  "bg-indigo-500",
-  "bg-amber-500",
-  "bg-pink-500",
-  "bg-lime-500",
-  "bg-teal-500",
-  "bg-violet-500",
-  "bg-rose-500",
-];
 
 export function CategoryDistribution() {
   const { t } = useLanguage();
@@ -48,11 +33,18 @@ export function CategoryDistribution() {
           const categories = Array.isArray(data) ? data : (data.items || data.data || data.categories || []);
           
           // Map category data to display format
-          const categoryDataList = categories.map((category: any, index: number) => ({
-            name: category.name || category.category || '',
-            count: category.totalNews || category.articleCount || category.count || 0,
-            color: colors[index % colors.length],
-          })).sort((a: CategoryData, b: CategoryData) => b.count - a.count);
+          const categoryDataList = categories.map((category: any, index: number) => {
+            // Use colorCode from API, fallback to a default color if not available
+            const colorCode = category.colorCode || category.color || category.hexColor;
+            // Convert hex color to a valid color string (use inline style later)
+            const color = colorCode || `#${((index * 137.508) % 256).toString(16).padStart(2, '0')}${((index * 199.508) % 256).toString(16).padStart(2, '0')}${((index * 37.508) % 256).toString(16).padStart(2, '0')}`;
+            
+            return {
+              name: category.name || category.category || '',
+              count: category.totalNews || category.articleCount || category.count || 0,
+              color: color,
+            };
+          }).sort((a: CategoryData, b: CategoryData) => b.count - a.count);
 
           setCategoryData(categoryDataList);
         } else {
@@ -93,7 +85,10 @@ export function CategoryDistribution() {
           {categoryData.map((category, index) => (
             <div key={index} className="flex items-center justify-between p-3 rounded-xl">
               <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${category.color}`} />
+                <div 
+                  className="w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: category.color }}
+                />
                 <span className="font-medium text-foreground">{category.name}</span>
               </div>
               <span className="text-sm font-semibold text-muted-foreground bg-muted px-3 py-1.5 rounded-lg">

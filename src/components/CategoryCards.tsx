@@ -50,6 +50,7 @@ export function CategoryCards({
   const [error, setError] = useState<string | null>(null);
   const [debouncedQuery, setDebouncedQuery] = useState(searchQuery);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [categoryIdMap, setCategoryIdMap] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     const handler = window.setTimeout(() => {
@@ -60,6 +61,37 @@ export function CategoryCards({
       window.clearTimeout(handler);
     };
   }, [searchQuery]);
+
+  // Fetch category ID mapping from workflow config endpoint
+  useEffect(() => {
+    const fetchCategoryIdMap = async () => {
+      try {
+        const response = await fetch(API_ENDPOINTS.WORKFLOW_CONFIG_CATEGORY, {
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const categoriesData = await response.json();
+          if (Array.isArray(categoriesData)) {
+            const idMap = new Map<string, string>();
+            categoriesData.forEach((cat: any) => {
+              const id = cat._id ?? cat.id ?? cat.categoryId;
+              const name = cat.name ?? cat.categoryName;
+              if (id && name) {
+                idMap.set(name, String(id));
+              }
+            });
+            setCategoryIdMap(idMap);
+            console.log('Loaded category ID mapping:', idMap.size, 'categories');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching category ID mapping:', error);
+      }
+    };
+
+    fetchCategoryIdMap();
+  }, [refreshTrigger]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -108,13 +140,13 @@ export function CategoryCards({
               item.CategoryId ??
               item.CategoryID;
             
-            // If no ID found in response, use category name as identifier
-            // Note: API search endpoint doesn't return IDs, so we use name as stable identifier
-            // This works for display, but API operations (like toggle) may need the actual ID
-            const finalId = id ?? (item.name || `category-${index}`);
+            // If no ID in response, look it up from the category ID mapping
+            // This mapping is fetched from WORKFLOW_CONFIG_CATEGORY endpoint
+            const categoryName = item.name ?? item.categoryName ?? item.title;
+            const finalId = id ?? (categoryName ? categoryIdMap.get(categoryName) : null) ?? categoryName ?? `category-${index}`;
             
-            if (!id) {
-              console.warn('Category item missing ID, using name as identifier:', finalId, item);
+            if (!id && categoryName && !categoryIdMap.has(categoryName)) {
+              console.warn('Category ID not found in mapping for:', categoryName);
             }
 
           const color =
@@ -186,7 +218,7 @@ export function CategoryCards({
       isCancelled = true;
       controller.abort();
     };
-  }, [debouncedQuery, refreshTrigger, t]);
+  }, [debouncedQuery, refreshTrigger, t, categoryIdMap]);
 
   // Function to refresh categories (can be called after adding)
   const refreshCategories = () => {
@@ -230,8 +262,21 @@ export function CategoryCards({
     );
 
     try {
-      // Since search API doesn't return IDs, we use category name as identifier
-      // The toggle API should accept either name or ID
+      // Get the actual database ID from the mapping if categoryId is a name
+      // Otherwise use the categoryId directly (if it's already an ID)
+      let actualCategoryId = String(categoryId);
+      
+      // If categoryId looks like a name (not a MongoDB ObjectId format), try to find the real ID
+      if (!/^[0-9a-fA-F]{24}$/.test(actualCategoryId) && category.name) {
+        const mappedId = categoryIdMap.get(category.name);
+        if (mappedId) {
+          actualCategoryId = mappedId;
+          console.log('Using mapped category ID:', actualCategoryId, 'for category:', category.name);
+        } else {
+          console.warn('Category ID not found in mapping, using name:', category.name);
+        }
+      }
+      
       const response = await fetch(API_ENDPOINTS.CATEGORY_VISIBLE, {
         method: 'PUT',
         headers: {
@@ -239,7 +284,7 @@ export function CategoryCards({
         },
         credentials: 'include',
         body: JSON.stringify({
-          categoryId: String(categoryId), // This is the category name when ID is not available
+          categoryId: actualCategoryId, // Use the actual database ID
           isVisible: newIsActive,
         }),
       });
