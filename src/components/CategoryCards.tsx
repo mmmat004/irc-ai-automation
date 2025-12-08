@@ -96,7 +96,7 @@ export function CategoryCards({
           console.log('Sample category item from API:', rawItems[0]);
         }
 
-        const mappedCategories: CategoryData[] = rawItems
+        const mappedCategories: (CategoryData | null)[] = rawItems
           .map((item, index) => {
             // Always use the actual database ID - prioritize _id (MongoDB standard)
             // Check all possible ID fields
