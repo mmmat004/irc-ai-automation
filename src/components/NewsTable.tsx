@@ -29,6 +29,8 @@ const getCategoryBadge = (category: string) => {
 interface NewsTableProps {
   onNewsSelect?: (newsId: string | number) => void;
   filters?: FilterState;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
 }
 
 interface CategoryOption {
@@ -36,33 +38,21 @@ interface CategoryOption {
   name: string;
 }
 
-export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
+export function NewsTable({ onNewsSelect, filters, currentPage: externalCurrentPage, onPageChange }: NewsTableProps) {
   const { language, t } = useLanguage();
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string | number>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
-  // Initialize currentPage from localStorage to persist pagination
-  const [currentPage, setCurrentPage] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const savedPage = localStorage.getItem('newsTableCurrentPage');
-      const pageNum = savedPage ? parseInt(savedPage, 10) : 1;
-      // Ensure page number is valid (at least 1)
-      return isNaN(pageNum) || pageNum < 1 ? 1 : pageNum;
-    }
-    return 1;
-  });
+  // Use external currentPage if provided, otherwise manage internally
+  const [internalCurrentPage, setInternalCurrentPage] = useState(1);
+  const currentPage = externalCurrentPage !== undefined ? externalCurrentPage : internalCurrentPage;
+  const setCurrentPage = onPageChange || setInternalCurrentPage;
+  
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [pageLimit] = useState(10);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const previousFiltersRef = useRef<FilterState | null>(null);
-  
-  // Save currentPage to localStorage whenever it changes
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('newsTableCurrentPage', String(currentPage));
-    }
-  }, [currentPage]);
   
   // Only reset to page 1 when filters actually change (not on initial mount or when navigating back)
   useEffect(() => {
@@ -74,7 +64,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     };
     
     if (previousFiltersRef.current === null) {
-      // First mount - don't reset, use saved page from localStorage
+      // First mount - don't reset, keep current page
       previousFiltersRef.current = { ...currentFilters };
       return;
     }
@@ -90,14 +80,11 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     if (filtersChanged) {
       // Only reset if filters actually changed (user changed filters, not just component remount)
       setCurrentPage(1);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('newsTableCurrentPage', '1');
-      }
     }
     
     // Always update the ref to current filters for next comparison
     previousFiltersRef.current = { ...currentFilters };
-  }, [filters]);
+  }, [filters, setCurrentPage]);
   
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -249,13 +236,6 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     fetchNewsData();
   }, [filters, currentPage, pageLimit, categories, language]);
 
-  // Reset to page 1 when filters change (but keep it saved in localStorage)
-  useEffect(() => {
-    setCurrentPage(1);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('newsTableCurrentPage', '1');
-    }
-  }, [filters]);
 
   const handleNewsClick = (newsId: string | number) => {
     if (onNewsSelect) {

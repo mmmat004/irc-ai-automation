@@ -79,6 +79,8 @@ function HomePageContent() {
     }
     return 'dashboard';
   });
+  // Store news table pagination state at app level to persist across navigation
+  const [newsTableCurrentPage, setNewsTableCurrentPage] = useState(1);
 
   // Update URL and localStorage when currentPage changes
   useEffect(() => {
@@ -317,7 +319,13 @@ function HomePageContent() {
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'news':
-        return <NewsManagement onNewsSelect={handleNewsSelect} />;
+        return (
+          <NewsManagement 
+            onNewsSelect={handleNewsSelect}
+            currentPage={newsTableCurrentPage}
+            onPageChange={setNewsTableCurrentPage}
+          />
+        );
       case 'verification':
         return <VerificationQueue onNewsSelect={handleNewsSelect} />;
       case 'news-detail':
