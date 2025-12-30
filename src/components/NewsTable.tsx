@@ -147,6 +147,9 @@ export function NewsTable({ onNewsSelect, filters, currentPage: externalCurrentP
       try {
         setIsLoading(true);
         
+        // Use the current page value (from props or state) - ensure it's at least 1
+        const pageToFetch = Math.max(1, currentPage);
+        
         let categoryId = "";
         if (filters?.category && filters.category !== "all") {
           const category = categories.find(cat => cat.name === filters.category);
@@ -175,7 +178,7 @@ export function NewsTable({ onNewsSelect, filters, currentPage: externalCurrentP
           startDate: string | null;
           endDate: string | null;
         } = {
-          page: currentPage,
+          page: pageToFetch,
           limit: pageLimit,
           keyword: filters?.search && filters.search.trim() !== "" ? filters.search.trim() : null,
           categoryId: categoryId,
@@ -183,6 +186,8 @@ export function NewsTable({ onNewsSelect, filters, currentPage: externalCurrentP
           startDate: startDate,
           endDate: endDate,
         };
+        
+        console.log('Fetching news with page:', pageToFetch, 'currentPage state:', currentPage);
 
         const response = await fetch(API_ENDPOINTS.NEWS_SEARCH, {
           method: 'POST',
@@ -205,10 +210,16 @@ export function NewsTable({ onNewsSelect, filters, currentPage: externalCurrentP
           }
           
           if (data && typeof data === 'object') {
-            // Don't override currentPage from API response - use local state instead
+            // IMPORTANT: Never override currentPage from API response - always use our state/props
+            // The API might return currentPage: 1, but we want to preserve the user's current page
             // Only update totalPages and totalItems from API response
             if (typeof data.totalPage === 'number') setTotalPages(data.totalPage);
             if (typeof data.totalItems === 'number') setTotalItems(data.totalItems);
+            
+            // Log to verify we're not being reset by API (can be removed in production)
+            if (data.currentPage !== undefined && data.currentPage !== currentPage) {
+              console.log('API returned currentPage:', data.currentPage, 'but keeping our currentPage:', currentPage);
+            }
           }
           
           const newsItems: NewsItem[] = rawItems.map((item: any, index: number) => ({
@@ -234,7 +245,7 @@ export function NewsTable({ onNewsSelect, filters, currentPage: externalCurrentP
     };
 
     fetchNewsData();
-  }, [filters, currentPage, pageLimit, categories, language]);
+  }, [filters, currentPage, pageLimit, categories, language, externalCurrentPage, onPageChange]);
 
 
   const handleNewsClick = (newsId: string | number) => {
@@ -817,7 +828,7 @@ export function NewsTable({ onNewsSelect, filters, currentPage: externalCurrentP
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage((prev: number) => Math.max(1, prev - 1))}
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1 || isLoading}
               className="h-8 px-3"
             >
@@ -854,7 +865,7 @@ export function NewsTable({ onNewsSelect, filters, currentPage: externalCurrentP
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage((prev: number) => Math.min(totalPages, prev + 1))}
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages || isLoading}
               className="h-8 px-3"
             >
