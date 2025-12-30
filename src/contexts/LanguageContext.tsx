@@ -179,7 +179,7 @@ const translations: Record<Language, Record<string, string>> = {
     'verification.sources': 'Sources (',
     'verification.adminNotes': 'Admin Notes',
     'verification.addNotes': 'Add your verification notes here...',
-    'verification.confirmVerify': 'Confirmation Verify',
+    'verification.confirmVerify': 'Confirm Verification',
     'verification.yesVerify': 'Yes, Verify',
     'verification.yesReject': 'Yes, Reject',
     'verification.at': 'at',
