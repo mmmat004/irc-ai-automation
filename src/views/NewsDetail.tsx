@@ -458,13 +458,18 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
 
     try {
       setIsUpdatingStatus(true);
-      const response = await fetch(`${API_ENDPOINTS.NEWS_PUBLISH}/${encodeURIComponent(String(newsId))}`, {
+      const publishUrl = `${API_ENDPOINTS.NEWS_PUBLISH}/${encodeURIComponent(String(newsId))}`;
+      console.log('Publishing news:', { newsId, url: publishUrl });
+      
+      const response = await fetch(publishUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
       });
+      
+      console.log('Publish response:', { status: response.status, ok: response.ok });
 
       if (response.ok) {
         // Refetch news to get updated status

@@ -41,11 +41,25 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
   const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string | number>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
+  // Initialize currentPage from localStorage to persist pagination
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedPage = localStorage.getItem('newsTableCurrentPage');
+      return savedPage ? parseInt(savedPage, 10) : 1;
+    }
+    return 1;
+  });
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [pageLimit] = useState(10);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
+  
+  // Save currentPage to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('newsTableCurrentPage', String(currentPage));
+    }
+  }, [currentPage]);
   
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -196,9 +210,12 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     fetchNewsData();
   }, [filters, currentPage, pageLimit, categories, language]);
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when filters change (but keep it saved in localStorage)
   useEffect(() => {
     setCurrentPage(1);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('newsTableCurrentPage', '1');
+    }
   }, [filters]);
 
   const handleNewsClick = (newsId: string | number) => {
@@ -356,13 +373,18 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     event.stopPropagation(); // Prevent row click
     
     try {
-      const response = await fetch(`${API_ENDPOINTS.NEWS_PUBLISH}/${encodeURIComponent(String(newsId))}`, {
+      const publishUrl = `${API_ENDPOINTS.NEWS_PUBLISH}/${encodeURIComponent(String(newsId))}`;
+      console.log('Publishing news:', { newsId, url: publishUrl });
+      
+      const response = await fetch(publishUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
       });
+      
+      console.log('Publish response:', { status: response.status, ok: response.ok });
 
       if (response.ok) {
         // Refetch news to get updated status
