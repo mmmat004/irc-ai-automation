@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Check, X, CheckSquare, Square, RotateCcw, ChevronLeft, ChevronRight, Send } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -45,7 +45,9 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
   const [currentPage, setCurrentPage] = useState(() => {
     if (typeof window !== 'undefined') {
       const savedPage = localStorage.getItem('newsTableCurrentPage');
-      return savedPage ? parseInt(savedPage, 10) : 1;
+      const pageNum = savedPage ? parseInt(savedPage, 10) : 1;
+      // Ensure page number is valid (at least 1)
+      return isNaN(pageNum) || pageNum < 1 ? 1 : pageNum;
     }
     return 1;
   });
@@ -53,6 +55,7 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
   const [totalItems, setTotalItems] = useState(0);
   const [pageLimit] = useState(10);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const previousFiltersRef = useRef<FilterState | null>(null);
   
   // Save currentPage to localStorage whenever it changes
   useEffect(() => {
@@ -60,6 +63,41 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
       localStorage.setItem('newsTableCurrentPage', String(currentPage));
     }
   }, [currentPage]);
+  
+  // Only reset to page 1 when filters actually change (not on initial mount or when navigating back)
+  useEffect(() => {
+    const currentFilters = filters || {
+      search: "",
+      category: "all",
+      status: "all",
+      dateRange: "all"
+    };
+    
+    if (previousFiltersRef.current === null) {
+      // First mount - don't reset, use saved page from localStorage
+      previousFiltersRef.current = { ...currentFilters };
+      return;
+    }
+    
+    // Check if filters actually changed by comparing values (not object reference)
+    const prevFilters = previousFiltersRef.current;
+    const filtersChanged = 
+      prevFilters?.search !== currentFilters.search ||
+      prevFilters?.category !== currentFilters.category ||
+      prevFilters?.status !== currentFilters.status ||
+      prevFilters?.dateRange !== currentFilters.dateRange;
+    
+    if (filtersChanged) {
+      // Only reset if filters actually changed (user changed filters, not just component remount)
+      setCurrentPage(1);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('newsTableCurrentPage', '1');
+      }
+    }
+    
+    // Always update the ref to current filters for next comparison
+    previousFiltersRef.current = { ...currentFilters };
+  }, [filters]);
   
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -180,7 +218,8 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
           }
           
           if (data && typeof data === 'object') {
-            if (typeof data.currentPage === 'number') setCurrentPage(data.currentPage);
+            // Don't override currentPage from API response - use local state instead
+            // Only update totalPages and totalItems from API response
             if (typeof data.totalPage === 'number') setTotalPages(data.totalPage);
             if (typeof data.totalItems === 'number') setTotalItems(data.totalItems);
           }
