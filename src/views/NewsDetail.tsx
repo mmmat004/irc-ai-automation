@@ -10,6 +10,7 @@ import {
   Check,
   X,
   RotateCcw,
+  Send,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
@@ -452,6 +453,67 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
     }
   };
 
+  const handlePublish = async () => {
+    if (!news) return;
+
+    try {
+      setIsUpdatingStatus(true);
+      const response = await fetch(`${API_ENDPOINTS.NEWS_PUBLISH}/${encodeURIComponent(String(newsId))}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        // Refetch news to get updated status
+        const refreshResponse = await fetch(`${API_ENDPOINTS.NEWS_GET}/${encodeURIComponent(String(newsId))}`, {
+          method: 'GET',
+          headers: { 
+            'Content-Type': 'application/json',
+            'irc-lang': language === 'th' ? 'th' : 'en',
+          },
+          credentials: 'include',
+        });
+        
+        if (refreshResponse.ok) {
+          const refreshData = await refreshResponse.json();
+          const mappedNews: NewsDetailData = {
+            id: refreshData.id,
+            title: refreshData.title || '',
+            category: refreshData.category || '',
+            status: refreshData.status || 'published',
+            date: extractDateFromItem(refreshData),
+            time: refreshData.time || '',
+            keywords: refreshData.keyword || refreshData.keywords || [],
+            intro: refreshData.introduction || refreshData.intro || '',
+            hookContent: refreshData.hook || '',
+            summarizedContent: refreshData.summary || '',
+            originalSources: refreshData.source 
+              ? [{ name: refreshData.source, url: refreshData.source }]
+              : (refreshData.originalSources || []),
+          };
+          setNews(mappedNews);
+          toast.success(t('newsDetail.publishedSuccess'));
+        } else {
+          // If refetch fails, update local state
+          setNews({ ...news, status: 'published' });
+          toast.success(t('newsDetail.publishedSuccess'));
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to publish news:', response.status, errorData);
+        toast.error(errorData.message || t('newsDetail.publishError'));
+      }
+    } catch (error) {
+      console.error('Error publishing news:', error);
+      toast.error(t('newsDetail.publishError'));
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "published":
@@ -698,15 +760,26 @@ export function NewsDetail({ newsId, onBack }: NewsDetailProps) {
                 {news.status === 'verified' && (
                   <>
                     <Separator />
-                    <Button
-                      variant="outline"
-                      onClick={handleCancelVerify}
-                      disabled={isUpdatingStatus}
-                      className="gap-2 border-orange-300 hover:bg-orange-50 text-orange-700 w-full"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                      {t('newsDetail.cancelVerify')}
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        variant="default"
+                        onClick={handlePublish}
+                        disabled={isUpdatingStatus}
+                        className="gap-2 bg-blue-600 hover:bg-blue-700 text-white w-full"
+                      >
+                        <Send className="w-4 h-4" />
+                        {t('newsDetail.publish')}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={handleCancelVerify}
+                        disabled={isUpdatingStatus}
+                        className="gap-2 border-orange-300 hover:bg-orange-50 text-orange-700 w-full"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        {t('newsDetail.cancelVerify')}
+                      </Button>
+                    </div>
                   </>
                 )}
                 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, X, CheckSquare, Square, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, X, CheckSquare, Square, RotateCcw, ChevronLeft, ChevronRight, Send } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { toast } from "sonner";
@@ -352,6 +352,66 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
     }
   };
 
+  const handlePublish = async (newsId: string | number, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent row click
+    
+    try {
+      const response = await fetch(`${API_ENDPOINTS.NEWS_PUBLISH}/${encodeURIComponent(String(newsId))}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        // Refetch news to get updated status
+        const refreshResponse = await fetch(`${API_ENDPOINTS.NEWS_GET}/${encodeURIComponent(String(newsId))}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'irc-lang': language === 'th' ? 'th' : 'en',
+          },
+          credentials: 'include',
+        });
+
+        if (refreshResponse.ok) {
+          const refreshData = await refreshResponse.json();
+          setNewsData(prevData => 
+            prevData.map(news => 
+              news.id === newsId 
+                ? { 
+                    ...news, 
+                    status: refreshData.status || 'published' 
+                  }
+                : news
+            )
+          );
+        } else {
+          // If refetch fails, update local state
+          setNewsData(prevData => 
+            prevData.map(news => 
+              news.id === newsId 
+                ? { ...news, status: 'published' }
+                : news
+            )
+          );
+        }
+        
+        const newsItem = newsData.find(news => news.id === newsId);
+        if (newsItem) {
+          toast.success(`"${newsItem.title}" ${t('newsDetail.publishedSuccess')}`);
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.message || t('newsDetail.publishError'));
+      }
+    } catch (error) {
+      console.error('Error publishing news:', error);
+      toast.error(t('newsDetail.publishError'));
+    }
+  };
+
   const handleCancelReject = async (newsId: string | number, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent row click
     
@@ -664,15 +724,26 @@ export function NewsTable({ onNewsSelect, filters }: NewsTableProps) {
                       </>
                     )}
                     {news.status === 'verified' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 w-8 p-0 border-orange-300 hover:bg-orange-50"
-                        onClick={(e) => handleCancelVerify(news.id, e)}
-                        title={t('newsTable.cancelVerifyDesc')}
-                      >
-                        <RotateCcw className="w-4 h-4 text-orange-600" />
-                      </Button>
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0 border-blue-300 hover:bg-blue-50"
+                          onClick={(e) => handlePublish(news.id, e)}
+                          title={t('newsDetail.publish')}
+                        >
+                          <Send className="w-4 h-4 text-blue-600" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0 border-orange-300 hover:bg-orange-50"
+                          onClick={(e) => handleCancelVerify(news.id, e)}
+                          title={t('newsTable.cancelVerifyDesc')}
+                        >
+                          <RotateCcw className="w-4 h-4 text-orange-600" />
+                        </Button>
+                      </>
                     )}
                     {news.status === 'rejected' && (
                       <Button
