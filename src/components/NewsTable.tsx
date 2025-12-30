@@ -817,7 +817,7 @@ export function NewsTable({ onNewsSelect, filters, currentPage: externalCurrentP
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              onClick={() => setCurrentPage((prev: number) => Math.max(1, prev - 1))}
               disabled={currentPage === 1 || isLoading}
               className="h-8 px-3"
             >
@@ -854,7 +854,7 @@ export function NewsTable({ onNewsSelect, filters, currentPage: externalCurrentP
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              onClick={() => setCurrentPage((prev: number) => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages || isLoading}
               className="h-8 px-3"
             >
