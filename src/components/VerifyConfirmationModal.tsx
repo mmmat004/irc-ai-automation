@@ -27,7 +27,7 @@ export function VerifyConfirmationModal({
   description,
 }: VerifyConfirmationModalProps) {
   const { t } = useLanguage();
-  const defaultTitle = t('verification.yesVerify');
+  const defaultTitle = t('verification.confirmVerify');
   const defaultDescription = t('newsDetail.verify');
   
   const handleConfirm = () => {
