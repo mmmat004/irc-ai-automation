@@ -77,6 +77,10 @@ const translations: Record<Language, Record<string, string>> = {
     'dashboard.title': 'Dashboard',
     'dashboard.recentNews': 'Recent News',
     'dashboard.recentExecutions': 'Recent Executions',
+    'dashboard.totalNews': 'Total News',
+    'dashboard.pendingVerification': 'Pending Verification',
+    'dashboard.published': 'Published',
+    'dashboard.categories': 'Categories',
     
     // Workflows
     'workflows.title': 'Workflows',
@@ -323,6 +327,10 @@ const translations: Record<Language, Record<string, string>> = {
     'dashboard.title': 'แดชบอร์ด',
     'dashboard.recentNews': 'ข่าวล่าสุด',
     'dashboard.recentExecutions': 'การดำเนินการล่าสุด',
+    'dashboard.totalNews': 'ข่าวทั้งหมด',
+    'dashboard.pendingVerification': 'รอการยืนยัน',
+    'dashboard.published': 'เผยแพร่แล้ว',
+    'dashboard.categories': 'หมวดหมู่',
     
     // Workflows
     'workflows.title': 'เวิร์กโฟลว์',

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FileText, Clock, TrendingUp, Tag } from "lucide-react";
 import { API_ENDPOINTS } from "../config/api";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface StatsData {
   title: string;
@@ -11,11 +12,12 @@ interface StatsData {
 }
 
 export function StatsCards() {
+  const { t } = useLanguage();
   const [statsData, setStatsData] = useState<StatsData[]>([
-    { title: "Total News", value: "0", icon: FileText, color: "text-orange-600", bgColor: "bg-orange-50" },
-    { title: "Pending Verification", value: "0", icon: Clock, color: "text-orange-600", bgColor: "bg-orange-50" },
-    { title: "Published", value: "0", icon: TrendingUp, color: "text-green-600", bgColor: "bg-green-50" },
-    { title: "Categories", value: "0", icon: Tag, color: "text-purple-600", bgColor: "bg-purple-50" },
+    { title: t('dashboard.totalNews'), value: "0", icon: FileText, color: "text-orange-600", bgColor: "bg-orange-50" },
+    { title: t('dashboard.pendingVerification'), value: "0", icon: Clock, color: "text-orange-600", bgColor: "bg-orange-50" },
+    { title: t('dashboard.published'), value: "0", icon: TrendingUp, color: "text-green-600", bgColor: "bg-green-50" },
+    { title: t('dashboard.categories'), value: "0", icon: Tag, color: "text-purple-600", bgColor: "bg-purple-50" },
   ]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -39,10 +41,10 @@ export function StatsCards() {
           const categoriesCount = data.totalCategory || 0;
 
           setStatsData([
-            { title: "Total News", value: totalNews.toLocaleString(), icon: FileText, color: "text-orange-600", bgColor: "bg-orange-50" },
-            { title: "Pending Verification", value: pendingCount.toLocaleString(), icon: Clock, color: "text-orange-600", bgColor: "bg-orange-50" },
-            { title: "Published", value: publishedCount.toLocaleString(), icon: TrendingUp, color: "text-green-600", bgColor: "bg-green-50" },
-            { title: "Categories", value: categoriesCount.toLocaleString(), icon: Tag, color: "text-purple-600", bgColor: "bg-purple-50" },
+            { title: t('dashboard.totalNews'), value: totalNews.toLocaleString(), icon: FileText, color: "text-orange-600", bgColor: "bg-orange-50" },
+            { title: t('dashboard.pendingVerification'), value: pendingCount.toLocaleString(), icon: Clock, color: "text-orange-600", bgColor: "bg-orange-50" },
+            { title: t('dashboard.published'), value: publishedCount.toLocaleString(), icon: TrendingUp, color: "text-green-600", bgColor: "bg-green-50" },
+            { title: t('dashboard.categories'), value: categoriesCount.toLocaleString(), icon: Tag, color: "text-purple-600", bgColor: "bg-purple-50" },
           ]);
         } else {
           console.error('Failed to fetch dashboard stats:', response.status);
@@ -55,7 +57,7 @@ export function StatsCards() {
     };
 
     fetchStats();
-  }, []);
+  }, [t]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

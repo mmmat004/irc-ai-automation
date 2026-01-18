@@ -25,7 +25,7 @@ interface NewsFormatOption {
 }
 
 export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [formatOptions, setFormatOptions] = useState<NewsFormatOption[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
@@ -50,6 +50,9 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
       try {
         const [categoriesResponse, formatsResponse, latestInfoResponse] = await Promise.all([
           fetch(API_ENDPOINTS.WORKFLOW_CONFIG_CATEGORY, {
+            headers: {
+              'irc-lang': language === 'th' ? 'th' : 'en',
+            },
             credentials: 'include'
           }),
           fetch(API_ENDPOINTS.WORKFLOW_CONFIG_FORMAT, {
@@ -168,7 +171,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
     };
 
     loadData();
-  }, []);
+  }, [language]);
 
   // Set default selections when options are loaded
   // Use latest info if available, otherwise use first option

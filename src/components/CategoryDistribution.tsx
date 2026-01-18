@@ -9,7 +9,7 @@ interface CategoryData {
 }
 
 export function CategoryDistribution() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -22,6 +22,7 @@ export function CategoryDistribution() {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'irc-lang': language === 'th' ? 'th' : 'en',
           },
           credentials: 'include',
         });
@@ -75,7 +76,7 @@ export function CategoryDistribution() {
     };
 
     fetchCategoryData();
-  }, []);
+  }, [language]);
 
   if (isLoading) {
     return (

@@ -46,7 +46,7 @@ export function CategoryCards({
   onCloseAddModal,
   onCategoryVisibilityChange
 }: CategoryCardsProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [categories, setCategories] = useState<CategoryData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +69,9 @@ export function CategoryCards({
     const fetchCategoryIdMap = async () => {
       try {
         const response = await fetch(API_ENDPOINTS.WORKFLOW_CONFIG_CATEGORY, {
+          headers: {
+            'irc-lang': language === 'th' ? 'th' : 'en',
+          },
           credentials: 'include'
         });
 
@@ -95,7 +98,7 @@ export function CategoryCards({
     };
 
     fetchCategoryIdMap();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, language]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -112,6 +115,9 @@ export function CategoryCards({
         const url = `${API_ENDPOINTS.CATEGORY_SEARCH}?${params.toString()}`;
 
         const response = await fetch(url, {
+          headers: {
+            'irc-lang': language === 'th' ? 'th' : 'en',
+          },
           credentials: "include",
           signal: controller.signal,
         });
@@ -223,7 +229,7 @@ export function CategoryCards({
       isCancelled = true;
       controller.abort();
     };
-  }, [debouncedQuery, refreshTrigger, t, categoryIdMap.size]);
+  }, [debouncedQuery, refreshTrigger, t, categoryIdMap.size, language]);
 
   // Function to refresh categories (can be called after adding)
   const refreshCategories = () => {
