@@ -49,18 +49,18 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
     const loadData = async () => {
       try {
         const [categoriesResponse, formatsResponse, latestInfoResponse] = await Promise.all([
+          // Categories already support Thai in BE, so send irc-lang
           fetch(API_ENDPOINTS.WORKFLOW_CONFIG_CATEGORY, {
             headers: {
               'irc-lang': language === 'th' ? 'th' : 'en',
             },
             credentials: 'include'
           }),
+          // Formats do NOT have Thai in BE, so no irc-lang here to avoid confusion
           fetch(API_ENDPOINTS.WORKFLOW_CONFIG_FORMAT, {
-            headers: {
-              'irc-lang': language === 'th' ? 'th' : 'en',
-            },
             credentials: 'include'
           }),
+          // Latest info should respect language for topic/category coming from DB
           fetch(API_ENDPOINTS.WORKFLOW_CONFIG_LATEST_INFO, {
             headers: {
               'irc-lang': language === 'th' ? 'th' : 'en',
