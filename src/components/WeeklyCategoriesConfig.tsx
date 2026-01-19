@@ -199,26 +199,16 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
   // Set default selections when options are loaded
   // Use latest info if available, otherwise use first option
   useEffect(() => {
-    if (categoryOptions.length > 0 && selectedCategoryId === "") {
-      // Prefer previousCategoryId from API if available, otherwise use first option
-      const defaultCategoryId = previousCategoryId || categoryOptions[0].id;
-      setSelectedCategoryId(defaultCategoryId);
-      if (!previousCategoryId) {
-        setPreviousCategoryId(defaultCategoryId);
-      }
+    if (selectedCategoryId === "" && previousCategoryId) {
+      setSelectedCategoryId(previousCategoryId);
     }
-  }, [categoryOptions, selectedCategoryId, previousCategoryId]);
+  }, [selectedCategoryId, previousCategoryId]);
 
   useEffect(() => {
-    if (formatOptions.length > 0 && selectedFormatId === "") {
-      // Prefer previousFormatId from API if available, otherwise use first option
-      const defaultFormatId = previousFormatId || formatOptions[0].id;
-      setSelectedFormatId(defaultFormatId);
-      if (!previousFormatId) {
-        setPreviousFormatId(defaultFormatId);
-      }
+    if (selectedFormatId === "" && previousFormatId) {
+      setSelectedFormatId(previousFormatId);
     }
-  }, [formatOptions, selectedFormatId, previousFormatId]);
+  }, [selectedFormatId, previousFormatId]);
 
   useEffect(() => {
     // Check if current selection differs from the last saved configuration
@@ -453,6 +443,9 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                     <SelectValue placeholder={t('weeklyConfig.chooseCategory')} />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__none__" disabled>
+                      {t('weeklyConfig.chooseCategory')}
+                    </SelectItem>
                     {categoryOptions.length > 0 ? (
                       categoryOptions.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
@@ -482,6 +475,9 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                     <SelectValue placeholder={t('weeklyConfig.chooseFormat')} />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__none__" disabled>
+                      {t('weeklyConfig.chooseFormat')}
+                    </SelectItem>
                     {formatOptions.length > 0 ? (
                       formatOptions.map((format) => (
                         <SelectItem key={format.id} value={format.id}>
