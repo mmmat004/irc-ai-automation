@@ -56,9 +56,15 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
             credentials: 'include'
           }),
           fetch(API_ENDPOINTS.WORKFLOW_CONFIG_FORMAT, {
+            headers: {
+              'irc-lang': language === 'th' ? 'th' : 'en',
+            },
             credentials: 'include'
           }),
           fetch(API_ENDPOINTS.WORKFLOW_CONFIG_LATEST_INFO, {
+            headers: {
+              'irc-lang': language === 'th' ? 'th' : 'en',
+            },
             credentials: 'include'
           })
         ]);
@@ -420,14 +426,14 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
             <div className="space-y-3">
               <div>
                 <label className="text-sm font-medium mb-2 block">
-                  Select News Topic for This Week
+                  {t('weeklyConfig.selectTopic')}
                 </label>
                 <Select 
                   value={selectedCategoryId} 
                   onValueChange={handleCategoryChange}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Choose a category..." />
+                    <SelectValue placeholder={t('weeklyConfig.chooseCategory')} />
                   </SelectTrigger>
                   <SelectContent>
                     {categoryOptions.length > 0 ? (
@@ -438,7 +444,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                       ))
                     ) : (
                       <SelectItem value="no-options" disabled>
-                        No categories available
+                        {t('weeklyConfig.noCategories')}
                       </SelectItem>
                     )}
                   </SelectContent>
@@ -449,14 +455,14 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
               <div>
                 <label className="text-sm font-medium mb-2 block">
                   <FileText className="h-4 w-4 inline mr-2" />
-                  Select News Format
+                  {t('weeklyConfig.selectFormat')}
                 </label>
                 <Select 
                   value={selectedFormatId} 
                   onValueChange={handleFormatChange}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Choose a news format..." />
+                    <SelectValue placeholder={t('weeklyConfig.chooseFormat')} />
                   </SelectTrigger>
                   <SelectContent>
                     {formatOptions.length > 0 ? (
@@ -472,7 +478,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                       ))
                     ) : (
                       <SelectItem value="no-options" disabled>
-                        No formats available
+                        {t('weeklyConfig.noFormats')}
                       </SelectItem>
                     )}
                   </SelectContent>

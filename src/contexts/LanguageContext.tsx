@@ -407,7 +407,7 @@ const translations: Record<Language, Record<string, string>> = {
     'workflows.currentFormat': 'รูปแบบปัจจุบัน',
     
     // Weekly Categories Config
-    'weeklyConfig.title': 'การตั้งค่าหมวดหมู่อาทิตย์',
+    'weeklyConfig.title': 'การตั้งค่าหมวดหมู่รายสัปดาห์',
     'weeklyConfig.description': 'กำหนดหัวข้อข่าวสำหรับการรวบรวมเวิร์กโฟลว์ AI อัตโนมัติ',
     'weeklyConfig.loadingOptions': 'กำลังโหลดตัวเลือก...',
     'weeklyConfig.lastUpdated': 'อัปเดตล่าสุด:',
