@@ -44,6 +44,20 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
   const [hasChanges, setHasChanges] = useState(false);
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
 
+  const getCategoryNameById = (id?: string) =>
+    (id ? categoryOptions.find((c) => c.id === id)?.name : undefined);
+
+  const getFormatNameById = (id?: string) =>
+    (id ? formatOptions.find((f) => f.id === id)?.name : undefined);
+
+  const getDisplayName = (
+    fromOptions: string | undefined,
+    fromLatestInfo: string | undefined,
+  ) => {
+    const name = (fromOptions ?? fromLatestInfo ?? "").trim();
+    return name.length > 0 ? name : "Not set";
+  };
+
   useEffect(() => {
     // Load options and current configuration from API
     const loadData = async () => {
@@ -63,7 +77,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
             },
             credentials: 'include'
           }),
-          // Latest info should respect language for topic/category coming from DB
+          
           fetch(API_ENDPOINTS.WORKFLOW_CONFIG_LATEST_INFO, {
             headers: {
               'irc-lang': language === 'th' ? 'th' : 'en',
@@ -504,7 +518,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                   variant="secondary" 
                   className="bg-primary/10 text-primary border-primary/20 px-3 py-1"
                 >
-                  {previousCategoryName || (previousCategoryId ? categoryOptions.find(c => c.id === previousCategoryId)?.name || 'Not set' : 'Not set')}
+                  {getDisplayName(getCategoryNameById(previousCategoryId), previousCategoryName)}
                 </Badge>
               </div>
 
@@ -514,7 +528,7 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                   {t('workflows.currentFormat')}
                 </label>
                 <Badge variant="outline">
-                  {previousFormatName || (previousFormatId ? formatOptions.find(f => f.id === previousFormatId)?.name || 'Not set' : 'Not set')}
+                  {getDisplayName(getFormatNameById(previousFormatId), previousFormatName)}
                 </Badge>
               </div>
 
@@ -529,12 +543,20 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
                 <div className="flex flex-wrap gap-2">
                   {(previousWeekCategoryId || previousWeekCategoryName) && (
                     <Badge variant="outline" className="text-muted-foreground">
-                      {t('workflows.topic')} {previousWeekCategoryName || (previousWeekCategoryId ? categoryOptions.find(c => c.id === previousWeekCategoryId)?.name : '')}
+                      {t('workflows.topic')}{" "}
+                      {getDisplayName(
+                        getCategoryNameById(previousWeekCategoryId),
+                        previousWeekCategoryName,
+                      )}
                     </Badge>
                   )}
                   {(previousWeekFormatId || previousWeekFormatName) && (
                     <Badge variant="outline" className="text-muted-foreground">
-                      {t('workflows.format')} {previousWeekFormatName || (previousWeekFormatId ? formatOptions.find(f => f.id === previousWeekFormatId)?.name : '')}
+                      {t('workflows.format')}{" "}
+                      {getDisplayName(
+                        getFormatNameById(previousWeekFormatId),
+                        previousWeekFormatName,
+                      )}
                     </Badge>
                   )}
                 </div>
