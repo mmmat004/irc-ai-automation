@@ -56,8 +56,11 @@ export function WeeklyCategoriesConfig({ onSave }: WeeklyCategoriesConfigProps) 
             },
             credentials: 'include'
           }),
-          // Formats do NOT have Thai in BE, so no irc-lang here to avoid confusion
+          
           fetch(API_ENDPOINTS.WORKFLOW_CONFIG_FORMAT, {
+            headers: {
+              'irc-lang': language === 'th' ? 'th' : 'en',
+            },
             credentials: 'include'
           }),
           // Latest info should respect language for topic/category coming from DB
