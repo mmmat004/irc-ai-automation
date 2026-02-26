@@ -25,7 +25,7 @@ interface WorkflowLogResponse {
 }
 
 export function RecentExecutions() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [logs, setLogs] = useState<WorkflowLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,6 +47,7 @@ export function RecentExecutions() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'irc-lang': language === 'th' ? 'th' : 'en',
           },
           credentials: 'include',
           body: JSON.stringify(searchPayload),
@@ -102,7 +103,7 @@ export function RecentExecutions() {
     };
 
     fetchWorkflowLogs();
-  }, [currentPage]);
+  }, [currentPage, language]);
 
   const formatTimestamp = (timestamp: string) => {
     try {
@@ -207,7 +208,7 @@ export function RecentExecutions() {
                   className="h-8 px-3"
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
-                  Previous
+                  {t('common.previous')}
                 </Button>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -243,7 +244,7 @@ export function RecentExecutions() {
                   disabled={currentPage === totalPages || isLoading}
                   className="h-8 px-3"
                 >
-                  Next
+                  {t('common.next')}
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
