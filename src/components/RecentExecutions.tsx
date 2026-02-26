@@ -24,6 +24,20 @@ interface WorkflowLogResponse {
   total?: number;
 }
 
+/** Normalize API status (may be Thai or English) to canonical English for UI logic */
+function normalizeStatus(raw: string | undefined): WorkflowLog['status'] {
+  if (!raw) return 'pending';
+  const s = String(raw).trim().toLowerCase();
+  // English
+  if (['success', 'error', 'running', 'pending'].includes(s)) return s as WorkflowLog['status'];
+  // Thai (API returns localized when irc-lang: th)
+  if (raw === 'สำเร็จ') return 'success';
+  if (raw === 'ข้อผิดพลาด') return 'error';
+  if (raw === 'กำลังทำงาน' || raw === 'กำลังดำเนินการ') return 'running';
+  if (raw === 'รอดำเนินการ') return 'pending';
+  return 'pending';
+}
+
 export function RecentExecutions() {
   const { t, language } = useLanguage();
   const [logs, setLogs] = useState<WorkflowLog[]>([]);
@@ -65,7 +79,9 @@ export function RecentExecutions() {
           const mappedLogs: WorkflowLog[] = rawItems.map((item: any) => ({
             id: item.id || item.logId || Math.random(),
             workflowName: item.step || item.workflowName || item.workflow || item.name || 'Unknown Workflow',
-            status: item.status || (item.success ? 'success' : 'error') || 'pending',
+            status: item.status != null && item.status !== ''
+              ? normalizeStatus(item.status)
+              : (item.success === true ? 'success' : item.success === false ? 'error' : 'pending'),
             timestamp: item.timestamp || item.createdAt || item.executedAt || new Date().toISOString(),
             duration: item.duration || 
                      (item.executionTime ? `${(item.executionTime / 1000).toFixed(1)}s` : undefined) ||
